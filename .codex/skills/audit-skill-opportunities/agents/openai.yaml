@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audit Skill Opportunities"
+  short_description: "Find repo-specific missing Codex skills worth creating"
+  default_prompt: "Use $audit-skill-opportunities to audit this repository for high-value missing repo-local skills, but only recommend skills that are truly repo-specific, repeatable, and not already covered by existing skills or shared standards docs."

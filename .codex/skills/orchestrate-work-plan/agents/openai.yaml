@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrate Work Plan"
+  short_description: "Execute large plans as resumable task queues"
+  default_prompt: "Use $orchestrate-work-plan on <file>."

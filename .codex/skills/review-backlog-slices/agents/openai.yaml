@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Backlog Slices"
+  short_description: "Check backlog slices before planning"
+  default_prompt: "Use $review-backlog-slices to review this capability backlog."

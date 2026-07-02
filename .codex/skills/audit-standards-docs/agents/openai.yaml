@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audit Standards Docs"
+  short_description: "Audit repo standards docs for gaps"
+  default_prompt: "Use $audit-standards-docs to review this repo's agent rules and docs for missing or misplaced standards guidance."

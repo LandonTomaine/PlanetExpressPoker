@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Implementation Plan"
+  short_description: "Check implementation plans before coding"
+  default_prompt: "Use $review-implementation-plan to review this implementation plan."
