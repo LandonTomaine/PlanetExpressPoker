@@ -1,6 +1,6 @@
 export type RoomFunEvent = {
   caption: string
-  mode: 'celebration' | 'chaos' | 'delivery' | 'flyby'
+  mode: 'celebration' | 'chaos' | 'delivery' | 'flyby' | 'milestone'
   quote?: RoomFunQuote
 }
 
@@ -126,3 +126,4 @@ export const consensusQuotes: RoomFunQuote[] = [
 export const revealCaption = 'Reveal'
 export const consensusCaption = 'Consensus'
 export const deliveryCaption = 'Delivery'
+export const milestoneCaption = '100 rounds'

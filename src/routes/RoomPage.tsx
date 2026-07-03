@@ -34,6 +34,7 @@ import { FunLayer } from '../features/room/FunLayer'
 import {
   consensusCaption,
   deliveryCaption,
+  milestoneCaption,
   revealCaption,
   consensusQuotes,
   revealQuotes,
@@ -234,6 +235,7 @@ export function RoomPage() {
   const lastSeenRoundNumberRef = useRef<number | null>(null)
   const locallyObservedRoundIdsRef = useRef<Set<string>>(new Set())
   const revealedFunRoundKeyRef = useRef<string | null>(null)
+  const milestoneRoundKeyRef = useRef<string | null>(null)
   const roundReactionRoundKeyRef = useRef<string | null>(null)
   const roundReactionTimeoutRef = useRef<number | null>(null)
   const funEventTimeoutRef = useRef<number | null>(null)
@@ -265,6 +267,10 @@ export function RoomPage() {
 
     if (event.mode === 'delivery') {
       return 8400
+    }
+
+    if (event.mode === 'milestone') {
+      return 10000
     }
 
     return 6600
@@ -562,6 +568,8 @@ export function RoomPage() {
           activeRound.id
         )
       : null
+  const isMilestoneRound =
+    activeRound?.status === 'revealed' && activeRound.roundNumber % 100 === 0
 
   const countdownSecondsRemaining =
     activeRound?.status === 'countdown' && activeRound.countdownStartedAt
@@ -646,6 +654,7 @@ export function RoomPage() {
       !activeRound ||
       activeRound.status !== 'revealed' ||
       !locallyObservedRoundIdsRef.current.has(activeRound.id) ||
+      isMilestoneRound ||
       roundReactionKind ||
       roomSettings?.funLevel !== 'chaotic'
     ) {
@@ -672,6 +681,7 @@ export function RoomPage() {
   }, [
     activeRound,
     isConsensusCelebration,
+    isMilestoneRound,
     roomSettings?.funLevel,
     roundReactionKind,
   ])
@@ -680,7 +690,40 @@ export function RoomPage() {
     if (
       !activeRound ||
       activeRound.status !== 'revealed' ||
+      !isMilestoneRound ||
+      !locallyObservedRoundIdsRef.current.has(activeRound.id) ||
+      roomSettings?.funLevel !== 'chaotic'
+    ) {
+      return
+    }
+
+    const milestoneKey = `${activeRound.id}:${activeRound.roundNumber}`
+
+    if (milestoneRoundKeyRef.current === milestoneKey) {
+      return
+    }
+
+    milestoneRoundKeyRef.current = milestoneKey
+
+    if (roundReactionTimeoutRef.current !== null) {
+      window.clearTimeout(roundReactionTimeoutRef.current)
+      roundReactionTimeoutRef.current = null
+    }
+
+    setActiveRoundReaction(null)
+
+    void broadcastFunEvent({
+      caption: milestoneCaption,
+      mode: 'milestone',
+    })
+  }, [activeRound, isMilestoneRound, roomSettings?.funLevel])
+
+  useEffect(() => {
+    if (
+      !activeRound ||
+      activeRound.status !== 'revealed' ||
       !roundReactionKind ||
+      isMilestoneRound ||
       !locallyObservedRoundIdsRef.current.has(activeRound.id) ||
       roomSettings?.funLevel !== 'chaotic'
     ) {
@@ -711,7 +754,7 @@ export function RoomPage() {
       setActiveRoundReaction(null)
       roundReactionTimeoutRef.current = null
     }, 5000)
-  }, [activeRound, roomSettings?.funLevel, roundReactionKind])
+  }, [activeRound, isMilestoneRound, roomSettings?.funLevel, roundReactionKind])
 
   useEffect(() => {
     if (!room || !selfParticipant || !activeRound) {

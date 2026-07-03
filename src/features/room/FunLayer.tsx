@@ -13,28 +13,59 @@ type FunLayerProps = {
 export function FunLayer({ event, reaction = null }: FunLayerProps) {
   const quoteDisplayDuration = event?.mode === 'celebration' ? 6.4 : 5.8
   const isDeliveryEvent = event?.mode === 'delivery'
+  const isMilestoneEvent = event?.mode === 'milestone'
   const shipMotion = isDeliveryEvent
     ? {
         rotate: [-1, 1, 0, 0, 0],
         x: ['-78vw', '0vw', '0vw', '0vw', '78vw'],
         y: [82, 92, 92, 92, 78],
       }
-    : {
-        rotate: [-1, 1, 0],
-        x: ['-18vw', '42vw', '110vw'],
-        y: [82, 94, 78],
-      }
+    : isMilestoneEvent
+      ? {
+          rotate: [-8, 9, -13, 12, -6, 7, -3],
+          scale: [0.74, 0.94, 0.82, 1.04, 0.9, 0.98, 0.78],
+          x: ['-42vw', '22vw', '76vw', '12vw', '105vw', '38vw', '-38vw'],
+          y: [58, 226, 82, 318, 150, 92, 258],
+        }
+      : {
+          rotate: [-1, 1, 0],
+          x: ['-18vw', '42vw', '110vw'],
+          y: [82, 94, 78],
+        }
   const shipTransition = isDeliveryEvent
     ? {
         duration: 5.8,
         ease: 'easeInOut' as const,
         times: [0, 0.3, 0.46, 0.72, 1],
       }
-    : {
-        duration: 2.35,
-        ease: 'easeInOut' as const,
-        times: [0, 0.18, 0.82, 1],
-      }
+    : isMilestoneEvent
+      ? {
+          duration: 10,
+          ease: 'easeInOut' as const,
+          times: [0, 0.16, 0.32, 0.5, 0.68, 0.84, 1],
+        }
+      : {
+          duration: 2.35,
+          ease: 'easeInOut' as const,
+          times: [0, 0.18, 0.82, 1],
+        }
+  const confetti = [
+    { color: '#d42f26', delay: 0.15, left: '8%', rotate: 280, x: -80 },
+    { color: '#f4d44f', delay: 0.45, left: '18%', rotate: -240, x: 72 },
+    { color: '#1fa089', delay: 0.25, left: '29%', rotate: 320, x: -34 },
+    { color: '#8fd6ff', delay: 0.65, left: '39%', rotate: -300, x: 96 },
+    { color: '#ff7c48', delay: 0.35, left: '48%', rotate: 220, x: -110 },
+    { color: '#d42f26', delay: 0.85, left: '58%', rotate: -260, x: 58 },
+    { color: '#f4d44f', delay: 0.55, left: '68%', rotate: 310, x: -62 },
+    { color: '#1fa089', delay: 0.75, left: '78%', rotate: -340, x: 88 },
+    { color: '#8fd6ff', delay: 0.2, left: '88%', rotate: 270, x: -76 },
+  ]
+  const balloons = [
+    { color: '#d42f26', delay: 0.3, left: '12%', x: -24 },
+    { color: '#f4d44f', delay: 1.1, left: '33%', x: 36 },
+    { color: '#1fa089', delay: 0.7, left: '62%', x: -34 },
+    { color: '#8fd6ff', delay: 1.45, left: '84%', x: 28 },
+  ]
   const packageDrops = [
     { delay: 2.08, drift: -34, rotate: -18, spread: -520, tumble: -420 },
     { delay: 2.22, drift: 18, rotate: 12, spread: -430, tumble: 380 },
@@ -64,17 +95,85 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
             exit={isDeliveryEvent ? {} : { opacity: 0 }}
             className="absolute inset-0"
           >
-            {event?.mode === 'flyby' || event?.mode === 'delivery' ? (
+            {isMilestoneEvent ? (
+              <>
+                {confetti.map((piece, index) => (
+                  <motion.span
+                    key={`confetti:${index}`}
+                    initial={{
+                      opacity: 0,
+                      rotate: 0,
+                      x: 0,
+                      y: -40,
+                    }}
+                    animate={{
+                      opacity: [0, 1, 1, 0],
+                      rotate: piece.rotate,
+                      x: [0, piece.x * 0.35, piece.x],
+                      y: ['-8vh', '48vh', '108vh'],
+                    }}
+                    transition={{
+                      delay: piece.delay,
+                      duration: 6.8,
+                      ease: 'easeOut' as const,
+                      times: [0, 0.14, 0.78, 1],
+                    }}
+                    className="absolute top-0 h-4 w-2 rounded-[3px] shadow-[0_6px_12px_rgba(12,32,42,0.14)]"
+                    style={{
+                      backgroundColor: piece.color,
+                      left: piece.left,
+                    }}
+                  />
+                ))}
+
+                {balloons.map((balloon, index) => (
+                  <motion.span
+                    key={`balloon:${index}`}
+                    initial={{
+                      opacity: 0,
+                      x: 0,
+                      y: '105vh',
+                    }}
+                    animate={{
+                      opacity: [0, 1, 1, 0],
+                      x: [0, balloon.x, balloon.x * -0.45, balloon.x],
+                      y: ['105vh', '62vh', '24vh', '-16vh'],
+                    }}
+                    transition={{
+                      delay: balloon.delay,
+                      duration: 7.4,
+                      ease: 'easeInOut' as const,
+                      times: [0, 0.18, 0.78, 1],
+                    }}
+                    className="absolute top-0 h-12 w-9 rounded-full border-2 border-white/70 shadow-[0_12px_24px_rgba(12,32,42,0.18)] after:absolute after:left-1/2 after:top-[43px] after:h-12 after:w-px after:-translate-x-1/2 after:bg-[rgba(20,38,51,0.28)] sm:h-14 sm:w-10 sm:after:top-[50px]"
+                    style={{
+                      backgroundColor: balloon.color,
+                      left: balloon.left,
+                    }}
+                  />
+                ))}
+              </>
+            ) : null}
+
+            {event?.mode === 'flyby' ||
+            event?.mode === 'delivery' ||
+            isMilestoneEvent ? (
               <motion.div
                 initial={{
                   rotate: -1,
-                  x: isDeliveryEvent ? '-78vw' : '-18vw',
-                  y: 82,
+                  scale: isMilestoneEvent ? 0.74 : 1,
+                  x: isDeliveryEvent
+                    ? '-78vw'
+                    : isMilestoneEvent
+                      ? '-42vw'
+                      : '-18vw',
+                  y: isMilestoneEvent ? 58 : 82,
                 }}
                 animate={shipMotion}
                 transition={shipTransition}
                 className={[
-                  'absolute top-16 w-56 drop-shadow-[0_12px_24px_rgba(12,32,42,0.18)] will-change-transform sm:w-72',
+                  'absolute w-56 drop-shadow-[0_12px_24px_rgba(12,32,42,0.18)] will-change-transform sm:w-72',
+                  isMilestoneEvent ? 'top-0 sm:w-80' : 'top-16',
                   isDeliveryEvent
                     ? 'left-[calc(50vw-7rem)] sm:left-[calc(50vw-9rem)]'
                     : 'left-0',
