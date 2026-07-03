@@ -68,7 +68,7 @@ const roundReactionConfig: Record<RoundReactionKind, RoundReactionDisplay> = {
   },
   benderWhoa: {
     mediaType: 'video',
-    src: '/effects/bender-whoa.webm',
+    src: '/effects/bender-whoa-clean.webm',
     mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
   },
   skepticalFry: {
