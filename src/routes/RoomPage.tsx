@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import {
   getAvatarOption,
   avatarOptions,
@@ -1991,6 +1991,14 @@ export function RoomPage() {
                 >
                   Copy invite link
                 </button>
+                {import.meta.env.DEV ? (
+                  <Link
+                    to={`/dev/multiplayer?room=${encodeURIComponent(normalizedRoomName)}`}
+                    className="rounded-[10px] border border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#ffffff,_#e3edf0)] px-3 py-2 text-sm font-semibold text-[var(--pep-ink)] transition hover:-translate-y-0.5"
+                  >
+                    Dev multiplayer
+                  </Link>
+                ) : null}
                 <button
                   type="button"
                   onClick={() => void handleFunLevelToggle()}
