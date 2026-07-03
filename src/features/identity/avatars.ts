@@ -3,6 +3,7 @@ export type AvatarOption = {
   label: string
   accentClassName: string
   portraitPath: string
+  portraitClassName?: string
 }
 
 export const avatarOptions: AvatarOption[] = [
@@ -65,6 +66,7 @@ export const avatarOptions: AvatarOption[] = [
     label: 'Lrrr',
     accentClassName: 'from-lime-300 via-yellow-100 to-white',
     portraitPath: '/cards/icons8-lrrr.png',
+    portraitClassName: 'scale-[1.22]',
   },
 ]
 
@@ -75,4 +77,13 @@ export function getAvatarOption(avatarKey: string) {
     avatarOptions.find((avatarOption) => avatarOption.key === avatarKey) ??
     defaultAvatar
   )
+}
+
+export function getAvatarPortraitClassName(
+  avatarOption: AvatarOption,
+  baseClassName = 'h-full w-full object-cover'
+) {
+  return [baseClassName, avatarOption.portraitClassName]
+    .filter(Boolean)
+    .join(' ')
 }

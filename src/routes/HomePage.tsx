@@ -1,7 +1,10 @@
 import { motion } from 'motion/react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { avatarOptions } from '../features/identity/avatars'
+import {
+  avatarOptions,
+  getAvatarPortraitClassName,
+} from '../features/identity/avatars'
 import {
   maxDisplayNameLength,
   normalizeDisplayName,
@@ -133,7 +136,7 @@ export function HomePage() {
                         <img
                           src={avatar.portraitPath}
                           alt={avatar.label}
-                          className="h-full w-full object-cover"
+                          className={getAvatarPortraitClassName(avatar)}
                         />
                       </span>
                     </button>
@@ -184,12 +187,15 @@ export function HomePage() {
           {avatarOptions.map((avatar) => (
             <div
               key={avatar.key}
-              className="rounded-[10px] border border-[var(--pep-line)] bg-white/88 p-2"
+              className="overflow-hidden rounded-[10px] border border-[var(--pep-line)] bg-white/88 p-2"
             >
               <img
                 src={avatar.portraitPath}
                 alt={avatar.label}
-                className="aspect-square w-full rounded-[8px] object-cover"
+                className={getAvatarPortraitClassName(
+                  avatar,
+                  'aspect-square w-full rounded-[8px] object-cover'
+                )}
               />
             </div>
           ))}

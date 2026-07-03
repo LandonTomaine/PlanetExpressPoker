@@ -1,7 +1,11 @@
 import { motion } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useParams } from 'react-router'
-import { getAvatarOption, avatarOptions } from '../features/identity/avatars'
+import {
+  getAvatarOption,
+  avatarOptions,
+  getAvatarPortraitClassName,
+} from '../features/identity/avatars'
 import {
   maxDisplayNameLength,
   normalizeDisplayName,
@@ -1195,7 +1199,7 @@ export function RoomPage() {
                       <img
                         src={avatarOption.portraitPath}
                         alt={avatarOption.label}
-                        className="h-full w-full object-cover"
+                        className={getAvatarPortraitClassName(avatarOption)}
                       />
                     </span>
                   </button>
@@ -1281,7 +1285,7 @@ export function RoomPage() {
                   <img
                     src={avatar.portraitPath}
                     alt={avatar.label}
-                    className="h-full w-full object-cover"
+                    className={getAvatarPortraitClassName(avatar)}
                   />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -1650,7 +1654,9 @@ export function RoomPage() {
                               <img
                                 src={avatarOption.portraitPath}
                                 alt={avatarOption.label}
-                                className="h-full w-full object-cover"
+                                className={getAvatarPortraitClassName(
+                                  avatarOption
+                                )}
                               />
                             </span>
                           </button>
