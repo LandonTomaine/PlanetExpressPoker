@@ -52,7 +52,21 @@ import {
 } from '../features/room/voting'
 import type { JoinedParticipant, Room } from '../features/room/types'
 
-type RoundReactionKind = 'hypnotoad' | 'benderWhoa' | 'skepticalFry'
+type RoundReactionKind =
+  | 'coffee1'
+  | 'coffee2'
+  | 'coffee3'
+  | 'coffee4'
+  | 'consensus1'
+  | 'consensus2'
+  | 'consensus3'
+  | 'consensus4'
+  | 'consensus5'
+  | 'nibblerQuestion'
+  | 'shipInfinity'
+  | 'skepticalFry'
+  | 'wideSpread1'
+  | 'wideSpread2'
 
 type RoundReactionDisplay = {
   mediaType: 'image' | 'video'
@@ -65,14 +79,59 @@ const numericCardIndexByValue = new Map(
 )
 
 const roundReactionConfig: Record<RoundReactionKind, RoundReactionDisplay> = {
-  hypnotoad: {
+  coffee1: {
+    mediaType: 'image',
+    src: '/effects/coffee-1.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  coffee2: {
+    mediaType: 'image',
+    src: '/effects/coffee-2.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  coffee3: {
+    mediaType: 'image',
+    src: '/effects/coffee-3.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  coffee4: {
+    mediaType: 'image',
+    src: '/effects/coffee-4.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  consensus1: {
     mediaType: 'image',
     src: '/effects/hypnotoad.gif',
     mediaClassName: 'h-44 w-44 object-contain sm:h-56 sm:w-56',
   },
-  benderWhoa: {
-    mediaType: 'video',
-    src: '/effects/bender-whoa-clean.webm',
+  consensus2: {
+    mediaType: 'image',
+    src: '/effects/consensus-2.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  consensus3: {
+    mediaType: 'image',
+    src: '/effects/consensus-3.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  consensus4: {
+    mediaType: 'image',
+    src: '/effects/consensus-4.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  consensus5: {
+    mediaType: 'image',
+    src: '/effects/consensus-5.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  nibblerQuestion: {
+    mediaType: 'image',
+    src: '/effects/nibbler-question.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  shipInfinity: {
+    mediaType: 'image',
+    src: '/effects/ship-infinity.gif',
     mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
   },
   skepticalFry: {
@@ -80,7 +139,32 @@ const roundReactionConfig: Record<RoundReactionKind, RoundReactionDisplay> = {
     src: '/effects/skeptical-fry.webm',
     mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
   },
+  wideSpread1: {
+    mediaType: 'image',
+    src: '/effects/wide-spread-1.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
+  wideSpread2: {
+    mediaType: 'image',
+    src: '/effects/wide-spread-2.gif',
+    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
+  },
 }
+
+const coffeeReactionKinds = [
+  'coffee1',
+  'coffee2',
+  'coffee3',
+  'coffee4',
+] as const
+const consensusReactionKinds = [
+  'consensus1',
+  'consensus2',
+  'consensus3',
+  'consensus4',
+  'consensus5',
+] as const
+const wideSpreadReactionKinds = ['wideSpread1', 'wideSpread2'] as const
 
 export function RoomPage() {
   const { roomName: roomNameParam = '' } = useParams()
@@ -463,12 +547,9 @@ export function RoomPage() {
   const revealedVoteByParticipantId = new Map(
     activeRoundVotes.map((vote) => [vote.participantId, vote.cardValue])
   )
-  const scoreSummary = buildScoreSummary(
-    Array.from(revealedVoteByParticipantId.values())
-  )
-  const hasMatchingNumericVotes = hasNumericConsensus(
-    Array.from(revealedVoteByParticipantId.values())
-  )
+  const revealedCardValues = Array.from(revealedVoteByParticipantId.values())
+  const scoreSummary = buildScoreSummary(revealedCardValues)
+  const hasMatchingNumericVotes = hasNumericConsensus(revealedCardValues)
   const isConsensusCelebration =
     activeRound?.status === 'revealed' &&
     allVotersHaveSubmitted &&
@@ -476,8 +557,9 @@ export function RoomPage() {
   const roundReactionKind =
     activeRound?.status === 'revealed'
       ? getRoundReactionKind(
-          Array.from(revealedVoteByParticipantId.values()),
-          hasMatchingNumericVotes
+          revealedCardValues,
+          hasMatchingNumericVotes,
+          activeRound.id
         )
       : null
 
@@ -1009,7 +1091,9 @@ export function RoomPage() {
                 ? '/planet-express-ship.png'
                 : card === 'BIG'
                   ? '/cards/icons8-lrrr.png'
-                  : null
+                  : card === 'coffee'
+                    ? '/cards/coffee-cup.svg'
+                    : null
           const cardLabel = getCardDisplayLabel(card)
           const cardMeaningLabel = getCardMeaningLabel(card)
 
@@ -1058,7 +1142,9 @@ export function RoomPage() {
                           ? 'max-h-14 w-32 sm:max-h-16 sm:w-40'
                           : card === 'BIG'
                             ? 'max-h-20 sm:max-h-24'
-                            : 'max-h-16 sm:max-h-20',
+                            : card === 'coffee'
+                              ? 'max-h-14 sm:max-h-16'
+                              : 'max-h-16 sm:max-h-20',
                       ].join(' ')}
                     />
                   </span>
@@ -1883,14 +1969,29 @@ function CheckIcon() {
 
 function getRoundReactionKind(
   cardValues: string[],
-  hasMatchingNumericVotes: boolean
+  hasMatchingNumericVotes: boolean,
+  roundId: string
 ): RoundReactionKind | null {
+  const reactionSeed = `${roundId}:${cardValues.slice().sort().join('|')}`
+
+  if (cardValues.includes('coffee')) {
+    return pickDeterministicItem(coffeeReactionKinds, reactionSeed)
+  }
+
+  if (cardValues.includes('nibbler')) {
+    return 'nibblerQuestion'
+  }
+
+  if (cardValues.includes('ship')) {
+    return 'shipInfinity'
+  }
+
   if (cardValues.includes('BIG')) {
     return 'skepticalFry'
   }
 
   if (hasMatchingNumericVotes) {
-    return 'hypnotoad'
+    return pickDeterministicItem(consensusReactionKinds, reactionSeed)
   }
 
   const numericCardIndexes = cardValues
@@ -1908,7 +2009,26 @@ function getRoundReactionKind(
   const lowestCardIndex = Math.min(...numericCardIndexes)
   const highestCardIndex = Math.max(...numericCardIndexes)
 
-  return highestCardIndex - lowestCardIndex > 1 ? 'benderWhoa' : null
+  return highestCardIndex - lowestCardIndex > 1
+    ? pickDeterministicItem(wideSpreadReactionKinds, reactionSeed)
+    : null
+}
+
+function pickDeterministicItem<const T extends readonly RoundReactionKind[]>(
+  items: T,
+  seed: string
+): T[number] {
+  return items[getDeterministicIndex(seed, items.length)]
+}
+
+function getDeterministicIndex(seed: string, itemCount: number) {
+  let hash = 0
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0
+  }
+
+  return hash % itemCount
 }
 
 function hasNumericConsensus(cardValues: string[]) {

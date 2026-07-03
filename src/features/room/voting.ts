@@ -1,19 +1,11 @@
-export const numericCardValues = [
-  '0',
-  '1',
-  '2',
-  '3',
-  '5',
-  '8',
-  '13',
-  '21',
-] as const
+export const numericCardValues = ['0', '1', '2', '3', '5', '8', '13'] as const
 
 export const fibonacciDeck = [
   ...numericCardValues,
   'ship',
   'BIG',
   'nibbler',
+  'coffee',
 ] as const
 
 export type PokerCardValue = (typeof fibonacciDeck)[number]
@@ -35,6 +27,10 @@ export function getCardDisplayLabel(cardValue: string) {
 
   if (cardValue === 'BIG') {
     return 'Lrrr'
+  }
+
+  if (cardValue === 'coffee') {
+    return 'Coffee'
   }
 
   return cardValue
