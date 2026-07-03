@@ -1038,7 +1038,7 @@ export function RoomPage() {
 
     if (isSelfRoomOwner) {
       setParticipantActionError(
-        'Room owner cannot leave. Shut down the room instead.'
+        'Room owner cannot leave. Close the room instead.'
       )
       return
     }
@@ -1083,7 +1083,7 @@ export function RoomPage() {
       navigate('/')
     } catch (error) {
       setSettingsError(
-        error instanceof Error ? error.message : 'Failed to shut down room.'
+        error instanceof Error ? error.message : 'Failed to close room.'
       )
     } finally {
       setIsShutdownSubmitting(false)
@@ -1617,7 +1617,7 @@ export function RoomPage() {
   )
 
   const shutdownConfirmDialog = isShutdownConfirmOpen ? (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[rgba(12,32,42,0.54)] px-4 py-8 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[radial-gradient(circle_at_top,_rgba(245,212,79,0.28),_rgba(12,32,42,0.74)_48%,_rgba(12,32,42,0.86))] px-4 py-8 backdrop-blur-sm">
       <motion.section
         initial={{ opacity: 0, scale: 0.96, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -1625,21 +1625,44 @@ export function RoomPage() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="shutdown-room-title"
-        className="w-full max-w-md rounded-[20px] border-2 border-[var(--pep-accent)] bg-white p-5 shadow-[0_28px_80px_rgba(12,32,42,0.28)]"
+        className="relative w-full max-w-md overflow-hidden rounded-[24px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#fff7ce,_#ffffff_55%,_#c8efe5)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
       >
-        <p className="text-xs font-black uppercase tracking-[0.1em] text-[var(--pep-accent)]">
-          Permanent action
-        </p>
-        <h2
-          id="shutdown-room-title"
-          className="mt-2 font-[var(--pep-font-display)] text-3xl text-[var(--pep-ink)]"
-        >
-          Shut down this room?
-        </h2>
-        <p className="mt-3 text-sm leading-6 text-[var(--pep-ink-soft)]">
-          This permanently deletes the room, participants, votes, rounds, and
-          settings. You will lose all saved data for this room.
-        </p>
+        <div className="pointer-events-none absolute -right-8 -top-5 opacity-20">
+          <img
+            src="/planet-express-ship.png"
+            alt=""
+            className="h-24 w-52 object-contain"
+          />
+        </div>
+        <div className="relative flex items-start gap-3">
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[16px] border-2 border-[var(--pep-ink)] bg-white shadow-[0_8px_0_rgba(20,38,51,0.12)]">
+            <img
+              src="/planet-express-logo.png"
+              alt=""
+              className="h-11 w-11 object-contain"
+            />
+          </div>
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.1em] text-[var(--pep-accent)]">
+              Permanent action
+            </p>
+            <h2
+              id="shutdown-room-title"
+              className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]"
+            >
+              Close this room?
+            </h2>
+          </div>
+        </div>
+        <div className="relative mt-4 rounded-[16px] border border-[var(--pep-accent)]/25 bg-white/82 p-4">
+          <p className="text-sm font-semibold leading-6 text-[var(--pep-ink)]">
+            This permanently deletes this room and all saved participants,
+            votes, rounds, and settings.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-[var(--pep-ink-soft)]">
+            This cannot be undone.
+          </p>
+        </div>
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <button
             type="button"
@@ -1660,7 +1683,7 @@ export function RoomPage() {
                 : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
             ].join(' ')}
           >
-            {isShutdownSubmitting ? 'Shutting down...' : 'Shut down room'}
+            {isShutdownSubmitting ? 'Closing...' : 'Close room'}
           </button>
         </div>
       </motion.section>
@@ -1758,9 +1781,7 @@ export function RoomPage() {
                         : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
                     ].join(' ')}
                   >
-                    {isShutdownSubmitting
-                      ? 'Shutting down...'
-                      : 'Shut down room'}
+                    {isShutdownSubmitting ? 'Closing...' : 'Close room'}
                   </button>
                 ) : null}
               </div>
