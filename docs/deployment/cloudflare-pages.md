@@ -7,34 +7,61 @@ Planet Express Poker deploys as:
 
 Cloudflare Pages alone is not enough because the app needs Supabase for shared room state.
 
-## GitHub + Cloudflare Pages
+## GitHub Actions + Cloudflare Pages
 
 Use this for the normal hosted path.
 
-1. Push `main` to GitHub.
-2. In Cloudflare, create a Pages project connected to the GitHub repository.
-3. Use these build settings:
-   - Framework preset: `Vite`
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-   - Production branch: `main`
-4. Add these Cloudflare Pages environment variables:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+The repo deploys to Cloudflare Pages from GitHub Actions on every push to `main`.
 
-Only use the public anon key in Cloudflare Pages. Never add the Supabase service-role key to this frontend project.
+Required GitHub repository secrets:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Only use the public Supabase anon key. Never add the Supabase service-role key to GitHub or Cloudflare for this frontend.
+
+Cloudflare project settings:
+
+- Project name: `planet-express-poker`
+- Production URL: `https://planet-express-poker.pages.dev`
+- Build output directory: `dist`
+
+## Optional Cloudflare Git Integration
+
+Cloudflare Pages can also connect directly to GitHub through the Cloudflare dashboard, but this repo uses GitHub Actions instead so the build and deploy steps are explicit in source control.
+
+If switching to Cloudflare's dashboard Git integration later, use:
+
+- Framework preset: `Vite`
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Production branch: `main`
+- Environment variables:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
 
 ## Hosted Supabase
 
-Create a Supabase project, then push the local migrations:
+Create a hosted Supabase project, then push the local migrations.
+
+Required values from Supabase:
+
+- Project ref
+- Database password
+- Project URL
+- Anon public key
+- Personal access token for CLI automation
 
 ```powershell
-npx.cmd supabase login
+$env:SUPABASE_ACCESS_TOKEN="<supabase-access-token>"
+$env:SUPABASE_DB_PASSWORD="<database-password>"
 npx.cmd supabase link --project-ref <project-ref>
 npx.cmd supabase db push
 ```
 
-Copy the hosted Project URL and anon public key from Supabase into Cloudflare Pages.
+Copy the hosted Project URL and anon public key into GitHub repository secrets as `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 
 ## Direct Cloudflare Upload
 
