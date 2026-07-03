@@ -65,10 +65,17 @@ type RoundReactionKind =
   | 'consensus4'
   | 'consensus5'
   | 'nibblerQuestion'
-  | 'shipInfinity'
   | 'skepticalFry'
   | 'wideSpread1'
   | 'wideSpread2'
+
+type RoundReactionCategory =
+  | 'coffee'
+  | 'consensus'
+  | 'nibblerQuestion'
+  | 'shipFlyby'
+  | 'skepticalFry'
+  | 'wideSpread'
 
 type RoundReactionDisplay = {
   mediaType: 'image' | 'video'
@@ -129,11 +136,6 @@ const roundReactionConfig: Record<RoundReactionKind, RoundReactionDisplay> = {
   nibblerQuestion: {
     mediaType: 'image',
     src: '/effects/nibbler-question.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  shipInfinity: {
-    mediaType: 'image',
-    src: '/effects/ship-infinity.gif',
     mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
   },
   skepticalFry: {
@@ -246,6 +248,9 @@ export function RoomPage() {
   const roundReactionRoundKeyRef = useRef<string | null>(null)
   const roundReactionTimeoutRef = useRef<number | null>(null)
   const funEventTimeoutRef = useRef<number | null>(null)
+  const lastRoundReactionByCategoryRef = useRef<
+    Partial<Record<RoundReactionCategory, RoundReactionKind>>
+  >({})
 
   const attemptAutoJoin = useEffectEvent(async () => {
     await handleJoin({
@@ -288,7 +293,7 @@ export function RoomPage() {
       return
     }
 
-    if (event.quote && roundReactionKind) {
+    if (event.quote && roundReactionCategory) {
       return
     }
 
@@ -569,24 +574,24 @@ export function RoomPage() {
     activeRound?.status === 'revealed' &&
     allVotersHaveSubmitted &&
     scoreSummary.unanimousNumericValue !== null
-  const roundReactionKind =
+  const roundReactionCategory =
     activeRound?.status === 'revealed'
-      ? getRoundReactionKind(
-          revealedCardValues,
-          hasMatchingNumericVotes,
-          activeRound.id
-        )
+      ? getRoundReactionCategory(revealedCardValues, hasMatchingNumericVotes)
       : null
   const isMilestoneRound =
     activeRound?.status === 'revealed' && activeRound.roundNumber % 100 === 0
 
+  const effectiveCountdownSeconds =
+    activeRound?.status === 'countdown'
+      ? Math.min(activeRound.countdownSeconds, 3)
+      : null
   const countdownSecondsRemaining =
     activeRound?.status === 'countdown' && activeRound.countdownStartedAt
       ? Math.max(
           0,
           Math.ceil(
             (new Date(activeRound.countdownStartedAt).getTime() +
-              activeRound.countdownSeconds * 1000 -
+              (effectiveCountdownSeconds ?? 3) * 1000 -
               countdownNow) /
               1000
           )
@@ -664,7 +669,7 @@ export function RoomPage() {
       activeRound.status !== 'revealed' ||
       !locallyObservedRoundIdsRef.current.has(activeRound.id) ||
       isMilestoneRound ||
-      roundReactionKind ||
+      roundReactionCategory ||
       roomSettings?.funLevel !== 'chaotic'
     ) {
       return
@@ -692,7 +697,7 @@ export function RoomPage() {
     isConsensusCelebration,
     isMilestoneRound,
     roomSettings?.funLevel,
-    roundReactionKind,
+    roundReactionCategory,
   ])
 
   useEffect(() => {
@@ -730,7 +735,7 @@ export function RoomPage() {
     if (
       !activeRound ||
       activeRound.status !== 'revealed' ||
-      !roundReactionKind ||
+      !roundReactionCategory ||
       isMilestoneRound ||
       !locallyObservedRoundIdsRef.current.has(activeRound.id) ||
       roomSettings?.funLevel !== 'chaotic'
@@ -748,6 +753,7 @@ export function RoomPage() {
 
     if (roundReactionTimeoutRef.current !== null) {
       window.clearTimeout(roundReactionTimeoutRef.current)
+      roundReactionTimeoutRef.current = null
     }
 
     if (funEventTimeoutRef.current !== null) {
@@ -755,14 +761,44 @@ export function RoomPage() {
       funEventTimeoutRef.current = null
     }
 
+    if (roundReactionCategory === 'shipFlyby') {
+      queueMicrotask(() => {
+        setActiveRoundReaction(null)
+
+        void broadcastFunEvent({
+          caption: deliveryCaption,
+          mode: 'flyby',
+        })
+      })
+
+      return
+    }
+
+    const nextRoundReactionKind = pickRoundReactionKind(
+      roundReactionCategory,
+      lastRoundReactionByCategoryRef.current[roundReactionCategory]
+    )
+
+    if (!nextRoundReactionKind) {
+      return
+    }
+
+    lastRoundReactionByCategoryRef.current[roundReactionCategory] =
+      nextRoundReactionKind
+
     setActiveFunEvent(null)
-    setActiveRoundReaction(roundReactionKind)
+    setActiveRoundReaction(nextRoundReactionKind)
 
     roundReactionTimeoutRef.current = window.setTimeout(() => {
       setActiveRoundReaction(null)
       roundReactionTimeoutRef.current = null
     }, 5000)
-  }, [activeRound, isMilestoneRound, roomSettings?.funLevel, roundReactionKind])
+  }, [
+    activeRound,
+    isMilestoneRound,
+    roomSettings?.funLevel,
+    roundReactionCategory,
+  ])
 
   useEffect(() => {
     if (!room || !selfParticipant || !activeRound) {
@@ -802,7 +838,7 @@ export function RoomPage() {
 
     const revealAt =
       new Date(activeRound.countdownStartedAt).getTime() +
-      activeRound.countdownSeconds * 1000
+      Math.min(activeRound.countdownSeconds, 3) * 1000
     const timeoutId = window.setTimeout(
       () => {
         void finalizeRevealEvent()
@@ -2149,15 +2185,12 @@ function CheckIcon() {
   )
 }
 
-function getRoundReactionKind(
+function getRoundReactionCategory(
   cardValues: string[],
-  hasMatchingNumericVotes: boolean,
-  roundId: string
-): RoundReactionKind | null {
-  const reactionSeed = `${roundId}:${cardValues.slice().sort().join('|')}`
-
+  hasMatchingNumericVotes: boolean
+): RoundReactionCategory | null {
   if (cardValues.includes('coffee')) {
-    return pickDeterministicItem(coffeeReactionKinds, reactionSeed)
+    return 'coffee'
   }
 
   if (cardValues.includes('nibbler')) {
@@ -2165,7 +2198,7 @@ function getRoundReactionKind(
   }
 
   if (cardValues.includes('ship')) {
-    return 'shipInfinity'
+    return 'shipFlyby'
   }
 
   if (cardValues.includes('BIG')) {
@@ -2173,7 +2206,7 @@ function getRoundReactionKind(
   }
 
   if (hasMatchingNumericVotes) {
-    return pickDeterministicItem(consensusReactionKinds, reactionSeed)
+    return 'consensus'
   }
 
   const numericCardIndexes = cardValues
@@ -2191,26 +2224,46 @@ function getRoundReactionKind(
   const lowestCardIndex = Math.min(...numericCardIndexes)
   const highestCardIndex = Math.max(...numericCardIndexes)
 
-  return highestCardIndex - lowestCardIndex > 1
-    ? pickDeterministicItem(wideSpreadReactionKinds, reactionSeed)
-    : null
+  return highestCardIndex - lowestCardIndex > 1 ? 'wideSpread' : null
 }
 
-function pickDeterministicItem<const T extends readonly RoundReactionKind[]>(
-  items: T,
-  seed: string
-): T[number] {
-  return items[getDeterministicIndex(seed, items.length)]
-}
-
-function getDeterministicIndex(seed: string, itemCount: number) {
-  let hash = 0
-
-  for (let index = 0; index < seed.length; index += 1) {
-    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0
+function pickRoundReactionKind(
+  category: RoundReactionCategory,
+  previousReactionKind: RoundReactionKind | undefined
+): RoundReactionKind | null {
+  if (category === 'coffee') {
+    return pickRandomReaction(coffeeReactionKinds, previousReactionKind)
   }
 
-  return hash % itemCount
+  if (category === 'consensus') {
+    return pickRandomReaction(consensusReactionKinds, previousReactionKind)
+  }
+
+  if (category === 'wideSpread') {
+    return pickRandomReaction(wideSpreadReactionKinds, previousReactionKind)
+  }
+
+  if (category === 'nibblerQuestion') {
+    return 'nibblerQuestion'
+  }
+
+  if (category === 'skepticalFry') {
+    return 'skepticalFry'
+  }
+
+  return null
+}
+
+function pickRandomReaction<const T extends readonly RoundReactionKind[]>(
+  items: T,
+  previousReactionKind: RoundReactionKind | undefined
+): T[number] {
+  const nextItems =
+    items.length > 1
+      ? items.filter((item) => item !== previousReactionKind)
+      : items
+
+  return nextItems[Math.floor(Math.random() * nextItems.length)] as T[number]
 }
 
 function hasNumericConsensus(cardValues: string[]) {
