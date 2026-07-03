@@ -1089,7 +1089,17 @@ export function RoomPage() {
     activeRoundReaction !== null
       ? roundReactionConfig[activeRoundReaction]
       : null
-  const shouldShowJoinModal = !isJoinedToRoom
+  const activeRoomName = readActiveRoomName()
+  const hasStoredAutoJoinTarget = Boolean(
+    identity.displayName.trim() &&
+    activeRoomName === (room?.name ?? normalizedRoomName)
+  )
+  const shouldDeferJoinModal =
+    !isJoinedToRoom &&
+    (isRoomLoading ||
+      isJoining ||
+      (hasStoredAutoJoinTarget && !autoJoinAttemptedRef.current))
+  const shouldShowJoinModal = !isJoinedToRoom && !shouldDeferJoinModal
   const joinModal = shouldShowJoinModal ? (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(20,38,51,0.5)] px-4 py-6 backdrop-blur-sm">
       <motion.section
@@ -1240,7 +1250,7 @@ export function RoomPage() {
         </div>
       ) : null}
 
-      <div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(13rem,1fr))] gap-2.5">
+      <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(13rem,13rem))] gap-2.5">
         {participants.map((participant, index) => {
           const avatar = getAvatarOption(participant.avatarKey)
           const isOnline = Boolean(presenceByParticipantId[participant.id])
