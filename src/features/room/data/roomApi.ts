@@ -88,6 +88,10 @@ const leaveRoomSchema = z.object({
   result_participant_id: z.string().uuid(),
 })
 
+const shutdownRoomSchema = z.object({
+  result_room_id: z.string().uuid(),
+})
+
 const revealCountdownSchema = z.object({
   result_round_id: z.string().uuid(),
   result_status: z.enum(['voting', 'countdown', 'revealed']),
@@ -384,6 +388,22 @@ export async function leaveRoom(input: {
   }
 
   return z.array(leaveRoomSchema).length(1).parse(data)[0]
+}
+
+export async function shutdownRoom(input: {
+  roomId: string
+  actorClientId: string
+}) {
+  const { data, error } = await supabase.rpc('shutdown_room', {
+    target_room_id: input.roomId,
+    actor_client_id: input.actorClientId,
+  })
+
+  if (error) {
+    throw new Error(getMessage(error))
+  }
+
+  return z.array(shutdownRoomSchema).length(1).parse(data)[0]
 }
 
 export async function startRevealCountdown(input: {
