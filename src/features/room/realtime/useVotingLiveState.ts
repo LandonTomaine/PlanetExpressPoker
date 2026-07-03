@@ -9,13 +9,16 @@ type UseVotingLiveStateResult = {
   errorMessage: string | null
 }
 
-export function useVotingLiveState(
+export function useVotingLiveState(input: {
+  actorClientId: string | null
   room: Room | null
-): UseVotingLiveStateResult {
+}): UseVotingLiveStateResult {
   const [activeRound, setActiveRound] = useState<Round | null>(null)
   const [votes, setVotes] = useState<Vote[]>([])
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const lastRoundKeyRef = useRef<string | null>(null)
+  const actorClientId = input.actorClientId
+  const room = input.room
 
   useEffect(() => {
     if (!room) {
@@ -44,7 +47,16 @@ export function useVotingLiveState(
         lastRoundKeyRef.current = nextRoundKey
         setActiveRound(nextRound)
 
-        const nextVotes = await listVotes(nextRound.id)
+        if (!actorClientId) {
+          setVotes([])
+          setErrorMessage(null)
+          return
+        }
+
+        const nextVotes = await listVotes({
+          roundId: nextRound.id,
+          actorClientId,
+        })
 
         if (!isCancelled) {
           setVotes(nextVotes)
@@ -103,7 +115,7 @@ export function useVotingLiveState(
       window.clearInterval(syncIntervalId)
       void supabase.removeChannel(channel)
     }
-  }, [room])
+  }, [actorClientId, room])
 
   return {
     activeRound: room ? activeRound : null,

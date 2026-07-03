@@ -22,7 +22,6 @@ const roomSchema = z.object({
 const participantSchema = z.object({
   id: z.string().uuid(),
   room_id: z.string().uuid(),
-  client_id: z.string().min(1),
   display_name: z.string().min(1),
   avatar_key: z.string().min(1),
   role: z.enum(['voter', 'spectator']),
@@ -131,7 +130,6 @@ function mapParticipant(
   return {
     id: participant.id,
     roomId: participant.room_id,
-    clientId: participant.client_id,
     displayName: participant.display_name,
     avatarKey: participant.avatar_key,
     role: participant.role,
@@ -245,14 +243,9 @@ export async function joinRoom(input: {
 }
 
 export async function listParticipants(roomId: string) {
-  const { data, error } = await supabase
-    .from('participants')
-    .select(
-      'id, room_id, client_id, display_name, avatar_key, role, is_kicked, created_at'
-    )
-    .eq('room_id', roomId)
-    .eq('is_kicked', false)
-    .order('created_at', { ascending: true })
+  const { data, error } = await supabase.rpc('list_room_participants', {
+    target_room_id: roomId,
+  })
 
   if (error) {
     throw new Error(getMessage(error))
@@ -293,11 +286,14 @@ export async function getActiveRound(roomId: string) {
   return mapRound(roundSchema.parse(data))
 }
 
-export async function listVotes(roundId: string) {
-  const { data, error } = await supabase
-    .from('votes')
-    .select('round_id, participant_id, card_value, submitted_at')
-    .eq('round_id', roundId)
+export async function listVotes(input: {
+  roundId: string
+  actorClientId: string
+}) {
+  const { data, error } = await supabase.rpc('list_round_votes', {
+    target_round_id: input.roundId,
+    actor_client_id: input.actorClientId,
+  })
 
   if (error) {
     throw new Error(getMessage(error))
@@ -396,9 +392,13 @@ export async function startRevealCountdown(input: {
   return z.array(revealCountdownSchema).length(1).parse(data)[0]
 }
 
-export async function revealRound(input: { roomId: string }) {
+export async function revealRound(input: {
+  roomId: string
+  actorClientId: string
+}) {
   const { data, error } = await supabase.rpc('reveal_round', {
     target_room_id: input.roomId,
+    actor_client_id: input.actorClientId,
   })
 
   if (error) {

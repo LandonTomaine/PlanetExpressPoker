@@ -135,10 +135,13 @@ export function RoomPage() {
     activeRound,
     votes,
     errorMessage: votingErrorMessage,
-  } = useVotingLiveState(room)
+  } = useVotingLiveState({
+    actorClientId: selfParticipant ? identity.clientId : null,
+    room,
+  })
   const { incomingFunEvent, sendFunEvent } = useRoomFunEvents(room)
   const selfRosterParticipant = participants.find(
-    (participant) => participant.clientId === identity.clientId
+    (participant) => participant.id === selfParticipant?.participantId
   )
   const roomOwnerParticipantId = participants[0]?.id ?? null
   const effectiveSelfRole = selfRosterParticipant?.role ?? selfParticipant?.role
@@ -208,11 +211,8 @@ export function RoomPage() {
   })
 
   const broadcastFunEvent = useEffectEvent(async (event: RoomFunEvent) => {
-    const wasSent = await sendFunEvent(event)
-
-    if (!wasSent) {
-      showFunEvent(event)
-    }
+    showFunEvent(event)
+    await sendFunEvent(event)
   })
 
   function resetForSelfKick() {
@@ -297,7 +297,7 @@ export function RoomPage() {
     }
 
     const syncedSelfParticipant = participants.find(
-      (participant) => participant.clientId === identity.clientId
+      (participant) => participant.id === selfParticipant.participantId
     )
 
     if (syncedSelfParticipant) {
@@ -563,7 +563,6 @@ export function RoomPage() {
     if (
       !activeRound ||
       activeRound.status !== 'revealed' ||
-      !allVotersHaveSubmitted ||
       !locallyObservedRoundIdsRef.current.has(activeRound.id) ||
       roundReactionKind ||
       roomSettings?.funLevel !== 'chaotic'
@@ -590,7 +589,6 @@ export function RoomPage() {
     })
   }, [
     activeRound,
-    allVotersHaveSubmitted,
     isConsensusCelebration,
     roomSettings?.funLevel,
     roundReactionKind,
@@ -742,7 +740,7 @@ export function RoomPage() {
     setRevealError(null)
 
     try {
-      await revealRound({ roomId: room.id })
+      await revealRound({ roomId: room.id, actorClientId: identity.clientId })
     } catch (error) {
       setRevealError(
         error instanceof Error ? error.message : 'Failed to reveal votes.'
@@ -753,12 +751,12 @@ export function RoomPage() {
   }
 
   async function finalizeReveal() {
-    if (!room) {
+    if (!room || !selfParticipant) {
       return
     }
 
     try {
-      await revealRound({ roomId: room.id })
+      await revealRound({ roomId: room.id, actorClientId: identity.clientId })
       setRevealError(null)
     } catch (error) {
       setRevealError(
@@ -1258,7 +1256,7 @@ export function RoomPage() {
         {participants.map((participant, index) => {
           const avatar = getAvatarOption(participant.avatarKey)
           const isOnline = Boolean(presenceByParticipantId[participant.id])
-          const isSelf = participant.clientId === identity.clientId
+          const isSelf = participant.id === selfParticipant?.participantId
           const isRoomOwner = participant.id === roomOwnerParticipantId
           const hasSubmittedVote =
             submittedVoteParticipantIds.has(participant.id) ||
@@ -1276,7 +1274,7 @@ export function RoomPage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.18, delay: index * 0.03 }}
-              className="relative min-w-0 overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-white/84 p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]"
+              className="relative min-w-0 overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.86),_rgba(238,245,243,0.92))] p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]"
             >
               <div className="flex items-start gap-2">
                 <div

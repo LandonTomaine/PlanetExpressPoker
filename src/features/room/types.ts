@@ -22,7 +22,6 @@ export type ParticipantRole = 'voter' | 'spectator'
 export type Participant = {
   id: string
   roomId: string
-  clientId: string
   displayName: string
   avatarKey: string
   role: ParticipantRole

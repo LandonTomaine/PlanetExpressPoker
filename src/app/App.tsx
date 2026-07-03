@@ -30,7 +30,7 @@ export function App() {
           </div>
 
           {shouldShowNav ? (
-            <nav className="flex gap-2 rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.8),_rgba(220,231,235,0.72))] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <nav className="flex gap-2">
               <AppNavLink to="/">Home</AppNavLink>
             </nav>
           ) : null}
