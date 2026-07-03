@@ -30,7 +30,7 @@ export function App() {
           </div>
 
           {shouldShowNav ? (
-            <nav className="flex gap-2 rounded-[12px] bg-[var(--pep-panel)] p-1">
+            <nav className="flex gap-2 rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.8),_rgba(220,231,235,0.72))] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
               <AppNavLink to="/">Home</AppNavLink>
             </nav>
           ) : null}
@@ -56,10 +56,10 @@ function AppNavLink({ children, to }: AppNavLinkProps) {
       end={to === '/'}
       className={({ isActive }) => {
         return [
-          'rounded-full px-4 py-2 text-sm font-semibold transition',
+          'rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.04em] transition hover:-translate-y-0.5',
           isActive
-            ? 'bg-[var(--pep-accent)] text-white shadow-[0_10px_24px_rgba(212,47,38,0.28)]'
-            : 'bg-white/55 text-[var(--pep-ink-soft)] hover:bg-white hover:text-[var(--pep-ink)]',
+            ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#ffffff,_#e3edf0)] text-[var(--pep-ink)] shadow-[0_6px_0_rgba(20,38,51,0.18)]'
+            : 'border-slate-300 bg-[linear-gradient(180deg,_#f9fbfc,_#dfe8ec)] text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.1)] hover:border-[var(--pep-line-strong)] hover:bg-[linear-gradient(180deg,_#ffffff,_#e9f0f2)]',
         ].join(' ')
       }}
     >
