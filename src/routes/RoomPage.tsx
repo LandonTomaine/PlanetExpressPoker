@@ -691,7 +691,6 @@ export function RoomPage() {
       !activeRound ||
       activeRound.status !== 'revealed' ||
       !isMilestoneRound ||
-      !locallyObservedRoundIdsRef.current.has(activeRound.id) ||
       roomSettings?.funLevel !== 'chaotic'
     ) {
       return
@@ -1175,7 +1174,7 @@ export function RoomPage() {
                   Card
                 </span>
                 {imageCardPath ? (
-                  <span className="flex min-h-12 items-center justify-center sm:min-h-14">
+                  <span className="flex min-h-14 items-center justify-center sm:min-h-16">
                     <img
                       src={imageCardPath}
                       alt={cardLabel}
@@ -1186,7 +1185,7 @@ export function RoomPage() {
                           : card === 'BIG'
                             ? 'max-h-20 sm:max-h-24'
                             : card === 'coffee'
-                              ? 'max-h-14 sm:max-h-16'
+                              ? 'max-h-20 sm:max-h-24'
                               : 'max-h-16 sm:max-h-20',
                       ].join(' ')}
                     />
