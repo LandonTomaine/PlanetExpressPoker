@@ -119,6 +119,13 @@ const roomFunLevelSchema = z.object({
   result_updated_at: z.string(),
 })
 
+const hypnotoadEasterEggSchema = z.object({
+  result_room_id: z.string().uuid(),
+  result_triggered: z.boolean(),
+  result_triggered_at: z.string().nullable(),
+  result_next_available_at: z.string().nullable(),
+})
+
 function mapRoom(room: z.infer<typeof roomSchema>): Room {
   return {
     id: room.result_room_id,
@@ -470,4 +477,20 @@ export async function setRoomFunLevel(input: {
   }
 
   return z.array(roomFunLevelSchema).length(1).parse(data)[0]
+}
+
+export async function triggerHypnotoadEasterEgg(input: {
+  roomId: string
+  actorClientId: string
+}) {
+  const { data, error } = await supabase.rpc('trigger_hypnotoad_easter_egg', {
+    target_room_id: input.roomId,
+    actor_client_id: input.actorClientId,
+  })
+
+  if (error) {
+    throw new Error(getMessage(error))
+  }
+
+  return z.array(hypnotoadEasterEggSchema).length(1).parse(data)[0]
 }

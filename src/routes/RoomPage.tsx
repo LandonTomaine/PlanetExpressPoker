@@ -30,11 +30,14 @@ import {
   shutdownRoom,
   startRevealCountdown,
   submitVote,
+  triggerHypnotoadEasterEgg,
 } from '../features/room/data/roomApi'
 import { FunLayer } from '../features/room/FunLayer'
 import {
   consensusCaption,
   deliveryCaption,
+  deliveryStormCaption,
+  hypnotoadCaption,
   milestoneCaption,
   revealCaption,
   consensusQuotes,
@@ -71,8 +74,10 @@ type RoundReactionKind =
   | 'wideSpread2'
 
 type RoundReactionCategory =
+  | 'allSpecialCards'
   | 'coffee'
   | 'consensus'
+  | 'fibonacciSpread'
   | 'nibblerQuestion'
   | 'shipFlyby'
   | 'skepticalFry'
@@ -170,6 +175,17 @@ const consensusReactionKinds = [
   'consensus5',
 ] as const
 const wideSpreadReactionKinds = ['wideSpread1', 'wideSpread2'] as const
+const deliveryStormSequence = [
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'KeyA',
+  'KeyB',
+  'ArrowUp',
+  'ArrowDown',
+] as const
+const specialCardValues = ['ship', 'BIG', 'nibbler', 'coffee'] as const
 
 export function RoomPage() {
   const navigate = useNavigate()
@@ -250,6 +266,10 @@ export function RoomPage() {
   const roundReactionRoundKeyRef = useRef<string | null>(null)
   const roundReactionTimeoutRef = useRef<number | null>(null)
   const funEventTimeoutRef = useRef<number | null>(null)
+  const deliveryStormSequenceRef = useRef<string[]>([])
+  const deliveryStormSequenceTimeoutRef = useRef<number | null>(null)
+  const hypnotoadClickCountRef = useRef(0)
+  const hypnotoadClickResetTimeoutRef = useRef<number | null>(null)
   const lastRoundReactionByCategoryRef = useRef<
     Partial<Record<RoundReactionCategory, RoundReactionKind>>
   >({})
@@ -283,6 +303,14 @@ export function RoomPage() {
       return 8400
     }
 
+    if (event.mode === 'deliveryStorm') {
+      return 9000
+    }
+
+    if (event.mode === 'hypnotoad') {
+      return 7000
+    }
+
     if (event.mode === 'milestone') {
       return 10000
     }
@@ -292,6 +320,17 @@ export function RoomPage() {
 
   function showFunEvent(event: RoomFunEvent) {
     if (event.mode === 'delivery' && activeFunEvent?.mode === 'delivery') {
+      return
+    }
+
+    if (
+      event.mode === 'deliveryStorm' &&
+      activeFunEvent?.mode === 'deliveryStorm'
+    ) {
+      return
+    }
+
+    if (event.mode === 'hypnotoad' && activeFunEvent?.mode === 'hypnotoad') {
       return
     }
 
@@ -317,6 +356,17 @@ export function RoomPage() {
   const broadcastFunEvent = useEffectEvent(async (event: RoomFunEvent) => {
     showFunEvent(event)
     await sendFunEvent(event)
+  })
+
+  const triggerDeliveryStormEvent = useEffectEvent(() => {
+    if (!areFunEffectsEnabled || !isJoinedToRoom || isDeliveryInProgress) {
+      return
+    }
+
+    void broadcastFunEvent({
+      caption: deliveryStormCaption,
+      mode: 'deliveryStorm',
+    })
   })
 
   function resetForSelfKick() {
@@ -561,7 +611,9 @@ export function RoomPage() {
     (participant) => participant.role === 'voter'
   )
   const areFunEffectsEnabled = roomSettings?.funLevel === 'chaotic'
-  const isDeliveryInProgress = activeFunEvent?.mode === 'delivery'
+  const isDeliveryInProgress =
+    activeFunEvent?.mode === 'delivery' ||
+    activeFunEvent?.mode === 'deliveryStorm'
   const allVotersHaveSubmitted =
     activeVoters.length > 0 &&
     activeVoters.every((participant) =>
@@ -613,6 +665,12 @@ export function RoomPage() {
       if (roundReactionTimeoutRef.current !== null) {
         window.clearTimeout(roundReactionTimeoutRef.current)
       }
+      if (deliveryStormSequenceTimeoutRef.current !== null) {
+        window.clearTimeout(deliveryStormSequenceTimeoutRef.current)
+      }
+      if (hypnotoadClickResetTimeoutRef.current !== null) {
+        window.clearTimeout(hypnotoadClickResetTimeoutRef.current)
+      }
     }
   }, [])
 
@@ -625,6 +683,66 @@ export function RoomPage() {
       showFunEventEvent(incomingFunEvent)
     })
   }, [incomingFunEvent])
+
+  useEffect(() => {
+    if (!isJoinedToRoom || !areFunEffectsEnabled) {
+      deliveryStormSequenceRef.current = []
+      return
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target
+
+      if (
+        target instanceof HTMLElement &&
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+      ) {
+        return
+      }
+
+      if (
+        !deliveryStormSequence.includes(
+          event.code as (typeof deliveryStormSequence)[number]
+        )
+      ) {
+        deliveryStormSequenceRef.current = []
+        return
+      }
+
+      if (deliveryStormSequenceTimeoutRef.current !== null) {
+        window.clearTimeout(deliveryStormSequenceTimeoutRef.current)
+      }
+
+      deliveryStormSequenceRef.current = [
+        ...deliveryStormSequenceRef.current,
+        event.code,
+      ].slice(-deliveryStormSequence.length)
+
+      deliveryStormSequenceTimeoutRef.current = window.setTimeout(() => {
+        deliveryStormSequenceRef.current = []
+        deliveryStormSequenceTimeoutRef.current = null
+      }, 4000)
+
+      const hasMatchedSequence = deliveryStormSequence.every(
+        (sequenceKey, index) =>
+          deliveryStormSequenceRef.current[index] === sequenceKey
+      )
+
+      if (!hasMatchedSequence) {
+        return
+      }
+
+      event.preventDefault()
+      deliveryStormSequenceRef.current = []
+      triggerDeliveryStormEvent()
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [areFunEffectsEnabled, isJoinedToRoom])
 
   useEffect(() => {
     if (activeRound?.status !== 'countdown') {
@@ -775,6 +893,19 @@ export function RoomPage() {
         void broadcastFunEvent({
           caption: deliveryCaption,
           mode: 'flyby',
+        })
+      })
+
+      return
+    }
+
+    if (roundReactionCategory === 'allSpecialCards') {
+      queueMicrotask(() => {
+        setActiveRoundReaction(null)
+
+        void broadcastFunEvent({
+          caption: deliveryStormCaption,
+          mode: 'deliveryStorm',
         })
       })
 
@@ -960,6 +1091,54 @@ export function RoomPage() {
 
     showFunEvent(deliveryEvent)
     await sendFunEvent(deliveryEvent)
+  }
+
+  async function handleHypnotoadLogoClick() {
+    if (!room || !selfParticipant || !areFunEffectsEnabled) {
+      return
+    }
+
+    hypnotoadClickCountRef.current += 1
+
+    if (hypnotoadClickResetTimeoutRef.current !== null) {
+      window.clearTimeout(hypnotoadClickResetTimeoutRef.current)
+    }
+
+    hypnotoadClickResetTimeoutRef.current = window.setTimeout(() => {
+      hypnotoadClickCountRef.current = 0
+      hypnotoadClickResetTimeoutRef.current = null
+    }, 4200)
+
+    if (hypnotoadClickCountRef.current < 10) {
+      return
+    }
+
+    hypnotoadClickCountRef.current = 0
+
+    try {
+      const result = await triggerHypnotoadEasterEgg({
+        roomId: room.id,
+        actorClientId: identity.clientId,
+      })
+
+      if (!result.result_triggered) {
+        setSettingsError('Hypnotoad is resting for now.')
+        return
+      }
+
+      const hypnotoadEvent = {
+        caption: hypnotoadCaption,
+        mode: 'hypnotoad',
+      } satisfies RoomFunEvent
+
+      setSettingsError(null)
+      showFunEvent(hypnotoadEvent)
+      await sendFunEvent(hypnotoadEvent)
+    } catch (error) {
+      setSettingsError(
+        error instanceof Error ? error.message : 'Failed to summon Hypnotoad.'
+      )
+    }
   }
 
   async function handleResetRound() {
@@ -1756,12 +1935,30 @@ export function RoomPage() {
                 isJoinedToRoom ? 'order-1' : 'order-2',
               ].join(' ')}
             >
-              <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
-                Room
-              </p>
-              <h2 className="mt-2 font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)]">
-                {normalizedRoomName || 'Unknown room'}
-              </h2>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
+                    Room
+                  </p>
+                  <h2 className="mt-2 break-words font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)]">
+                    {normalizedRoomName || 'Unknown room'}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void handleHypnotoadLogoClick()}
+                  disabled={!isJoinedToRoom || !areFunEffectsEnabled}
+                  title="Planet Express"
+                  aria-label="Planet Express logo"
+                  className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-white shadow-[0_10px_20px_rgba(12,32,42,0.1)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-70 disabled:hover:translate-y-0"
+                >
+                  <img
+                    src="/planet-express-logo.png"
+                    alt=""
+                    className="h-10 w-10 object-contain"
+                  />
+                </button>
+              </div>
               <p className="mt-3 text-sm leading-6 text-[var(--pep-ink-soft)]">
                 Join, copy the link, and start estimating.
               </p>
@@ -2197,6 +2394,12 @@ function getRoundReactionCategory(
   cardValues: string[],
   hasMatchingNumericVotes: boolean
 ): RoundReactionCategory | null {
+  const uniqueCardValues = new Set(cardValues)
+
+  if (specialCardValues.every((cardValue) => uniqueCardValues.has(cardValue))) {
+    return 'allSpecialCards'
+  }
+
   if (cardValues.includes('coffee')) {
     return 'coffee'
   }
@@ -2215,6 +2418,10 @@ function getRoundReactionCategory(
 
   if (hasMatchingNumericVotes) {
     return 'consensus'
+  }
+
+  if (hasExactFibonacciSpread(cardValues)) {
+    return 'fibonacciSpread'
   }
 
   const numericCardIndexes = cardValues
@@ -2251,6 +2458,10 @@ function pickRoundReactionKind(
     return pickRandomReaction(wideSpreadReactionKinds, previousReactionKind)
   }
 
+  if (category === 'fibonacciSpread') {
+    return pickRandomReaction(wideSpreadReactionKinds, previousReactionKind)
+  }
+
   if (category === 'nibblerQuestion') {
     return 'nibblerQuestion'
   }
@@ -2283,6 +2494,34 @@ function hasNumericConsensus(cardValues: string[]) {
     numericCardVotes.length >= 2 &&
     numericCardVotes.every((cardValue) => cardValue === numericCardVotes[0])
   )
+}
+
+function hasExactFibonacciSpread(cardValues: string[]) {
+  const uniqueNumericCardIndexes = new Set(
+    cardValues
+      .map((cardValue) =>
+        numericCardIndexByValue.get(
+          cardValue as (typeof numericCardValues)[number]
+        )
+      )
+      .filter((cardIndex): cardIndex is number => cardIndex !== undefined)
+  )
+
+  if (uniqueNumericCardIndexes.size < 2 || uniqueNumericCardIndexes.size > 4) {
+    return false
+  }
+
+  const sortedCardIndexes = Array.from(uniqueNumericCardIndexes).sort(
+    (leftCardIndex, rightCardIndex) => leftCardIndex - rightCardIndex
+  )
+
+  return sortedCardIndexes.every((cardIndex, index) => {
+    if (index === 0) {
+      return true
+    }
+
+    return cardIndex === sortedCardIndexes[index - 1] + 1
+  })
 }
 
 function SpinnerIcon() {

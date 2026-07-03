@@ -13,42 +13,57 @@ type FunLayerProps = {
 export function FunLayer({ event, reaction = null }: FunLayerProps) {
   const quoteDisplayDuration = event?.mode === 'celebration' ? 6.4 : 5.8
   const isDeliveryEvent = event?.mode === 'delivery'
+  const isDeliveryStormEvent = event?.mode === 'deliveryStorm'
+  const isHypnotoadEvent = event?.mode === 'hypnotoad'
   const isMilestoneEvent = event?.mode === 'milestone'
-  const shipMotion = isDeliveryEvent
+  const shipMotion = isDeliveryStormEvent
     ? {
-        rotate: [-1, 1, 0, 0, 0],
-        x: ['-78vw', '0vw', '0vw', '0vw', '78vw'],
-        y: [82, 92, 92, 92, 78],
+        rotate: [-9, 13, -16, 18, -11, 10, -7, 5],
+        scale: [0.78, 0.96, 0.84, 1.08, 0.9, 1, 0.86, 0.78],
+        x: ['-34vw', '18vw', '72vw', '24vw', '96vw', '44vw', '8vw', '112vw'],
+        y: [42, 168, 70, 306, 136, 222, 88, 260],
       }
-    : isMilestoneEvent
+    : isDeliveryEvent
       ? {
-          rotate: [-8, 9, -13, 12, -6, 7, -3],
-          scale: [0.74, 0.94, 0.82, 1.04, 0.9, 0.98, 0.78],
-          x: ['-42vw', '22vw', '76vw', '12vw', '105vw', '38vw', '-38vw'],
-          y: [58, 226, 82, 318, 150, 92, 258],
+          rotate: [-1, 1, 0, 0, 0],
+          x: ['-78vw', '0vw', '0vw', '0vw', '78vw'],
+          y: [82, 92, 92, 92, 78],
         }
-      : {
-          rotate: [-1, 1, 0],
-          x: ['-18vw', '42vw', '110vw'],
-          y: [82, 94, 78],
-        }
-  const shipTransition = isDeliveryEvent
+      : isMilestoneEvent
+        ? {
+            rotate: [-8, 9, -13, 12, -6, 7, -3],
+            scale: [0.74, 0.94, 0.82, 1.04, 0.9, 0.98, 0.78],
+            x: ['-42vw', '22vw', '76vw', '12vw', '105vw', '38vw', '-38vw'],
+            y: [58, 226, 82, 318, 150, 92, 258],
+          }
+        : {
+            rotate: [-1, 1, 0],
+            x: ['-18vw', '42vw', '110vw'],
+            y: [82, 94, 78],
+          }
+  const shipTransition = isDeliveryStormEvent
     ? {
-        duration: 5.8,
+        duration: 8,
         ease: 'easeInOut' as const,
-        times: [0, 0.3, 0.46, 0.72, 1],
+        times: [0, 0.13, 0.27, 0.42, 0.58, 0.72, 0.86, 1],
       }
-    : isMilestoneEvent
+    : isDeliveryEvent
       ? {
-          duration: 10,
+          duration: 5.8,
           ease: 'easeInOut' as const,
-          times: [0, 0.16, 0.32, 0.5, 0.68, 0.84, 1],
+          times: [0, 0.3, 0.46, 0.72, 1],
         }
-      : {
-          duration: 2.35,
-          ease: 'easeInOut' as const,
-          times: [0, 0.18, 0.82, 1],
-        }
+      : isMilestoneEvent
+        ? {
+            duration: 10,
+            ease: 'easeInOut' as const,
+            times: [0, 0.16, 0.32, 0.5, 0.68, 0.84, 1],
+          }
+        : {
+            duration: 2.35,
+            ease: 'easeInOut' as const,
+            times: [0, 0.18, 0.82, 1],
+          }
   const confetti = [
     { color: '#d42f26', delay: 0.15, left: '8%', rotate: 280, x: -80 },
     { color: '#f4d44f', delay: 0.45, left: '18%', rotate: -240, x: 72 },
@@ -77,6 +92,32 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
     { delay: 3.06, drift: 22, rotate: 14, spread: 260, tumble: 520 },
     { delay: 3.2, drift: -16, rotate: -8, spread: 385, tumble: -430 },
     { delay: 3.34, drift: 30, rotate: 12, spread: 500, tumble: 560 },
+  ]
+  const stormPackageDrops = [
+    { delay: 0.7, left: '22vw', top: 110, drift: -220, fall: 760, spin: -620 },
+    { delay: 0.85, left: '29vw', top: 168, drift: 260, fall: 690, spin: 540 },
+    { delay: 1.05, left: '39vw', top: 150, drift: -360, fall: 820, spin: -760 },
+    { delay: 1.2, left: '51vw', top: 96, drift: 320, fall: 760, spin: 680 },
+    { delay: 1.42, left: '66vw', top: 78, drift: -280, fall: 710, spin: -520 },
+    { delay: 1.58, left: '73vw', top: 118, drift: 230, fall: 850, spin: 820 },
+    { delay: 1.84, left: '58vw', top: 220, drift: -480, fall: 700, spin: -880 },
+    { delay: 2.02, left: '43vw', top: 296, drift: 510, fall: 640, spin: 900 },
+    { delay: 2.22, left: '31vw', top: 300, drift: -300, fall: 770, spin: -640 },
+    { delay: 2.44, left: '50vw', top: 242, drift: 360, fall: 810, spin: 700 },
+    { delay: 2.66, left: '70vw', top: 150, drift: -420, fall: 720, spin: -780 },
+    { delay: 2.88, left: '84vw', top: 128, drift: 270, fall: 800, spin: 560 },
+    { delay: 3.16, left: '72vw', top: 214, drift: -520, fall: 650, spin: -960 },
+    { delay: 3.38, left: '55vw', top: 278, drift: 460, fall: 710, spin: 820 },
+    { delay: 3.62, left: '38vw', top: 208, drift: -360, fall: 820, spin: -700 },
+    { delay: 3.84, left: '23vw', top: 120, drift: 420, fall: 760, spin: 740 },
+    { delay: 4.1, left: '18vw', top: 102, drift: -260, fall: 780, spin: -520 },
+    { delay: 4.32, left: '32vw', top: 146, drift: 320, fall: 740, spin: 620 },
+    { delay: 4.58, left: '47vw', top: 212, drift: -430, fall: 720, spin: -860 },
+    { delay: 4.8, left: '63vw', top: 206, drift: 390, fall: 700, spin: 780 },
+    { delay: 5.08, left: '80vw', top: 150, drift: -340, fall: 760, spin: -680 },
+    { delay: 5.3, left: '92vw', top: 198, drift: 240, fall: 790, spin: 520 },
+    { delay: 5.62, left: '71vw', top: 246, drift: -520, fall: 690, spin: -920 },
+    { delay: 5.9, left: '46vw', top: 96, drift: 500, fall: 840, spin: 880 },
   ]
   const shouldShowLayer = Boolean(event || reaction)
 
@@ -157,23 +198,28 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
 
             {event?.mode === 'flyby' ||
             event?.mode === 'delivery' ||
+            isDeliveryStormEvent ||
             isMilestoneEvent ? (
               <motion.div
                 initial={{
-                  rotate: -1,
-                  scale: isMilestoneEvent ? 0.74 : 1,
-                  x: isDeliveryEvent
-                    ? '-78vw'
-                    : isMilestoneEvent
-                      ? '-42vw'
-                      : '-18vw',
-                  y: isMilestoneEvent ? 58 : 82,
+                  rotate: isDeliveryStormEvent ? -9 : -1,
+                  scale: isMilestoneEvent || isDeliveryStormEvent ? 0.74 : 1,
+                  x: isDeliveryStormEvent
+                    ? '-34vw'
+                    : isDeliveryEvent
+                      ? '-78vw'
+                      : isMilestoneEvent
+                        ? '-42vw'
+                        : '-18vw',
+                  y: isDeliveryStormEvent ? 42 : isMilestoneEvent ? 58 : 82,
                 }}
                 animate={shipMotion}
                 transition={shipTransition}
                 className={[
                   'absolute w-56 drop-shadow-[0_12px_24px_rgba(12,32,42,0.18)] will-change-transform sm:w-72',
-                  isMilestoneEvent ? 'top-0 sm:w-80' : 'top-16',
+                  isMilestoneEvent || isDeliveryStormEvent
+                    ? 'top-0 sm:w-80'
+                    : 'top-16',
                   isDeliveryEvent
                     ? 'left-[calc(50vw-7rem)] sm:left-[calc(50vw-9rem)]'
                     : 'left-0',
@@ -186,6 +232,56 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
                 />
               </motion.div>
             ) : null}
+
+            {isDeliveryStormEvent
+              ? stormPackageDrops.map((packageDrop, index) => (
+                  <motion.img
+                    key={`${event.caption}:storm:${index}`}
+                    src="/effects/icons8-package.png"
+                    alt=""
+                    initial={{
+                      opacity: 0,
+                      rotate: packageDrop.spin * 0.04,
+                      scale: 0.62,
+                      x: 0,
+                      y: 0,
+                    }}
+                    animate={{
+                      opacity: [0, 1, 1, 0],
+                      rotate: [
+                        packageDrop.spin * 0.04,
+                        packageDrop.spin * 0.32,
+                        packageDrop.spin * 0.72,
+                        packageDrop.spin,
+                      ],
+                      scale: [0.62, 0.95, 0.9, 0.74],
+                      x: [
+                        0,
+                        packageDrop.drift * 0.2,
+                        packageDrop.drift * 0.68,
+                        packageDrop.drift,
+                      ],
+                      y: [
+                        0,
+                        packageDrop.fall * 0.18,
+                        packageDrop.fall * 0.66,
+                        packageDrop.fall,
+                      ],
+                    }}
+                    transition={{
+                      delay: packageDrop.delay,
+                      duration: 3.2,
+                      ease: 'linear' as const,
+                      times: [0, 0.12, 0.76, 1],
+                    }}
+                    className="absolute w-7 drop-shadow-[0_12px_24px_rgba(12,32,42,0.24)] will-change-transform sm:w-8"
+                    style={{
+                      left: packageDrop.left,
+                      top: packageDrop.top,
+                    }}
+                  />
+                ))
+              : null}
 
             {event?.mode === 'delivery'
               ? packageDrops.map((packageDrop, index) => (
@@ -233,7 +329,29 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
                 ))
               : null}
 
-            {reaction ? (
+            {isHypnotoadEvent ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.74, rotate: -4 }}
+                animate={{
+                  opacity: [0, 1, 1, 0],
+                  scale: [0.74, 1.06, 1, 0.92],
+                  rotate: [-4, 2, -1, 0],
+                }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: 7,
+                  ease: 'easeOut',
+                  times: [0, 0.12, 0.9, 1],
+                }}
+                className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle,_rgba(201,240,232,0.36),_rgba(12,32,42,0.24)_50%,_rgba(12,32,42,0.44))]"
+              >
+                <img
+                  src="/effects/hypnotoad.gif"
+                  alt=""
+                  className="w-[min(34rem,82vw)] rounded-[24px] border-4 border-[var(--pep-ink)] bg-black shadow-[0_30px_90px_rgba(12,32,42,0.44)]"
+                />
+              </motion.div>
+            ) : reaction ? (
               <motion.div
                 initial={{ opacity: 0, x: 140, y: 10, rotate: 3 }}
                 animate={{
