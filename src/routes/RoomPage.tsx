@@ -585,15 +585,19 @@ export function RoomPage() {
     activeRound?.status === 'countdown'
       ? Math.min(activeRound.countdownSeconds, 3)
       : null
+  const maxCountdownSeconds = effectiveCountdownSeconds ?? 3
   const countdownSecondsRemaining =
     activeRound?.status === 'countdown' && activeRound.countdownStartedAt
-      ? Math.max(
-          0,
-          Math.ceil(
-            (new Date(activeRound.countdownStartedAt).getTime() +
-              (effectiveCountdownSeconds ?? 3) * 1000 -
-              countdownNow) /
-              1000
+      ? Math.min(
+          maxCountdownSeconds,
+          Math.max(
+            0,
+            Math.ceil(
+              (new Date(activeRound.countdownStartedAt).getTime() +
+                maxCountdownSeconds * 1000 -
+                countdownNow) /
+                1000
+            )
           )
         )
       : null
@@ -839,12 +843,13 @@ export function RoomPage() {
     const revealAt =
       new Date(activeRound.countdownStartedAt).getTime() +
       Math.min(activeRound.countdownSeconds, 3) * 1000
-    const timeoutId = window.setTimeout(
-      () => {
-        void finalizeRevealEvent()
-      },
-      Math.max(0, revealAt - Date.now())
+    const revealDelayMs = Math.min(
+      Math.max(0, revealAt - Date.now()),
+      Math.min(activeRound.countdownSeconds, 3) * 1000
     )
+    const timeoutId = window.setTimeout(() => {
+      void finalizeRevealEvent()
+    }, revealDelayMs)
 
     return () => {
       window.clearTimeout(timeoutId)
@@ -1314,7 +1319,7 @@ export function RoomPage() {
     !isJoinedToRoom &&
     (isRoomLoading ||
       isJoining ||
-      (hasStoredAutoJoinTarget && !autoJoinAttemptedRef.current))
+      (hasStoredAutoJoinTarget && !joinError && !roomError))
   const shouldShowJoinModal = !isJoinedToRoom && !shouldDeferJoinModal
   const joinModal = shouldShowJoinModal ? (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-[rgba(20,38,51,0.5)] px-4 py-6 backdrop-blur-sm">
