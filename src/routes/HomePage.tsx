@@ -15,17 +15,26 @@ import {
   saveActiveRoomName,
   saveStoredIdentity,
 } from '../features/identity/storage'
+import {
+  getRoomNameError,
+  maxRoomNameLength,
+  normalizeRoomName,
+  roomNameInputPattern,
+} from '../features/room/roomName'
 
 export function HomePage() {
   const navigate = useNavigate()
   const [roomName, setRoomName] = useState(() => readActiveRoomName() ?? '')
   const [identity, setIdentity] = useState(() => readStoredIdentity())
+  const roomNameError = getRoomNameError(roomName)
+  const hasDisplayName = Boolean(normalizeDisplayName(identity.displayName))
+  const canOpenRoom = !roomNameError && hasDisplayName
 
   const openRoom = () => {
-    const normalizedRoomName = roomName.trim()
+    const normalizedRoomName = normalizeRoomName(roomName)
     const normalizedDisplayName = normalizeDisplayName(identity.displayName)
 
-    if (!normalizedRoomName || !normalizedDisplayName) {
+    if (roomNameError || !normalizedDisplayName) {
       return
     }
 
@@ -70,6 +79,10 @@ export function HomePage() {
               id="room-name"
               value={roomName}
               onChange={(event) => setRoomName(event.target.value)}
+              maxLength={maxRoomNameLength}
+              pattern={roomNameInputPattern}
+              spellCheck={false}
+              autoCapitalize="none"
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   openRoom()
@@ -78,6 +91,11 @@ export function HomePage() {
               placeholder="farnsworth-friday"
               className="min-w-0 flex-1 rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-3 text-base outline-none transition focus:border-[var(--pep-accent-2)]"
             />
+            <p className="text-xs font-semibold text-[var(--pep-ink-soft)]">
+              {roomNameError
+                ? roomNameError
+                : `Use letters, numbers, hyphen, or underscore. Max ${maxRoomNameLength} characters.`}
+            </p>
             <label className="block">
               <span className="text-xs font-black uppercase text-[var(--pep-accent)]">
                 Your name
@@ -147,7 +165,7 @@ export function HomePage() {
             <button
               type="button"
               onClick={openRoom}
-              disabled={!roomName.trim() || !identity.displayName.trim()}
+              disabled={!canOpenRoom}
               className="rounded-[10px] bg-[var(--pep-accent)] px-5 py-3 text-sm font-black uppercase text-white shadow-[0_10px_24px_rgba(212,47,38,0.28)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
             >
               Create or join room

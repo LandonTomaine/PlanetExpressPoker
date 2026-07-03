@@ -45,6 +45,7 @@ import { useRoomFunEvents } from '../features/room/realtime/useRoomFunEvents'
 import { useRoomLiveState } from '../features/room/realtime/useRoomLiveState'
 import { useRoomSettingsLiveState } from '../features/room/realtime/useRoomSettingsLiveState'
 import { useVotingLiveState } from '../features/room/realtime/useVotingLiveState'
+import { getRoomNameError, normalizeRoomName } from '../features/room/roomName'
 import { buildScoreSummary } from '../features/room/summary'
 import {
   fibonacciDeck,
@@ -173,7 +174,8 @@ const wideSpreadReactionKinds = ['wideSpread1', 'wideSpread2'] as const
 export function RoomPage() {
   const navigate = useNavigate()
   const { roomName: roomNameParam = '' } = useParams()
-  const normalizedRoomName = roomNameParam.trim()
+  const normalizedRoomName = normalizeRoomName(roomNameParam)
+  const roomNameError = getRoomNameError(roomNameParam)
   const autoJoinAttemptedRef = useRef(false)
   const selfParticipantSyncGraceUntilRef = useRef(0)
   const [room, setRoom] = useState<Room | null>(null)
@@ -342,10 +344,11 @@ export function RoomPage() {
       setIsRoomLoading(true)
       setRoomError(null)
       setSelfParticipant(null)
+      setRoom(null)
 
-      if (!normalizedRoomName) {
+      if (roomNameError) {
         setIsRoomLoading(false)
-        setRoomError('Room name is required.')
+        setRoomError(roomNameError)
         return
       }
 
@@ -374,7 +377,7 @@ export function RoomPage() {
     return () => {
       isCancelled = true
     }
-  }, [normalizedRoomName])
+  }, [normalizedRoomName, roomNameError])
 
   useEffect(() => {
     if (!room || selfParticipant || autoJoinAttemptedRef.current) {
