@@ -1095,7 +1095,7 @@ export function RoomPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="mt-4 mb-4 h-[12rem] overflow-hidden rounded-[18px] border-2 border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#fff7ce,_#ffffff_58%,_#d7f5eb)] p-4 shadow-[0_14px_34px_rgba(31,160,137,0.13)]"
+      className="mt-4 mb-4 min-h-[12rem] rounded-[18px] border-2 border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#fff7ce,_#ffffff_58%,_#d7f5eb)] p-4 shadow-[0_14px_34px_rgba(31,160,137,0.13)] sm:h-[12rem] sm:overflow-hidden"
     >
       {activeRound?.status === 'revealed' ? (
         <>
