@@ -18,11 +18,7 @@ Use this only when `implement-planned-work` needs worker or reviewer delegation.
 - non-goals or out-of-scope items
 - owned files or areas
 - relevant standards
-- required standard choices when relevant:
-  - handler vs orchestration handler
-  - Domain service vs shared Application service
-  - page-local helper/contract vs partial/component
-  - handler test vs page test
+- required standard choices when relevant
 - current worktree context for overlapping files
 - expected validation
 - constraints: do not edit outside scope, do not revert unrelated changes, preserve existing patterns

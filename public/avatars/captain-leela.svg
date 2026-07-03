@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>Leela</title>
+  <rect width="128" height="128" rx="26" fill="#cdeeff"/>
+  <path d="M41 22c13-13 37-13 51 2 10 11 13 27 8 46-3 14-11 26-23 36H49C34 93 27 76 27 58c0-16 5-28 14-36z" fill="#f2bc98"/>
+  <path d="M30 54c3-25 17-39 39-40 16 0 29 7 36 22l-12 1c4 6 5 13 3 22-8-9-19-14-34-15-11 0-21 3-32 10z" fill="#6e2ab8"/>
+  <path d="M77 18c22 11 31 27 28 47-2 18-11 35-27 49l-14-9c13-14 20-28 20-42 0-14-5-27-16-39z" fill="#7b35cf"/>
+  <path d="M40 49c9-7 18-10 28-9 10 0 18 4 25 11-7 8-15 12-25 12-11 0-20-5-28-14z" fill="#f2bc98"/>
+  <ellipse cx="64" cy="62" rx="19" ry="22" fill="#fff8ef" stroke="#44251d" stroke-width="3"/>
+  <circle cx="64" cy="63" r="10" fill="#3b251b"/>
+  <circle cx="67" cy="59" r="3" fill="#fff2dc"/>
+  <path d="M45 76c6 7 13 11 21 11 7 0 13-3 18-9" fill="none" stroke="#8c4537" stroke-linecap="round" stroke-width="4"/>
+  <path d="M44 104h40l9 18H35z" fill="#f4f6fa"/>
+  <path d="M47 107h34l-6 15H53z" fill="#171d30"/>
+  <path d="M35 111h16v11H33zM77 111h17l2 11H78z" fill="#ec4b4f"/>
+</svg>

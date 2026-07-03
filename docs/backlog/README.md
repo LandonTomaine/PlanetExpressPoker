@@ -16,4 +16,6 @@ Use it for durable planning artifacts after product requirements are stable.
 
 ## Current State
 
-No capability backlog has been created yet for this repository.
+Current capability backlogs:
+
+- [01-core-room-flow/backlog.md](01-core-room-flow/backlog.md): v1 room creation, join, presence, voting, reveal, reset, and chaos interactions

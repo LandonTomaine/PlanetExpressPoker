@@ -1,4 +1,4 @@
 interface:
-  display_name: "Review Product PRD"
-  short_description: "Check MVP PRDs for scope and clarity"
-  default_prompt: "Use $review-product-prd to review this child PRD."
+  display_name: 'Review Product PRD'
+  short_description: 'Check MVP PRDs for scope and clarity'
+  default_prompt: 'Use $review-product-prd to review this child PRD.'

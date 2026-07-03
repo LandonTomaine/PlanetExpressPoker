@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>Amy</title>
+  <rect width="128" height="128" rx="26" fill="#ffe0ef"/>
+  <path d="M31 61c0-26 14-43 35-43 20 0 33 17 33 43 0 24-15 42-34 42S31 85 31 61z" fill="#f1bea5"/>
+  <path d="M30 59c0-28 15-44 37-44 19 0 33 14 36 40-9 0-17-3-25-10-8 7-20 12-38 14z" fill="#151923"/>
+  <path d="M37 72c5 21 15 33 29 33 13 0 22-12 27-33l-10 2c-5 11-11 17-18 17s-13-6-18-17z" fill="#151923"/>
+  <circle cx="52" cy="66" r="5" fill="#2d211c"/>
+  <circle cx="78" cy="66" r="5" fill="#2d211c"/>
+  <path d="M45 56c5-3 10-4 15-3m10 3c5-3 10-4 15-3" fill="none" stroke="#4a2c25" stroke-linecap="round" stroke-width="4"/>
+  <path d="M52 84c4 5 9 7 14 7s10-2 14-7" fill="none" stroke="#9b4d45" stroke-linecap="round" stroke-width="4"/>
+  <path d="M36 100h58l10 22H27z" fill="#ff9bd0"/>
+  <path d="M47 98h37l7 24H40z" fill="#ffbfdc"/>
+  <path d="M42 104h44l-7 18H50z" fill="#ef4f9c"/>
+</svg>

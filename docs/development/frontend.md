@@ -1,6 +1,7 @@
 # Frontend Standards
 
 The frontend stack is:
+
 - `React`
 - `TypeScript`
 - `Vite`
@@ -19,6 +20,7 @@ The frontend stack is:
 Prefer feature-oriented organization.
 
 Suggested pattern:
+
 - `features/room`
 - `features/voting`
 - `features/participants`
@@ -38,6 +40,7 @@ Avoid giant shared utility folders with vague ownership.
 ## State Rules
 
 Use:
+
 - component state for local UI
 - browser storage for remembered name and avatar
 - Supabase-backed state for shared room truth

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Draft Follow-On PRD"
+  display_name: 'Draft Follow-On PRD'
   short_description: "Draft concise child PRDs from the current repository's parent PRD."
-  default_prompt: "Use $draft-follow-on-prd to draft the next follow-on PRD from the parent PRD."
+  default_prompt: 'Use $draft-follow-on-prd to draft the next follow-on PRD from the parent PRD.'

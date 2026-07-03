@@ -1,0 +1,76 @@
+@import 'tailwindcss';
+
+:root {
+  --pep-bg: #d9f4ee;
+  --pep-panel: rgba(255, 255, 255, 0.74);
+  --pep-panel-strong: #c8efe5;
+  --pep-line: rgba(18, 47, 56, 0.14);
+  --pep-line-strong: rgba(18, 47, 56, 0.32);
+  --pep-ink: #142633;
+  --pep-ink-soft: #526a73;
+  --pep-accent: #d42f26;
+  --pep-accent-2: #179886;
+  --pep-mint: #71d5bf;
+  --pep-yellow: #f4d44f;
+  --pep-sky: #9edff1;
+  --pep-font-body: 'Trebuchet MS', 'Segoe UI', sans-serif;
+  --pep-font-display: 'Arial Narrow', 'Franklin Gothic Medium', sans-serif;
+  font-family: var(--pep-font-body);
+  color: var(--pep-ink);
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(244, 212, 79, 0.56),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 85% 12%,
+      rgba(23, 152, 134, 0.22),
+      transparent 20%
+    ),
+    radial-gradient(
+      circle at 70% 92%,
+      rgba(212, 47, 38, 0.12),
+      transparent 22%
+    ),
+    linear-gradient(180deg, #c7eef0 0%, #e7fbf1 52%, #d6f1e9 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(20, 38, 51, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20, 38, 51, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default !important;
+}
+
+#root {
+  min-height: 100vh;
+}

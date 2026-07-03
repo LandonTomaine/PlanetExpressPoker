@@ -11,6 +11,7 @@ The backend platform is `Supabase`.
 ## Backend Shape
 
 Supabase is the system of record for:
+
 - room records
 - room settings
 - participants
@@ -18,6 +19,7 @@ Supabase is the system of record for:
 - votes
 
 Use:
+
 - database tables for durable state
 - Realtime Presence for online participant presence
 - Realtime Broadcast for transient room events
@@ -45,6 +47,7 @@ Use:
 ## Recommended Feature Boundaries
 
 Keep backend access grouped by feature path:
+
 - room creation and lookup
 - participant join and leave
 - role and kick changes

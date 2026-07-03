@@ -23,7 +23,7 @@ These rules apply to shell usage in this repository's Windows environment.
 - Use explicit, bounded timeouts for formatters, validators, and hooks.
 - If a formatter or validator hangs, times out, or is interrupted once, do not rerun the same full command blindly.
 - First check for orphaned processes, stop only the process you started, then use a narrower command or targeted fix.
-- For `dotnet format` line-ending failures, prefer normalizing only the touched files to the repo's configured line ending before rerunning a verify command.
+- If a formatting or validation command fails because of line-ending drift, normalize only the touched files to the repo's configured line ending before rerunning a verify command.
 
 ## Safety
 

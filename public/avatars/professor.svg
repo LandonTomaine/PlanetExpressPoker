@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>Professor Farnsworth</title>
+  <rect width="128" height="128" rx="26" fill="#e7f8ce"/>
+  <path d="M35 61c0-24 11-38 30-38s29 14 29 38c0 26-13 45-30 45S35 87 35 61z" fill="#edc19d"/>
+  <path d="M43 38c5-21 12-31 21-31 8 0 16 10 22 31-5-4-11-6-18-6-8 0-16 2-25 6z" fill="#fffdf3"/>
+  <path d="M29 51c8-8 14-23 18-45l13 4c-4 22-12 40-24 52zm70 0c-8-8-14-23-18-45l-13 4c4 22 12 40 24 52z" fill="#f8fff1"/>
+  <rect x="39" y="59" width="24" height="18" rx="9" fill="#fff" stroke="#24323a" stroke-width="3"/>
+  <rect x="66" y="59" width="24" height="18" rx="9" fill="#fff" stroke="#24323a" stroke-width="3"/>
+  <path d="M63 68h4" stroke="#24323a" stroke-width="3"/>
+  <circle cx="51" cy="68" r="3" fill="#1d2529"/>
+  <circle cx="78" cy="68" r="3" fill="#1d2529"/>
+  <path d="M43 54c5-3 10-4 15-3m13 3c5-3 10-4 15-3" fill="none" stroke="#79604d" stroke-linecap="round" stroke-width="4"/>
+  <path d="M54 87c3 3 7 5 11 5s8-2 11-5" fill="none" stroke="#8c5543" stroke-linecap="round" stroke-width="4"/>
+  <path d="M31 100h66l11 22H20z" fill="#fbfaf2"/>
+  <path d="M49 96h30l8 26H40z" fill="#e7e0c9"/>
+  <path d="M48 106h34l-7 16H54z" fill="#76ad5e"/>
+</svg>

@@ -53,11 +53,13 @@ Then include validation gaps or residual risk.
 If there are no findings, say so explicitly.
 
 Use:
+
 - `[high|medium|low] file:line - finding`
 - `Why it matters: <short paragraph>`
 - `Blocking: yes|no`
 
 Severity:
+
 - `[high]` correctness, data loss, security, architecture-boundary, or major regression risk
 - `[medium]` maintainability or validation gaps that materially increase risk
 - `[low]` worthwhile but non-blocking

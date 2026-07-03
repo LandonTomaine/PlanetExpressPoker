@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>Zapp Brannigan</title>
+  <rect width="128" height="128" rx="26" fill="#fff0c8"/>
+  <path d="M33 61c0-24 13-42 34-42 20 0 33 17 33 42 0 25-14 43-34 43S33 86 33 61z" fill="#efbea0"/>
+  <path d="M32 56c5-28 20-43 43-43 14 0 25 5 33 15-9 14-25 23-48 27-9 2-18 2-28 1z" fill="#ffd45d"/>
+  <path d="M44 32c10-10 22-15 36-15 10 0 18 3 25 8-11 4-21 9-30 15-9 6-19 9-31 9z" fill="#ffea8b"/>
+  <circle cx="52" cy="66" r="5" fill="#2f211c"/>
+  <circle cx="78" cy="66" r="5" fill="#2f211c"/>
+  <path d="M45 56c5-3 10-4 15-3m10 3c5-3 10-4 15-3" fill="none" stroke="#7a522b" stroke-linecap="round" stroke-width="4"/>
+  <path d="M51 84c5 5 10 7 16 7 5 0 10-2 15-7" fill="none" stroke="#95523f" stroke-linecap="round" stroke-width="4"/>
+  <path d="M27 101h77l10 21H16z" fill="#e53042"/>
+  <path d="M45 96h42l8 26H36z" fill="#f7f2dc"/>
+  <path d="M42 104h49l-8 18H51z" fill="#c51f34"/>
+  <circle cx="66" cy="109" r="5" fill="#ffd45d"/>
+  <path d="M29 102h24l-5 12H25zm46 0h25l5 12H80z" fill="#ffd45d"/>
+</svg>

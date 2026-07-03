@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>Dr. Zoidberg</title>
+  <rect width="128" height="128" rx="26" fill="#ffe2d4"/>
+  <path d="M32 62c0-24 13-42 33-42 19 0 32 18 32 42 0 21-10 36-25 41H57c-15-5-25-20-25-41z" fill="#ef705f"/>
+  <path d="M31 49c6-20 18-30 36-30 13 0 23 6 30 18-12-4-25-3-40 3-9 4-18 7-26 9z" fill="#f58b74"/>
+  <circle cx="51" cy="60" r="13" fill="#fff5e8" stroke="#9e3c32" stroke-width="3"/>
+  <circle cx="79" cy="60" r="13" fill="#fff5e8" stroke="#9e3c32" stroke-width="3"/>
+  <circle cx="51" cy="60" r="4" fill="#1e252b"/>
+  <circle cx="79" cy="60" r="4" fill="#1e252b"/>
+  <path d="M54 78c-9 4-15 10-18 18m20-17c-4 8-6 16-6 25m17-25c3 8 4 16 3 25m4-26c9 4 15 10 18 18" fill="none" stroke="#be4a3e" stroke-linecap="round" stroke-width="5"/>
+  <path d="M46 50c4-4 9-6 15-6m9 6c4-4 9-6 15-6" fill="none" stroke="#9e3c32" stroke-linecap="round" stroke-width="4"/>
+  <path d="M29 101h73l10 21H18z" fill="#e9f4f7"/>
+  <path d="M49 96h36l8 26H40z" fill="#d4eaf0"/>
+  <path d="M48 104h38l-7 18H55z" fill="#d84634"/>
+</svg>

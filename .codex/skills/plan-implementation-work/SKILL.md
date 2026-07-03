@@ -25,7 +25,7 @@ Blocking questions are a stop condition, not a plan section.
    - Use supplied PRD/backlog/artifacts before loading extra docs.
    - Read nearby patterns for each affected area.
    - Use targeted searches and file reads; do not broad-scan by default.
-   - Identify likely files, modules, handlers, pages, services, tests, and docs.
+   - Identify likely files, modules, routes, data access areas, tests, and docs.
    - Treat repo docs, local code, and architecture tests as the source of truth.
 
 3. Produce tasks, not prose.
@@ -35,14 +35,14 @@ Blocking questions are a stop condition, not a plan section.
    - Include: ID, action, files/areas, depends_on, parallel, validation.
 
 4. Add technical detail only when it prevents a likely mistake.
-   - Prefer file names, handler names, query names, error types, and exact commands.
+   - Prefer file names, module names, route names, error types, and exact commands.
    - Use short notes only for high-risk decisions or intentional leftovers.
 
 5. Define completion.
    - Provide exact validation commands when available.
    - When tests are part of the change, name the intended test layer explicitly using `docs/development/testing/strategy.md` rather than saying only `add tests`.
    - For UI work, name routes/pages/components, states, copy/consequence, and browser scope.
-   - For new/changed main workflows, state feature-close E2E coverage. Do not add per-slice E2E unless risk demands it.
+   - For new or changed main workflows, state the final validation path clearly. Use browser E2E only when the repo actually has it.
    - Provide brief manual checks only when automation is insufficient.
    - State assumptions and leftovers briefly.
 

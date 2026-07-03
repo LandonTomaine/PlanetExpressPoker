@@ -1,4 +1,4 @@
 interface:
-  display_name: "Plan Implementation Work"
-  short_description: "Turn ambiguous work into a short implementation task list"
-  default_prompt: "Use $plan-implementation-work to clarify this work, keep asking until there is no material ambiguity, then paste a draft implementation plan in chat for approval before writing any plan file."
+  display_name: 'Plan Implementation Work'
+  short_description: 'Turn ambiguous work into a short implementation task list'
+  default_prompt: 'Use $plan-implementation-work to clarify this work, keep asking until there is no material ambiguity, then paste a draft implementation plan in chat for approval before writing any plan file.'

@@ -15,6 +15,7 @@ Use the lightest testing stack that still protects the multiplayer room flow.
 ### Unit
 
 Use unit tests for:
+
 - average calculation
 - recommendation calculation
 - Fibonacci helpers
@@ -24,6 +25,7 @@ Use unit tests for:
 ### Component / Integration
 
 Use component or integration tests for:
+
 - join flow
 - room roster rendering
 - voter vs spectator behavior
@@ -34,6 +36,7 @@ Use component or integration tests for:
 ### Browser E2E
 
 Use browser E2E tests sparingly for:
+
 - create/join room
 - two-participant happy-path vote and reveal
 - persisted room settings across reload

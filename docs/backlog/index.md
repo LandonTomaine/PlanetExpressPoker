@@ -1,5 +1,8 @@
-﻿# Backlog Index
+# Backlog Index
 
-No implementation backlog has been defined yet.
+## Active Capability Backlogs
 
-Add capability entries here once the product requirements are broken into delivery slices.
+- [01 Core Room Flow](01-core-room-flow/backlog.md)
+  - Status: Draft
+  - Scope: the main v1 product loop from room creation through reveal, reset, and cosmetic chaos events
+  - Next slice: `S1 Room entry and live presence`

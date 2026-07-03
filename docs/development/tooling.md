@@ -1,3 +1,81 @@
-﻿# Tooling
+# Tooling
 
-Document local commands, scripts, formatters, linters, and verification steps here once the project tooling is in place.
+Use [getting-started.md](getting-started.md) for first-time setup and the default local run flow.
+
+Treat this document and the current `.husky/` files as the source of truth for local commands and hook behavior.
+
+## Stack
+
+This repository uses:
+
+- `Node.js`
+- `React`
+- `TypeScript`
+- `Vite`
+- `Supabase`
+- `Tailwind CSS`
+- `Motion`
+
+## Current Commands
+
+- install dependencies
+  - `npm install`
+- run the frontend dev server
+  - `npm run dev`
+- typecheck
+  - `npm run typecheck`
+- lint
+  - `npm run lint`
+- format
+  - `npm run format`
+- format check
+  - `npm run format:check`
+- production build
+  - `npm run build`
+- preview production build locally
+  - `npm run preview`
+- check Cloudflare Wrangler auth
+  - `npm run cloudflare:whoami`
+- deploy current build to Cloudflare Pages by direct upload
+  - `npm run deploy:cloudflare`
+- start local Supabase
+  - `npm run supabase:start`
+- stop local Supabase
+  - `npm run supabase:stop`
+- inspect local Supabase status and keys
+  - `npm run supabase:status`
+
+The local Supabase config currently keeps only the services needed for early app work. Studio, storage, analytics, and other optional services are disabled to keep local startup reliable on this machine.
+
+## Linting And Formatting
+
+The repo currently enforces:
+
+- TypeScript typechecking
+- ESLint
+- Prettier
+
+Style choices stay intentionally simple:
+
+- one lint path
+- one formatting path
+- no custom source guards
+
+## Git Hooks
+
+The repo uses Husky.
+
+Current hooks:
+
+- `pre-commit`
+  - `npx lint-staged`
+- `pre-push`
+  - `npm run lint`
+  - `npm run typecheck`
+  - `npm run build`
+
+## Validation Philosophy
+
+- Keep local validation fast enough that it actually runs.
+- Put cheap checks earlier than expensive checks.
+- Use the pre-push hook as the default local quality gate until tests are added.

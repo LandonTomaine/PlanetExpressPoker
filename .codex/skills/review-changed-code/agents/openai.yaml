@@ -1,4 +1,4 @@
 interface:
-  display_name: "Review Changed Code"
-  short_description: "Review current changes against repo standards"
+  display_name: 'Review Changed Code'
+  short_description: 'Review current changes against repo standards'
   default_prompt: "Use $review-changed-code to review the current changes against this repo's standards."

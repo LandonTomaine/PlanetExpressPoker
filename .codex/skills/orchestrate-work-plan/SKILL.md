@@ -24,14 +24,14 @@ Use subagents to self-check backlog shaping, implementation planning, and change
   - Create or revise `docs/backlog/<numbered-capability>/backlog.md`, `plans/`, `workflows/`, and `artifacts/`.
   - Self-check the backlog with a subagent before treating it as executable.
 - Capability backlog: `docs/backlog/<numbered-capability>/backlog.md`
-  - Select the next unblocked `I*` implementation slice.
+  - Select the next unblocked implementation slice.
   - Create a focused plan under `docs/backlog/<numbered-capability>/plans/`.
 - Implementation plan: `docs/backlog/<numbered-capability>/plans/*.md`
   - Execute the plan directly with `implement-planned-work`.
 - Workflow state: `docs/backlog/<numbered-capability>/workflows/*.md`
   - Resume from the workflow file before selecting new work.
 
-Default granularity is one `I*` implementation slice. Do not plan or implement a whole feature or epic at once unless the backlog proves the scope is tiny or the user explicitly asks.
+Default granularity is one implementation slice. Do not plan or implement a whole feature or epic at once unless the backlog proves the scope is tiny or the user explicitly asks.
 
 ## Called By MVP Delivery
 
@@ -39,7 +39,7 @@ When invoked from `orchestrate-mvp-delivery`:
 
 - Own exactly the capability backlog/workflow execution layer.
 - Do not select, create, close, or advance MVP capabilities.
-- After a slice completes or blocks, return control with: workflow path, slice ID, status, validation, review result, screenshot artifacts or non-UI reason, commit/push status, blockers, and residual risk.
+- After a slice completes or blocks, return control with: workflow path, slice ID, status, validation, review result, browser-validation result or non-UI reason, commit/push status, blockers, and residual risk.
 - A completed slice handoff is not workflow completion unless every queue item is `done` or explicitly skipped.
 
 ## Preconditions
@@ -76,7 +76,7 @@ Do not guess product, UX, architecture, data, validation, or scope decisions.
 
 2. Normalize the work into independent task packets.
    - Preserve original IDs when available.
-   - For capability backlogs, preserve `I*` slice IDs and use those as the task IDs.
+   - For capability backlogs, preserve existing slice IDs when present and use those as task IDs.
    - Split tasks until each packet can be implemented, validated, reviewed, and committed independently.
    - Record dependencies instead of carrying hidden ordering in prose.
    - Mark tasks `blocked_user` when requirements are missing.
@@ -96,11 +96,13 @@ Use this shape:
 
 ```markdown
 # Workflow: <title>
+
 Source: <file, issue, chat, or tracker reference>
 Branch: <branch>
 Status: active
 
 ## Rules
+
 - Execute one task at a time.
 - Commit after each completed task.
 - Ask only blocking questions.
@@ -108,14 +110,17 @@ Status: active
 - Stop on failed validation, unsafe git state, or unexpected broad scope.
 
 ## Queue
-| ID | Status | Depends On | Summary | Validation |
-| --- | --- | --- | --- | --- |
-| T1 | pending | - | <one sentence> | <focused check> |
+
+| ID  | Status  | Depends On | Summary        | Validation      |
+| --- | ------- | ---------- | -------------- | --------------- |
+| T1  | pending | -          | <one sentence> | <focused check> |
 
 ## Current Task
+
 None
 
 ## Log
+
 - <date>: Created workflow from <source>.
 ```
 
@@ -128,18 +133,14 @@ For each task:
    - Set the task to `in_progress`.
    - Copy its packet into `Current Task`.
    - Log the start time and intended validation.
-   - Mark the matching backlog `I*` slice `in_progress`.
+   - Mark the matching backlog slice `in_progress`.
 3. Create a minimal handoff for the implementation pass:
    - task ID and goal
    - acceptance criteria
    - files or areas likely involved
    - dependency notes
    - exact validation expected
-   - standard choices when relevant:
-     - handler vs orchestration handler
-     - Domain service vs shared Application service
-     - page-local helper/contract vs partial/component
-     - handler test vs page test
+   - standard choices when relevant
    - instruction to use `implement-planned-work`
 4. Use subagents where useful, but delegate only one implementation task at a time unless tasks are independent and write scopes are disjoint.
 5. After implementation, inspect the diff yourself.
@@ -149,8 +150,7 @@ For each task:
    - Do not run build, test, format, lint, or generated-output commands in parallel when they can write the same output folders, caches, test database, or generated assets. Sequence them, or build once and use `--no-build` where safe.
    - Long-lived app servers, watch processes, and browser validation support processes are exceptions to the foreground timeout rule: start them non-blocking, capture their process IDs and logs, use a bounded readiness wait, and clean them up before marking validation complete.
    - If the task changes user-visible UI behavior, run a concrete browser-validation flow before marking the task done.
-   - For UI screenshot artifacts, follow the repo's current browser-validation convention; this workflow records the resulting artifact paths grouped by task and viewport but does not duplicate the capture rules.
-   - If integrated browser validation or screenshot capture cannot be completed for a UI task, do not mark the task done unless the real user explicitly waives that requirement; record the blocker or waiver in durable state.
+   - If integrated browser validation cannot be completed for a UI task, do not mark the task done unless the real user explicitly waives that requirement; record the blocker or waiver in durable state.
    - Append command/tooling/environment/bad-assumption incidents to `.codex/state/ai-process-issues.md` at the point of failure or the next durable state update. Include workflow/slice, symptom, cause, corrective action, occurrence key, and count if known.
    - Logging an incident does not automatically stop the task. Run `improve-ai-self` only after three recorded occurrences of the same occurrence key, or after one severe workflow-state, validation-integrity, commit, scope-control, or destructive-action failure.
 7. Require a review subagent after validation and before commit.
@@ -162,22 +162,22 @@ For each task:
    - `Status: done`
    - files changed summary
    - validation result
-   - browser screenshot artifact paths for UI tasks, grouped by task and viewport, including dimensions, byte sizes, nonblank verification result, and visual sanity result, or why any expected viewport artifact was waived
+   - browser-validation result for UI tasks, including what was checked and what remains unverified
    - review result
    - follow-ups or residual risk
-   - Mark the matching backlog `I*` slice `done`, or `blocked` with a blocker note.
+   - Mark the matching backlog slice `done`, or `blocked` with a blocker note.
    - Do not reopen or recommit the workflow file only to paste commit SHAs. Git history is the source of truth for commit IDs.
 9. Commit the completed task, including code, tests, plan updates, workflow state, backlog status, and validation artifacts, with a focused message.
 10. Push progress when the branch has an upstream or the user asked for remote-backed progress.
-    - For code changes, do not treat filtered test runs such as `Category!=Slow` as sufficient push validation.
-    - The repo pre-push hook is expected to run the full Release test suite. If the hook is bypassed or unavailable for a code push, run `dotnet build --configuration Release /p:TreatWarningsAsErrors=true` and `dotnet test --no-build --configuration Release` first.
+    - For code changes, do not treat narrowed validation as sufficient push validation unless the user explicitly accepts the risk.
+    - Prefer the repo's current pre-push hook as the final local gate when it exists.
 
 ## Self-Check Requirements
 
 Use [references/handoffs.md](references/handoffs.md) for backlog-review, planning, and changed-code review handoffs.
 
 - Use a subagent to review a newly created or substantially revised backlog before implementation planning.
-- Use a planning subagent for each selected `I*` slice unless the implementation plan already exists and is current.
+- Use a planning subagent for each selected slice unless the implementation plan already exists and is current.
 - Use a review subagent after each implementation task and before commit.
 - Do not let subagents decide product ambiguity. They may identify ambiguity; unresolved blocking questions go to the real user.
 - After every subagent result, inspect the relevant diff or plan yourself and record the outcome in workflow state.

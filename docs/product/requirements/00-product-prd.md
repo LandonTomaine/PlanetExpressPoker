@@ -3,10 +3,16 @@
 ## Product Requirements Document
 
 ### Status
+
 Draft v1
 
 ### Date
+
 July 1, 2026
+
+### Delivery Backlog
+
+- [../../backlog/01-core-room-flow/backlog.md](../../backlog/01-core-room-flow/backlog.md)
 
 ## 1. Product Summary
 
@@ -111,8 +117,8 @@ The target user is a small private group that wants a simple planning poker room
 ### 7.7 Participant State Changes
 
 - Any participant can change any participant between voter and spectator.
-- Any participant can kick any participant from the room.
-- The room creator does not need special protections or elevated controls.
+- Any participant can kick non-owner participants from the room.
+- The first participant to join a room is treated as the room owner and cannot be kicked.
 
 ### 7.8 Score Summary
 

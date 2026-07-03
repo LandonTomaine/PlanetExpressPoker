@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 300" role="img" aria-labelledby="title">
+  <title>Planet Express ship</title>
+  <rect width="820" height="300" fill="none"/>
+  <g stroke="#111820" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M266 141c84-24 213-32 385-22 57 3 102 13 135 30 14 7 17 15 8 22-32 24-91 39-176 46-88 8-207 7-358-2-39-2-65-16-77-41 12-14 39-25 83-33z" fill="#99ecc1" stroke-width="5"/>
+    <path d="M200 163c30-27 89-45 178-54 83-8 174-7 273 1 61 5 107 16 137 34-77-14-187-17-329-10-112 5-197 18-255 38z" fill="#d9f6ca" opacity=".55" stroke="none"/>
+    <path d="M263 190c93 10 208 14 345 8 71-3 127-12 166-28-23 22-76 41-157 50-89 10-210 8-364-4-32-3-54-16-66-38 20 5 45 9 76 12z" fill="#378878" opacity=".7" stroke="none"/>
+    <path d="M194 118 26 74 4 83l167 70c13-14 21-25 23-35z" fill="#378f7b" stroke-width="5"/>
+    <path d="M184 119 76 91 57 99l115 49z" fill="#57b08e" stroke="none"/>
+    <path d="M191 192 71 252 50 246l113-78c13 12 22 20 28 24z" fill="#12907d" stroke-width="5"/>
+    <path d="M170 170c-20 13-39 33-56 60l57-28c21-34 32-55 33-63-10 6-21 16-34 31z" fill="#006f63" opacity=".45" stroke="none"/>
+    <path d="M345 142h109v34H345z" fill="#f3e7bd" stroke-width="4"/>
+    <path d="M357 149v21m13-21v21m13-21v21m13-21v21m13-21v21m13-21v21m13-21v21m13-21v21" fill="none" stroke="#111820" stroke-width="3"/>
+    <path d="M266 162h525" fill="none" stroke="#d93430" stroke-width="8"/>
+    <path d="M264 132c-14 16-25 35-32 58l21 13c56-20 91-43 104-69-31-7-62-8-93-2z" fill="#f3e7bd" stroke-width="5"/>
+    <path d="M298 136c-17 14-30 32-39 53" fill="none" stroke="#111820" stroke-width="3" opacity=".4"/>
+    <path d="M219 90c-14 8-24 19-29 33 2 16 13 28 34 36l47-30c-7-20-24-33-52-39z" fill="#0c877a" stroke-width="5"/>
+    <path d="M214 103c-9 6-15 14-17 24 2 10 9 18 22 23" fill="none" stroke="#0b524b" stroke-width="4"/>
+    <path d="M178 124c-22 5-41 17-56 36l-25 33c20 8 43 5 67-8 25-13 46-31 63-54-14-8-30-10-49-7z" fill="#f5e8bf" stroke-width="5"/>
+    <path d="M147 141c-15 11-25 24-31 39" fill="none" stroke="#111820" stroke-width="3" opacity=".45"/>
+    <path d="M91 158c12 8 22 18 29 31" fill="none" stroke="#111820" stroke-width="4"/>
+    <path d="M95 151c-16 10-28 23-36 39" fill="none" stroke="#92cfff" stroke-width="3"/>
+    <path d="M56 169 20 161m39 21-36 4m50 10-30 18" fill="none" stroke="#8fd6ff" stroke-width="4"/>
+    <path d="M194 216 81 262" fill="none" stroke="#d93430" stroke-width="5"/>
+    <path d="M174 238 68 271" fill="none" stroke="#d93430" stroke-width="5"/>
+    <path d="M526 115h24v27h-24z" fill="#f3e7bd" stroke-width="4"/>
+    <path d="M530 154h20m-20 11h20m-20 11h20" fill="none" stroke="#111820" stroke-width="3"/>
+    <circle cx="612" cy="139" r="11" fill="#85d8c6" stroke-width="4"/>
+    <circle cx="681" cy="141" r="10" fill="#85d8c6" stroke-width="4"/>
+    <circle cx="734" cy="145" r="9" fill="#85d8c6" stroke-width="4"/>
+    <circle cx="772" cy="150" r="8" fill="#85d8c6" stroke-width="4"/>
+    <circle cx="612" cy="139" r="5" fill="#1a6d68" stroke="none"/>
+    <circle cx="681" cy="141" r="4.5" fill="#1a6d68" stroke="none"/>
+    <circle cx="734" cy="145" r="4" fill="#1a6d68" stroke="none"/>
+    <circle cx="772" cy="150" r="3.5" fill="#1a6d68" stroke="none"/>
+    <path d="M786 139c16 1 25 4 29 10l-22 6-22-2c3-8 8-13 15-14z" fill="#d5e9e5" stroke-width="4"/>
+    <path d="M604 102c13-13 31-19 54-18 25 1 45 11 59 30l-28 11-33-13-42 8z" fill="#41af86" stroke-width="5"/>
+    <path d="M624 96h56" fill="none" stroke="#111820" stroke-width="4"/>
+    <circle cx="646" cy="85" r="15" fill="#a3e7ef" stroke-width="4"/>
+    <path d="M690 103 737 86l5 14-46 19z" fill="#6e657a" stroke-width="4"/>
+    <path d="M213 83c34-43 89-67 166-73 73-6 149 6 226 35l-78 53-16 51-124-2-66-33z" fill="#47ad8f" stroke-width="5"/>
+    <path d="M250 91c50-38 117-57 202-56 53 1 103 9 150 25l-69 38-19 45-122-1-67-33z" fill="#7fd3a7" opacity=".4" stroke="none"/>
+    <g transform="translate(297 78) rotate(10)">
+      <circle cx="0" cy="0" r="31" fill="#fff8cc" stroke-width="5"/>
+      <circle cx="0" cy="0" r="22" fill="#fbefb7" stroke-width="3"/>
+      <path d="M-17 9 5-18l12 12 26-14-20 27 13 12-29 2-18 25z" fill="#95ecc0" stroke="#111820" stroke-width="4"/>
+      <path d="M-20-1c11-12 27-18 47-18" fill="none" stroke="#d93430" stroke-width="6"/>
+      <text x="-6" y="-20" font-family="Arial, sans-serif" font-size="9" font-weight="900" text-anchor="middle" fill="#111820">PLANET</text>
+      <text x="13" y="25" font-family="Arial, sans-serif" font-size="9" font-weight="900" text-anchor="middle" fill="#111820">EXPRESS</text>
+    </g>
+    <path d="M4 83 26 74" fill="none" stroke="#d93430" stroke-width="5"/>
+    <path d="M50 246 72 253" fill="none" stroke="#d93430" stroke-width="5"/>
+    <path d="M34 78h-18" fill="none" stroke="#f3e7bd" stroke-width="7"/>
+    <path d="M72 253h-18" fill="none" stroke="#f3e7bd" stroke-width="7"/>
+  </g>
+</svg>

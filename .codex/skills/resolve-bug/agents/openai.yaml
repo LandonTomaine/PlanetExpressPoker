@@ -1,4 +1,4 @@
 interface:
-  display_name: "Resolve Bug"
-  short_description: "Investigate, fix, and validate repo bugs"
-  default_prompt: "Use $resolve-bug to investigate, fix, and validate this reported bug."
+  display_name: 'Resolve Bug'
+  short_description: 'Investigate, fix, and validate repo bugs'
+  default_prompt: 'Use $resolve-bug to investigate, fix, and validate this reported bug.'

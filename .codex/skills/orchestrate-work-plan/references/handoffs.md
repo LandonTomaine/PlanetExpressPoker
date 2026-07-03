@@ -12,7 +12,7 @@
 
 - Source child PRD path
 - Backlog path
-- Selected `I*` slice and acceptance criteria
+- Selected slice and acceptance criteria
 - Likely code areas if known
 - Ask for a `plan-implementation-work` draft plan
 - Ask for blocking ambiguity only
@@ -22,7 +22,7 @@
 ## Changed-Code Review
 
 - Source child PRD path
-- Backlog path and selected `I*` slice
+- Backlog path and selected slice
 - Implementation plan path
 - Changed files or diff summary
 - Validation commands and results

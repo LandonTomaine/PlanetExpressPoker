@@ -3,9 +3,11 @@
 ## Product Requirements Document
 
 ### Status
+
 Draft v1
 
 ### Date
+
 July 1, 2026
 
 ## 1. Product Summary

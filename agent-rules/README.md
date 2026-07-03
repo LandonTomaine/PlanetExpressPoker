@@ -22,7 +22,9 @@ Read this at the start of every task:
 
 Repo-local skills live under `.codex/skills/`.
 
-Use a repo-local skill only when the task clearly matches it. The copied skill set is a starting point and may need repo-specific cleanup over time.
+Use a repo-local skill only when the task clearly matches it.
+
+The current skill set has been aligned to the chosen stack at a high level, but more repo-specific validation or migration skills may still be added later if repeated workflows justify them.
 
 ## Load Only When Needed
 

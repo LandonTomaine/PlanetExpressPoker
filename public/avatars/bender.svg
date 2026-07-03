@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>Bender</title>
+  <rect width="128" height="128" rx="26" fill="#dbe7ef"/>
+  <path d="M59 10h10v15H59z" fill="#7f929f"/>
+  <circle cx="64" cy="9" r="5" fill="#7f929f"/>
+  <path d="M35 42c0-14 12-25 29-25s29 11 29 25v21c0 12-8 22-19 26v12H54V89c-11-4-19-14-19-26z" fill="#9fb1bf"/>
+  <path d="M39 42c0-11 10-20 25-20s25 9 25 20v14H39z" fill="#b9c8d2"/>
+  <rect x="32" y="42" width="64" height="25" rx="12" fill="#d8e4eb" stroke="#627480" stroke-width="4"/>
+  <circle cx="52" cy="55" r="9" fill="#fff5df" stroke="#61727c" stroke-width="3"/>
+  <circle cx="76" cy="55" r="9" fill="#fff5df" stroke="#61727c" stroke-width="3"/>
+  <circle cx="52" cy="55" r="3.5" fill="#1e2730"/>
+  <circle cx="76" cy="55" r="3.5" fill="#1e2730"/>
+  <rect x="43" y="76" width="42" height="15" rx="5" fill="#3f4d59"/>
+  <path d="M47 81h34M49 86h30M57 77v14M68 77v14" fill="none" stroke="#aebdc6" stroke-width="2"/>
+  <path d="M44 98c7 4 14 6 20 6s13-2 20-6l8 24H36z" fill="#8fa1af"/>
+  <path d="M50 103h28l4 19H46z" fill="#788b99"/>
+</svg>

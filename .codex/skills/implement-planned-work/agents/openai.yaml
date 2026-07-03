@@ -1,4 +1,4 @@
 interface:
-  display_name: "Implement Planned Work"
-  short_description: "Autonomously implement a technical work plan"
-  default_prompt: "Use $implement-planned-work to implement this plan end to end."
+  display_name: 'Implement Planned Work'
+  short_description: 'Autonomously implement a technical work plan'
+  default_prompt: 'Use $implement-planned-work to implement this plan end to end.'

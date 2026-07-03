@@ -3,6 +3,7 @@
 Planet Express Poker is a small realtime web app built around room-based multiplayer estimation.
 
 The chosen stack is:
+
 - `React`
 - `TypeScript`
 - `Vite`
@@ -13,12 +14,15 @@ The chosen stack is:
 ## Purpose
 
 This document captures the durable architecture for the repository:
+
 - application shape
 - major boundaries
 - realtime model
 - persistence model
 - frontend and backend responsibilities
 - testing boundaries
+
+For initial table shape, see [data-model.md](data-model.md).
 
 ## System Shape
 
@@ -43,6 +47,7 @@ This is intentionally a thin architecture. The app does not need a separate cust
 ### Browser Client
 
 The frontend owns:
+
 - routing
 - room UI
 - avatar selection UI
@@ -57,6 +62,7 @@ The frontend should not own durable room truth. It may hold transient UI state, 
 ### Supabase
 
 Supabase owns:
+
 - persisted room records
 - persisted room settings
 - persisted participant records
@@ -97,6 +103,7 @@ Recommended ownership:
   - quick synchronization nudges for active clients
 
 Use persisted database writes for durable game state:
+
 - room creation
 - room settings changes
 - voter/spectator changes
@@ -107,6 +114,7 @@ Use persisted database writes for durable game state:
 - reset status
 
 Rule of thumb:
+
 - If it must survive reconnect or reload, persist it.
 - If it is cosmetic or short-lived, broadcast it.
 
@@ -115,6 +123,7 @@ Rule of thumb:
 The data model should stay simple and explicit.
 
 Expected core entities:
+
 - `rooms`
 - `room_settings`
 - `participants`
@@ -122,10 +131,12 @@ Expected core entities:
 - `votes`
 
 Optional later entities:
+
 - `fun_events`
 - `avatar_catalog`
 
 Persistence principles:
+
 - Keep one active round per room in v1.
 - Do not add round history unless the product changes.
 - Keep participant role as a simple room-level state: `voter` or `spectator`.
@@ -161,6 +172,7 @@ Avoid adding a heavy client state library in v1 unless the app proves it needs o
 The UI should be organized by feature, not by generic component buckets alone.
 
 Suggested top-level app areas:
+
 - app shell
 - room join/create flow
 - room view
@@ -177,6 +189,7 @@ Themed effects should be layered on top of the core product flow, not intertwine
 Animation is a first-class product concern.
 
 Use `Motion` for:
+
 - card selection feedback
 - countdown entrance/exit
 - card flip reveal
@@ -185,6 +198,7 @@ Use `Motion` for:
 - character pop-ins
 
 Principles:
+
 - Core interactions must remain readable when fun effects are disabled.
 - Cosmetic events must not be required for understanding room state.
 - Animation triggers should come from durable state transitions or explicit transient broadcast events.
@@ -194,6 +208,7 @@ Principles:
 Keep the frontend simple, but do not let it become a grab bag of ad hoc Supabase calls.
 
 Recommended boundaries:
+
 - Put Supabase access behind repo-local feature modules.
 - Keep raw query shapes and row mapping near the feature that owns them.
 - Centralize shared Supabase client creation and environment wiring.
@@ -205,6 +220,7 @@ Recommended boundaries:
 There are no accounts in v1, but the app still needs bounded behavior.
 
 Assumptions for v1:
+
 - Room access is link-based.
 - Participants self-identify with display name and avatar.
 - The room is collaborative, not adversarial.
@@ -212,6 +228,7 @@ Assumptions for v1:
 This means the security model should optimize for simplicity, not formal identity.
 
 Still required:
+
 - server-side validation for writes
 - room-scoped access boundaries
 - protection against malformed client payloads
@@ -219,6 +236,7 @@ Still required:
 ## Deployment Shape
 
 Expected deployment:
+
 - static frontend on `Vercel` or similar
 - hosted `Supabase` project for database and realtime
 
@@ -237,6 +255,7 @@ Once scaffolded, the repo should roughly converge toward:
 - `src/types/`
 
 Supabase-related code should likely live under:
+
 - `src/lib/supabase/`
 - `src/features/<feature>/data/`
 
@@ -249,6 +268,7 @@ Use three main layers:
 - Browser E2E tests for the main multiplayer flow
 
 Do not overbuild the test pyramid for v1. Focus on:
+
 - score recommendation logic
 - role changes
 - reveal flow
@@ -258,6 +278,7 @@ Do not overbuild the test pyramid for v1. Focus on:
 ## Non-Goals
 
 This architecture does not include:
+
 - SSR
 - native mobile apps
 - accounts/auth-heavy identity model

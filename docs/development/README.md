@@ -14,7 +14,3 @@ Load only the docs needed for the current task.
 - [workflow.md](workflow.md): development workflow
 - [commits.md](commits.md): commit guidance
 - [pull-requests.md](pull-requests.md): pull request guidance
-
-## Current State
-
-Most development docs are placeholders until the stack is selected.

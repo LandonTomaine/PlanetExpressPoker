@@ -33,7 +33,7 @@ Catch bad implementation plans before code is written.
 - UI plans include states: first-time, edit, empty, loading, error, disabled, success, blocked.
 - Copy terms and consequence messaging are decided before coding.
 - Browser validation names viewports, interactions, artifacts, and console/error checks.
-- New/changed main workflows state feature-close E2E coverage; no per-slice E2E unless justified.
+- New or changed main workflows state a concrete final validation path; browser E2E is optional unless the repo has adopted it.
 - Foreground validation commands have bounded timeouts.
 - No unresolved product, UX, data, architecture, or validation ambiguity remains.
 

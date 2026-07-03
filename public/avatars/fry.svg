@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title>Fry</title>
+  <rect width="128" height="128" rx="26" fill="#fff0cf"/>
+  <path d="M34 55c0-21 14-37 33-37 20 0 34 15 34 38 0 25-14 45-34 45S34 80 34 55z" fill="#f3bd94"/>
+  <path d="M29 59c2-20 10-34 24-41 8-4 17-5 28-2l-8 10c13-4 25 0 35 11-11 1-22 4-32 9 13 1 23 5 30 12-15-2-29-2-43 1-10 2-22 2-34 0z" fill="#f47a21"/>
+  <path d="M42 50c9-8 19-12 30-14-4 7-11 13-20 18z" fill="#df531f"/>
+  <circle cx="52" cy="65" r="5" fill="#2d211c"/>
+  <circle cx="77" cy="65" r="5" fill="#2d211c"/>
+  <path d="M45 56c5-3 10-4 15-3m11 3c5-3 10-4 15-3" fill="none" stroke="#794028" stroke-linecap="round" stroke-width="4"/>
+  <path d="M51 84c5 5 10 7 16 7 5 0 10-2 15-7" fill="none" stroke="#8e4b3c" stroke-linecap="round" stroke-width="4"/>
+  <path d="M37 99h58l10 23H26z" fill="#c7352e"/>
+  <path d="M50 96h31l9 26H40z" fill="#f6f2ea"/>
+  <path d="M38 101h16v21H28zM78 101h18l4 21H82z" fill="#d74332"/>
+</svg>

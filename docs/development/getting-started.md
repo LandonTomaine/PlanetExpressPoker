@@ -1,37 +1,53 @@
 # Getting Started
 
-This repository is expected to use:
+This repository uses:
+
 - `Node.js`
 - `React`
 - `TypeScript`
 - `Vite`
 - `Supabase`
 
-## Current State
+## Prerequisites
 
-The stack is chosen, but the application has not been scaffolded yet.
+- Node.js `24.x` is the current known-good local version in this repo
+- Docker Desktop for the local Supabase stack
 
-## Expected Local Workflow
+## PowerShell Note
 
-Once scaffolded, the default local workflow should be:
+On this machine, PowerShell may block `npm` and `npx` PowerShell shims because of execution policy.
 
-1. Install dependencies
-2. Configure local environment variables
-3. Run the Vite dev server
-4. Point the app at the chosen Supabase project
+If that happens:
 
-## Expected Environment Inputs
+- use `npm.cmd` instead of `npm`
+- use `npx.cmd` instead of `npx`
 
-The app will likely need:
-- Supabase project URL
-- Supabase anon/public key
+The package scripts themselves still use normal `npm run ...` flows.
 
-Additional environment variables should be added only when the real app structure requires them.
+## Local Setup
 
-## First Setup Goal
+1. Install frontend and repo tooling dependencies
+   - `npm install`
+2. Copy environment defaults if needed
+   - `.env.example` -> `.env`
+3. Start the local Supabase stack
+   - `npm run supabase:start`
+4. The repo-local `.env` already targets the working local API URL and anon key.
+5. Check local Supabase connection info if needed
+   - `npm run supabase:status`
+6. Start the frontend
+   - `npm run dev`
 
-The first implementation setup should optimize for:
-- one frontend app
-- one Supabase project
-- one local `.env` flow
-- minimal ceremony
+## Default Local URLs
+
+Expected local URLs:
+
+- app: `http://127.0.0.1:5173`
+- Supabase API: `http://127.0.0.1:54321`
+- Supabase Studio is intentionally disabled in the local config for now
+
+## Default Validation
+
+- lint: `npm run lint`
+- typecheck: `npm run typecheck`
+- build: `npm run build`
