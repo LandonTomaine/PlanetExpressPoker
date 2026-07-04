@@ -31,7 +31,7 @@ When a round is revealed, the app picks at most one reveal reaction in this orde
 4. At least one Nibbler card: Nibbler `?` GIF.
 5. At least one ship card: Planet Express fly-by.
 6. At least one Lrrr card: skeptical Fry GIF.
-7. Matching numeric consensus: random consensus GIF, including Hypnotoad. The same browser avoids immediately repeating the prior consensus GIF when multiple options are available.
+7. Matching numeric consensus: random consensus GIF, including Hypnotoad. The reveal transaction stores the selected GIF so every browser sees the same consensus reaction and the room avoids immediately repeating the prior reaction when multiple options are available.
 8. Exact Fibonacci spread of 2 to 4 consecutive numeric cards, such as `0,1,2,3`, `1,2,3,5`, or `2,3,5,8`: random spread GIF.
 9. Numeric votes more than one card apart: random spread GIF.
 

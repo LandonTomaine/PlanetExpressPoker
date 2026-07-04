@@ -8,6 +8,7 @@ import type {
   RoomFunLevel,
   RoomSettings,
   Round,
+  RoundReactionKind,
   SubmittedVote,
   Vote,
 } from '../types'
@@ -39,6 +40,22 @@ const roomSettingsSchema = z.object({
   updated_at: z.string(),
 })
 
+const roundReactionKindSchema = z.enum([
+  'coffee1',
+  'coffee2',
+  'coffee3',
+  'coffee4',
+  'consensus1',
+  'consensus2',
+  'consensus3',
+  'consensus4',
+  'consensus5',
+  'nibblerQuestion',
+  'skepticalFry',
+  'wideSpread1',
+  'wideSpread2',
+] satisfies [RoundReactionKind, ...RoundReactionKind[]])
+
 const roundSchema = z.object({
   id: z.string().uuid(),
   room_id: z.string().uuid(),
@@ -47,6 +64,7 @@ const roundSchema = z.object({
   countdown_started_at: z.string().nullable(),
   countdown_seconds: z.number().int().min(1),
   revealed_at: z.string().nullable(),
+  reaction_kind: roundReactionKindSchema.nullable(),
 })
 
 const voteSchema = z.object({
@@ -186,6 +204,7 @@ function mapRound(round: z.infer<typeof roundSchema>): Round {
     countdownStartedAt: round.countdown_started_at,
     countdownSeconds: round.countdown_seconds,
     revealedAt: round.revealed_at,
+    reactionKind: round.reaction_kind,
   }
 }
 
@@ -295,7 +314,7 @@ export async function getActiveRound(roomId: string) {
   const { data, error } = await supabase
     .from('rounds')
     .select(
-      'id, room_id, round_number, status, countdown_started_at, countdown_seconds, revealed_at'
+      'id, room_id, round_number, status, countdown_started_at, countdown_seconds, revealed_at, reaction_kind'
     )
     .eq('room_id', roomId)
     .single()

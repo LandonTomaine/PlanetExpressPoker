@@ -31,6 +31,21 @@ export type Participant = {
 
 export type RoundStatus = 'voting' | 'countdown' | 'revealed'
 
+export type RoundReactionKind =
+  | 'coffee1'
+  | 'coffee2'
+  | 'coffee3'
+  | 'coffee4'
+  | 'consensus1'
+  | 'consensus2'
+  | 'consensus3'
+  | 'consensus4'
+  | 'consensus5'
+  | 'nibblerQuestion'
+  | 'skepticalFry'
+  | 'wideSpread1'
+  | 'wideSpread2'
+
 export type Round = {
   id: string
   roomId: string
@@ -39,6 +54,7 @@ export type Round = {
   countdownStartedAt: string | null
   countdownSeconds: number
   revealedAt: string | null
+  reactionKind: RoundReactionKind | null
 }
 
 export type JoinedParticipant = {

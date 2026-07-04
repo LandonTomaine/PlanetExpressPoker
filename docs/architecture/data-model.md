@@ -110,6 +110,8 @@ Suggested fields:
 - `countdown_started_at` timestamptz null
 - `countdown_seconds` integer not null default 3
 - `revealed_at` timestamptz null
+- `reaction_kind` text null
+- `last_reaction_kind` text null
 - `updated_at` timestamptz not null default now()
 
 Suggested allowed values:
@@ -120,6 +122,8 @@ Notes:
 
 - one row per room
 - reset does not create a new row in v1; it clears votes, increments `round_number`, and returns the round to `voting`
+- `reaction_kind` stores the shared reveal GIF selected during reveal so every browser sees the same reaction
+- `last_reaction_kind` lets the reveal transaction avoid immediately repeating the same GIF after reset
 
 ### `votes`
 

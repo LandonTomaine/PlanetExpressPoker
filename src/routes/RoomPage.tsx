@@ -66,22 +66,8 @@ import type {
   Participant,
   PresenceParticipant,
   Room,
+  RoundReactionKind,
 } from '../features/room/types'
-
-type RoundReactionKind =
-  | 'coffee1'
-  | 'coffee2'
-  | 'coffee3'
-  | 'coffee4'
-  | 'consensus1'
-  | 'consensus2'
-  | 'consensus3'
-  | 'consensus4'
-  | 'consensus5'
-  | 'nibblerQuestion'
-  | 'skepticalFry'
-  | 'wideSpread1'
-  | 'wideSpread2'
 
 type RoundReactionCategory =
   | 'allSpecialCards'
@@ -171,20 +157,6 @@ const roundReactionConfig: Record<RoundReactionKind, RoundReactionDisplay> = {
   },
 }
 
-const coffeeReactionKinds = [
-  'coffee1',
-  'coffee2',
-  'coffee3',
-  'coffee4',
-] as const
-const consensusReactionKinds = [
-  'consensus1',
-  'consensus2',
-  'consensus3',
-  'consensus4',
-  'consensus5',
-] as const
-const wideSpreadReactionKinds = ['wideSpread1', 'wideSpread2'] as const
 const deliveryStormSequence = [
   'ArrowUp',
   'ArrowDown',
@@ -313,9 +285,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const deliveryStormSequenceTimeoutRef = useRef<number | null>(null)
   const hypnotoadClickCountRef = useRef(0)
   const hypnotoadClickResetTimeoutRef = useRef<number | null>(null)
-  const lastRoundReactionByCategoryRef = useRef<
-    Partial<Record<RoundReactionCategory, RoundReactionKind>>
-  >({})
 
   const attemptAutoJoin = useEffectEvent(async () => {
     await handleJoin({
@@ -1034,20 +1003,14 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
-    const nextRoundReactionKind = pickRoundReactionKind(
-      roundReactionCategory,
-      lastRoundReactionByCategoryRef.current[roundReactionCategory]
-    )
-
-    if (!nextRoundReactionKind) {
+    if (!activeRound.reactionKind) {
       return
     }
 
-    lastRoundReactionByCategoryRef.current[roundReactionCategory] =
-      nextRoundReactionKind
-
-    setActiveFunEvent(null)
-    setActiveRoundReaction(nextRoundReactionKind)
+    queueMicrotask(() => {
+      setActiveFunEvent(null)
+      setActiveRoundReaction(activeRound.reactionKind)
+    })
 
     roundReactionTimeoutRef.current = window.setTimeout(() => {
       setActiveRoundReaction(null)
@@ -2865,49 +2828,6 @@ function getRoundReactionCategory(
   const highestCardIndex = Math.max(...numericCardIndexes)
 
   return highestCardIndex - lowestCardIndex > 1 ? 'wideSpread' : null
-}
-
-function pickRoundReactionKind(
-  category: RoundReactionCategory,
-  previousReactionKind: RoundReactionKind | undefined
-): RoundReactionKind | null {
-  if (category === 'coffee') {
-    return pickRandomReaction(coffeeReactionKinds, previousReactionKind)
-  }
-
-  if (category === 'consensus') {
-    return pickRandomReaction(consensusReactionKinds, previousReactionKind)
-  }
-
-  if (category === 'wideSpread') {
-    return pickRandomReaction(wideSpreadReactionKinds, previousReactionKind)
-  }
-
-  if (category === 'fibonacciSpread') {
-    return pickRandomReaction(wideSpreadReactionKinds, previousReactionKind)
-  }
-
-  if (category === 'nibblerQuestion') {
-    return 'nibblerQuestion'
-  }
-
-  if (category === 'skepticalFry') {
-    return 'skepticalFry'
-  }
-
-  return null
-}
-
-function pickRandomReaction<const T extends readonly RoundReactionKind[]>(
-  items: T,
-  previousReactionKind: RoundReactionKind | undefined
-): T[number] {
-  const nextItems =
-    items.length > 1
-      ? items.filter((item) => item !== previousReactionKind)
-      : items
-
-  return nextItems[Math.floor(Math.random() * nextItems.length)] as T[number]
 }
 
 function hasNumericConsensus(cardValues: string[]) {
