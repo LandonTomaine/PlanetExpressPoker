@@ -1,0 +1,251 @@
+name: Dependabot Weekly Review
+
+on:
+  schedule:
+    # Run near 7:00 AM America/New_York every Sunday.
+    # UTC is 11:00 in EDT and 12:00 in EST.
+    - cron: '0 11 * * 0'
+    - cron: '0 12 * * 0'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  review_dependabot_prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan open Dependabot pull requests
+        uses: actions/github-script@v7
+        env:
+          LOCAL_TZ: America/New_York
+        with:
+          script: |
+            const localDateTime = new Intl.DateTimeFormat('en-US', {
+              timeZone: process.env.LOCAL_TZ,
+              hour: '2-digit',
+              minute: '2-digit',
+              weekday: 'short',
+              hour12: false,
+            }).formatToParts(new Date());
+
+            const localHour = Number(localDateTime.find((p) => p.type === 'hour')?.value ?? '0');
+            const localMinute = Number(localDateTime.find((p) => p.type === 'minute')?.value ?? '0');
+            const localWeekday = localDateTime.find((p) => p.type === 'weekday')?.value;
+
+            if (!(localWeekday === 'Sun' && localHour === 7 && localMinute === 0)) {
+              core.info(
+                `Skipping run: local time is ${localWeekday} ${localHour
+                  .toString()
+                  .padStart(2, '0')}:${localMinute.toString().padStart(2, '0')} in ${process.env.LOCAL_TZ}.`
+              );
+              return;
+            }
+
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const codexLabel = 'codex-fix-required';
+          const codexLabelColor = '1d76db';
+          const codexLabelDescription = 'Needs manual follow-up or automated fix';
+
+          const pulls = await github.paginate(github.rest.pulls.list, {
+            owner,
+            repo,
+            state: 'open',
+            per_page: 100,
+            });
+
+            const dependabotPrs = pulls.filter((pr) =>
+              pr.user?.login === 'dependabot[bot]' ||
+              (pr.user?.login?.includes('dependabot') ?? false)
+            );
+
+            if (dependabotPrs.length === 0) {
+              core.info('No open Dependabot PRs found.');
+            return;
+          }
+
+            try {
+              await github.rest.issues.createLabel({
+                owner,
+                repo,
+                name: codexLabel,
+                color: codexLabelColor,
+                description: codexLabelDescription,
+              });
+            } catch (error) {
+              if (!(error.status === 422 && /already exists/i.test(error.message))) {
+                core.warning(`Could not ensure codex label: ${error.message}`);
+              }
+            }
+
+            const reportRows = ['| PR | Status | Details |', '| --- | --- | --- |'];
+            const passingStatuses = new Set(['success', 'neutral', 'skipped']);
+
+            for (const pr of dependabotPRs) {
+              const fullPr = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: pr.number,
+              });
+              const currentPr = fullPr.data;
+
+              if (pr.draft) {
+                reportRows.push(
+                  `| [#${pr.number}](${pr.html_url}) | skipped | PR is a draft. |`
+                );
+                continue;
+              }
+
+              const reviews = await github.paginate(github.rest.pulls.listReviews, {
+                owner,
+                repo,
+                pull_number: pr.number,
+              });
+              const alreadyApproved = reviews.some((review) => review.state === 'APPROVED');
+
+              const status = await github.rest.repos.getCombinedStatusForRef({
+                owner,
+                repo,
+                ref: pr.head.sha,
+              });
+              const statusRows = status.data.statuses ?? [];
+              const failingStatuses = statusRows.filter((item) => item.state !== 'success');
+
+              const checkRuns = await github.paginate(
+                github.rest.checks.listForRef,
+                {
+                  owner,
+                  repo,
+                  ref: pr.head.sha,
+                  filter: 'all',
+                  per_page: 100,
+                }
+              );
+              const pendingOrFailingChecks = checkRuns.filter(
+                (run) =>
+                  run.status !== 'completed' ||
+                  !passingStatuses.has(run.conclusion)
+              );
+
+              const blockers = [];
+              const currentLabels = currentPr.labels ?? [];
+              const hasCodexLabel = currentLabels.some(
+                (label) => (label.name ?? label) === codexLabel
+              );
+              if (currentPr.mergeable_state !== 'clean') {
+                blockers.push(`mergeable_state is ${currentPr.mergeable_state}`);
+              }
+              if (currentPr.mergeable === false) {
+                blockers.push('GitHub reports mergeability as false');
+              }
+              if (status.data.state !== 'success') {
+                blockers.push(`status check state is ${status.data.state}`);
+              }
+              if (statusRows.length === 0 && checkRuns.length === 0) {
+                blockers.push('no check status data yet');
+              }
+              if (failingStatuses.length > 0) {
+                blockers.push(
+                  `failing status checks: ${failingStatuses
+                    .map((check) => `${check.context} (${check.state})`)
+                    .join(', ')}`
+                );
+              }
+              if (pendingOrFailingChecks.length > 0) {
+                blockers.push(
+                  `failing/pending checks: ${pendingOrFailingChecks
+                    .map((run) => `${run.name} (${run.status}/${run.conclusion ?? 'pending'})`)
+                    .join(', ')}`
+                );
+              }
+
+              if (blockers.length > 0) {
+                reportRows.push(
+                `| [#${pr.number}](${pr.html_url}) | blocked | ${blockers.join('; ')} |`
+              );
+
+              if (!hasCodexLabel) {
+                try {
+                  await github.rest.issues.addLabels({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    labels: [codexLabel],
+                  });
+                } catch (labelError) {
+                  reportRows.push(
+                    `| [#${pr.number}](${pr.html_url}) | blocked | failed to add label: ${labelError.message} |`
+                  );
+                }
+              }
+
+                try {
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    body: [
+                      'Dependabot review found blockers and could not auto-merge.',
+                      '',
+                      `- ${blockers.join('\\n- ')}`,
+                      '',
+                      `This PR is labeled '${codexLabel}' for Codex follow-up.`,
+                      '',
+                      'If you want Codex to handle this next, ask it to resolve this PR.',
+                    ].join('\\n'),
+                  });
+                } catch (commentError) {
+                  reportRows.push(
+                    `| [#${pr.number}](${pr.html_url}) | blocked | comment failed: ${commentError.message} |`
+                  );
+                }
+                continue;
+              }
+
+              try {
+                if (!alreadyApproved) {
+                  await github.rest.pulls.createReview({
+                    owner,
+                    repo,
+                    pull_number: pr.number,
+                    event: 'APPROVE',
+                    body:
+                      'Automated approval: Dependabot PR passes checks and is mergeable.',
+                  });
+                }
+
+                const mergeResult = await github.rest.pulls.merge({
+                  owner,
+                  repo,
+                  pull_number: pr.number,
+                  merge_method: 'squash',
+                  commit_title: `chore: auto-merge dependabot PR #${pr.number}`,
+                });
+
+                reportRows.push(
+                  `| [#${pr.number}](${pr.html_url}) | merged | ${mergeResult.data.sha ? 'auto-approved and merged' : 'attempted merge'} |`
+                );
+              } catch (mergeError) {
+                reportRows.push(
+                  `| [#${pr.number}](${pr.html_url}) | blocked | auto-approval/merge failed: ${mergeError.message} |`
+                );
+              }
+            }
+
+            const report = [
+              '# Dependabot Weekly Review',
+              '',
+              `Owner: ${owner}/${repo}`,
+              `Run time: ${new Date().toISOString()} (America/New_York)`,
+              '',
+              reportRows.join('\n'),
+              '',
+            ].join('\n');
+
+            core.summary.addRaw(report);
+            await core.summary.write({ overwrite: true });
