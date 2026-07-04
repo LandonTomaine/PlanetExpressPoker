@@ -147,6 +147,14 @@ The app includes Futurama/Planet Express-inspired media assets for private, pers
 - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Security: [SECURITY.md](SECURITY.md)
 
+## Optional CodeRabbit Reviews
+
+This repo includes `.coderabbit.yaml` so CodeRabbit reviews use the project docs and stay concise.
+
+CodeRabbit is optional. To use it on a fork, install CodeRabbit for your own GitHub account or organization and grant access only to your fork. CodeRabbit documents an open-source option for public repositories, but check CodeRabbit's current plan limits before relying on it.
+
+Forks do not inherit this repository's CodeRabbit installation, GitHub secrets, Cloudflare account, or Supabase project.
+
 ## GitHub Secrets For Deployment
 
 Add these repository secrets in GitHub:
@@ -162,7 +170,7 @@ The `VITE_SUPABASE_*` secrets should point at the hosted Supabase project, not l
 
 ## Cloudflare Pages Deployment
 
-This repo deploys through GitHub Actions on every push to `main`.
+This repo deploys through GitHub Actions after changes are merged to `main`.
 
 1. Create a Cloudflare API token with permission to deploy Cloudflare Pages.
 
@@ -182,13 +190,16 @@ If you want a different Cloudflare Pages project name, update all three places:
 
 The deploy workflow is intentionally guarded to run only in `LandonTomaine/PlanetExpressPoker`. If you fork the repo and want your fork to deploy to your own resources, update that guard in `.github/workflows/deploy-cloudflare.yml`.
 
-4. Push to `main`:
+4. Open and merge a pull request into `main`.
 
 ```powershell
-git push origin main
+git switch -c <branch-name>
+git add .
+git commit -m "<short summary>"
+git push -u origin <branch-name>
 ```
 
-GitHub Actions will build with the hosted Supabase secrets and deploy `dist` to Cloudflare Pages.
+Open a pull request in GitHub. After required checks pass and the PR is approved, merge it. GitHub Actions will build with the hosted Supabase secrets and deploy `dist` to Cloudflare Pages from `main`.
 
 ## Manual Cloudflare Deploy
 
@@ -215,7 +226,7 @@ npm.cmd run deploy:cloudflare
 
 ## Validation Commands
 
-Run these before pushing changes:
+Run these before opening or updating a pull request:
 
 ```powershell
 npm.cmd run format:check

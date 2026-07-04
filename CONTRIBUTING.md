@@ -38,6 +38,7 @@ npm.cmd run test:e2e
 
 ## Rules
 
+- Do not push directly to `main`; open a pull request for every change.
 - Do not commit `.env`, tokens, database passwords, service-role keys, or provider secrets.
 - Use only Supabase anon/publishable public keys in frontend or GitHub Actions config.
 - Keep fork/PR workflows secret-free. Do not use `pull_request_target` for untrusted code.
@@ -49,6 +50,8 @@ npm.cmd run test:e2e
 - Update docs when setup, deployment, validation, theme assets, schema, or user-visible behavior changes.
 
 ## Pull Requests
+
+All changes require a pull request into `main`.
 
 Include:
 

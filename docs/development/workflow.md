@@ -3,9 +3,10 @@
 ## Development Model
 
 - Use `main` as the trunk and default integration branch.
+- Never push directly to `main`.
+- Put every change on a short-lived branch and merge through a pull request.
 - Keep changes focused on one task or one small related set of changes.
-- Prefer short-lived branches for non-trivial work.
-- Direct commits to `main` are acceptable for small, low-risk, well-validated repo setup work.
+- Keep branches short-lived and delete them after merge.
 
 ## Working Style
 
@@ -30,7 +31,10 @@ Default flow for meaningful work:
 2. inspect the smallest relevant docs and code
 3. make the smallest coherent change
 4. run the cheapest meaningful validation
-5. commit focused changes
+5. commit focused changes on a branch
+6. open a pull request
+7. wait for required checks, CodeRabbit, and owner review
+8. merge after approval
 
 ## Safety Rules
 

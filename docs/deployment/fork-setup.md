@@ -90,17 +90,33 @@ VITE_SUPABASE_ANON_KEY
 
 Use hosted Supabase values for `VITE_SUPABASE_*`, not local Supabase values.
 
-## 6. Push And Deploy
+## 6. Optional CodeRabbit Reviews
 
-Commit any fork-specific config changes, then push to `main`:
+This repository includes `.coderabbit.yaml` for concise pull request reviews that use the repo docs as guidance.
+
+CodeRabbit is optional. To enable it for your fork:
+
+1. Sign in to CodeRabbit with your own GitHub account.
+2. Install the CodeRabbit GitHub App for your account or organization.
+3. Grant access only to your forked repository.
+4. Confirm CodeRabbit comments or status checks appear on new pull requests.
+
+CodeRabbit documents an open-source option for public repositories. Check CodeRabbit's current plan and rate limits before depending on it.
+
+## 7. Open A Pull Request And Deploy
+
+Commit fork-specific config changes on a branch:
 
 ```powershell
-git push origin main
+git switch -c configure-hosting
+git add .
+git commit -m "Configure fork hosting"
+git push -u origin configure-hosting
 ```
 
-GitHub Actions will run validation and deploy to Cloudflare Pages if the deploy guard, secrets, and Cloudflare project are configured correctly.
+Open a pull request into `main`. After required checks pass and the PR is merged, GitHub Actions will deploy to Cloudflare Pages if the deploy guard, secrets, and Cloudflare project are configured correctly.
 
-## 7. Smoke Test
+## 8. Smoke Test
 
 After deployment:
 

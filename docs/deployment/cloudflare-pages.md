@@ -13,7 +13,7 @@ If you are deploying a fork with your own Cloudflare and Supabase resources, sta
 
 Use this for the normal hosted path.
 
-The repo deploys to Cloudflare Pages from GitHub Actions on every push to `main`.
+The repo deploys to Cloudflare Pages from GitHub Actions after pull requests are merged to `main`.
 
 Required GitHub repository secrets:
 
