@@ -61,7 +61,7 @@ Out:
   - Validation: hooks fail on broken lint/typecheck/build and pass on a clean repo
 
 - [T6] Rewrite repo-local skills against the real stack
-  - Files/Areas: `.codex/skills/*`
+  - Files/Areas: `.agents/skills/*`
   - Depends on: T1, T3, T5
   - Parallel: no
   - Validation: skills reference real commands, folders, and validation flow

@@ -2,6 +2,8 @@
 
 Repo-local skills for Planet Express Poker.
 
+Skills live under `.agents/skills/`. Do not add new repo-local skills elsewhere.
+
 ## Active Skills
 
 - `draft-follow-on-prd`

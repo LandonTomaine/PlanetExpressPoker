@@ -59,4 +59,4 @@ Use this outline:
 - Small enough slices for focused implementation plans.
 - Requirements traceable to the child PRD.
 - No implementation plan hidden inside the backlog.
-- Plans and workflow state stay inside the capability folder, not `.codex/`.
+- Plans and workflow state stay inside the capability folder, not `.agents/`.

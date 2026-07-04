@@ -23,7 +23,7 @@ If nothing clears that bar, return `no change needed`.
 ## Workflow
 
 1. Inventory current coverage before proposing anything.
-   - Read the existing repo-local skills under `.codex/skills/`.
+   - Read the existing repo-local skills under `.agents/skills/`.
    - Load only the additional docs needed for candidate surfaces you inspect.
    - Note which workflows already have a skill and which ones are already handled well enough by shared docs.
 

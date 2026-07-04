@@ -20,7 +20,7 @@ Read this at the start of every task:
 
 ## Repo-Local Skills
 
-Repo-local skills live under `.codex/skills/`.
+Repo-local skills live under `.agents/skills/`.
 
 Use a repo-local skill only when the task clearly matches it.
 
@@ -50,6 +50,8 @@ Use these routes only when the task actually needs them:
   - [../docs/product/workflows.md](../docs/product/workflows.md)
 - Engineering standards and setup:
   - [../docs/development/README.md](../docs/development/README.md)
+- Documentation maintenance:
+  - [../docs/development/documentation.md](../docs/development/documentation.md)
 - Deployment or hosting questions:
   - [../docs/deployment/cloudflare-pages.md](../docs/deployment/cloudflare-pages.md)
 - Maintaining this guidance system:

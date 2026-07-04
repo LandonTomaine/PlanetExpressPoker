@@ -12,5 +12,7 @@ Load only the docs needed for the current task.
 - [testing/README.md](testing/README.md): testing docs index
 - [tooling.md](tooling.md): command reference and developer tooling
 - [workflow.md](workflow.md): development workflow
+- [documentation.md](documentation.md): when and how to update repo docs
+- [bootstrap-checklist.md](bootstrap-checklist.md): repository standards/bootstrap coverage
 - [commits.md](commits.md): commit guidance
 - [pull-requests.md](pull-requests.md): pull request guidance

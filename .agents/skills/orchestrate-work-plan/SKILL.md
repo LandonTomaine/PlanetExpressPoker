@@ -151,7 +151,7 @@ For each task:
    - Long-lived app servers, watch processes, and browser validation support processes are exceptions to the foreground timeout rule: start them non-blocking, capture their process IDs and logs, use a bounded readiness wait, and clean them up before marking validation complete.
    - If the task changes user-visible UI behavior, run a concrete browser-validation flow before marking the task done.
    - If integrated browser validation cannot be completed for a UI task, do not mark the task done unless the real user explicitly waives that requirement; record the blocker or waiver in durable state.
-   - Append command/tooling/environment/bad-assumption incidents to `.codex/state/ai-process-issues.md` at the point of failure or the next durable state update. Include workflow/slice, symptom, cause, corrective action, occurrence key, and count if known.
+   - Append command/tooling/environment/bad-assumption incidents to `.agents/state/ai-process-issues.md` at the point of failure or the next durable state update. Include workflow/slice, symptom, cause, corrective action, occurrence key, and count if known.
    - Logging an incident does not automatically stop the task. Run `improve-ai-self` only after three recorded occurrences of the same occurrence key, or after one severe workflow-state, validation-integrity, commit, scope-control, or destructive-action failure.
 7. Require a review subagent after validation and before commit.
    - Use the repo-local `review-changed-code` skill for this review.

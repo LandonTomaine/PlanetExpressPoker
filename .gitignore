@@ -24,6 +24,9 @@ test-results
 # Supabase local temp output
 supabase/.temp
 
+# Agent bootstrap working state
+.agents/tmp/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
