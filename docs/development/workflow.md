@@ -33,7 +33,7 @@ Default flow for meaningful work:
 4. run the cheapest meaningful validation
 5. commit focused changes on a branch
 6. open a pull request
-7. follow the CodeRabbit polling and fix loop in [pull-requests.md](pull-requests.md)
+7. wait for required checks, CodeRabbit, and owner review
 8. merge after approval
 
 ## Safety Rules

@@ -20,6 +20,7 @@ Use a skill only when the task clearly matches it. Otherwise use the shared docs
 | `orchestrate-work-plan`      | Run a resumable multi-slice workflow.                    |
 | `resolve-bug`                | Reproduce, fix, and validate a concrete bug.             |
 | `review-changed-code`        | Review current code changes.                             |
+| `complete-pr`                | Push, open/update, review, and complete a PR.            |
 | `audit-skill-opportunities`  | Decide if a repeated workflow needs a skill.             |
 | `audit-standards-docs`       | Audit docs and agent guidance for JEC and drift.         |
 | `retheme-app`                | Replace the current theme while preserving app behavior. |
