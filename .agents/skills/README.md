@@ -18,6 +18,7 @@ Skills live under `.agents/skills/`. Do not add new repo-local skills elsewhere.
 - `review-product-prd`
 - `audit-skill-opportunities`
 - `audit-standards-docs`
+- `retheme-app`
 
 ## Possible Future Skills
 
