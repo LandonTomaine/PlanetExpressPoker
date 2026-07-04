@@ -1,3 +1,3 @@
 ﻿# Product Workflows
 
-Document the main room and voting flows here once they stabilize beyond the current PRD.
+Current flow lives in [requirements/00-product-prd.md](requirements/00-product-prd.md).
