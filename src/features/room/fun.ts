@@ -133,6 +133,6 @@ export const consensusQuotes: RoomFunQuote[] = [
 export const revealCaption = 'Reveal'
 export const consensusCaption = 'Consensus'
 export const deliveryCaption = 'Delivery'
-export const deliveryStormCaption = 'Delivery storm'
+export const deliveryStormCaption = 'Ship stunt'
 export const hypnotoadCaption = 'Hypnotoad'
 export const milestoneCaption = '100 rounds'

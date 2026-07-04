@@ -18,10 +18,11 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
   const isMilestoneEvent = event?.mode === 'milestone'
   const shipMotion = isDeliveryStormEvent
     ? {
-        rotate: [-9, 13, -16, 18, -11, 10, -7, 5],
-        scale: [0.78, 0.96, 0.84, 1.08, 0.9, 1, 0.86, 0.78],
-        x: ['-34vw', '18vw', '72vw', '24vw', '96vw', '44vw', '8vw', '112vw'],
-        y: [42, 168, 70, 306, 136, 222, 88, 260],
+        rotate: [4, 12, -9, 15, -14, 10, -7, -3],
+        scale: [0.78, 0.94, 0.86, 1.02, 0.9, 0.98, 0.84, 0.76],
+        scaleX: [1, 1, -1, 1, -1, -1, 1, 1],
+        x: ['-38vw', '72vw', '18vw', '96vw', '42vw', '-24vw', '84vw', '112vw'],
+        y: [72, 296, 126, 344, 68, 242, 148, 42],
       }
     : isDeliveryEvent
       ? {
@@ -43,7 +44,7 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
           }
   const shipTransition = isDeliveryStormEvent
     ? {
-        duration: 8,
+        duration: 9,
         ease: 'easeInOut' as const,
         times: [0, 0.13, 0.27, 0.42, 0.58, 0.72, 0.86, 1],
       }
@@ -92,32 +93,6 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
     { delay: 3.06, drift: 22, rotate: 14, spread: 260, tumble: 520 },
     { delay: 3.2, drift: -16, rotate: -8, spread: 385, tumble: -430 },
     { delay: 3.34, drift: 30, rotate: 12, spread: 500, tumble: 560 },
-  ]
-  const stormPackageDrops = [
-    { delay: 0.7, left: '22vw', top: 110, drift: -220, fall: 760, spin: -620 },
-    { delay: 0.85, left: '29vw', top: 168, drift: 260, fall: 690, spin: 540 },
-    { delay: 1.05, left: '39vw', top: 150, drift: -360, fall: 820, spin: -760 },
-    { delay: 1.2, left: '51vw', top: 96, drift: 320, fall: 760, spin: 680 },
-    { delay: 1.42, left: '66vw', top: 78, drift: -280, fall: 710, spin: -520 },
-    { delay: 1.58, left: '73vw', top: 118, drift: 230, fall: 850, spin: 820 },
-    { delay: 1.84, left: '58vw', top: 220, drift: -480, fall: 700, spin: -880 },
-    { delay: 2.02, left: '43vw', top: 296, drift: 510, fall: 640, spin: 900 },
-    { delay: 2.22, left: '31vw', top: 300, drift: -300, fall: 770, spin: -640 },
-    { delay: 2.44, left: '50vw', top: 242, drift: 360, fall: 810, spin: 700 },
-    { delay: 2.66, left: '70vw', top: 150, drift: -420, fall: 720, spin: -780 },
-    { delay: 2.88, left: '84vw', top: 128, drift: 270, fall: 800, spin: 560 },
-    { delay: 3.16, left: '72vw', top: 214, drift: -520, fall: 650, spin: -960 },
-    { delay: 3.38, left: '55vw', top: 278, drift: 460, fall: 710, spin: 820 },
-    { delay: 3.62, left: '38vw', top: 208, drift: -360, fall: 820, spin: -700 },
-    { delay: 3.84, left: '23vw', top: 120, drift: 420, fall: 760, spin: 740 },
-    { delay: 4.1, left: '18vw', top: 102, drift: -260, fall: 780, spin: -520 },
-    { delay: 4.32, left: '32vw', top: 146, drift: 320, fall: 740, spin: 620 },
-    { delay: 4.58, left: '47vw', top: 212, drift: -430, fall: 720, spin: -860 },
-    { delay: 4.8, left: '63vw', top: 206, drift: 390, fall: 700, spin: 780 },
-    { delay: 5.08, left: '80vw', top: 150, drift: -340, fall: 760, spin: -680 },
-    { delay: 5.3, left: '92vw', top: 198, drift: 240, fall: 790, spin: 520 },
-    { delay: 5.62, left: '71vw', top: 246, drift: -520, fall: 690, spin: -920 },
-    { delay: 5.9, left: '46vw', top: 96, drift: 500, fall: 840, spin: 880 },
   ]
   const shouldShowLayer = Boolean(event || reaction)
 
@@ -204,6 +179,7 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
                 initial={{
                   rotate: isDeliveryStormEvent ? -9 : -1,
                   scale: isMilestoneEvent || isDeliveryStormEvent ? 0.74 : 1,
+                  scaleX: 1,
                   x: isDeliveryStormEvent
                     ? '-34vw'
                     : isDeliveryEvent
@@ -232,56 +208,6 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
                 />
               </motion.div>
             ) : null}
-
-            {isDeliveryStormEvent
-              ? stormPackageDrops.map((packageDrop, index) => (
-                  <motion.img
-                    key={`${event.caption}:storm:${index}`}
-                    src="/effects/icons8-package.png"
-                    alt=""
-                    initial={{
-                      opacity: 0,
-                      rotate: packageDrop.spin * 0.04,
-                      scale: 0.62,
-                      x: 0,
-                      y: 0,
-                    }}
-                    animate={{
-                      opacity: [0, 1, 1, 0],
-                      rotate: [
-                        packageDrop.spin * 0.04,
-                        packageDrop.spin * 0.32,
-                        packageDrop.spin * 0.72,
-                        packageDrop.spin,
-                      ],
-                      scale: [0.62, 0.95, 0.9, 0.74],
-                      x: [
-                        0,
-                        packageDrop.drift * 0.2,
-                        packageDrop.drift * 0.68,
-                        packageDrop.drift,
-                      ],
-                      y: [
-                        0,
-                        packageDrop.fall * 0.18,
-                        packageDrop.fall * 0.66,
-                        packageDrop.fall,
-                      ],
-                    }}
-                    transition={{
-                      delay: packageDrop.delay,
-                      duration: 3.2,
-                      ease: 'linear' as const,
-                      times: [0, 0.12, 0.76, 1],
-                    }}
-                    className="absolute w-7 drop-shadow-[0_12px_24px_rgba(12,32,42,0.24)] will-change-transform sm:w-8"
-                    style={{
-                      left: packageDrop.left,
-                      top: packageDrop.top,
-                    }}
-                  />
-                ))
-              : null}
 
             {event?.mode === 'delivery'
               ? packageDrops.map((packageDrop, index) => (
