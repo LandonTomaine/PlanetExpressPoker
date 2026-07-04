@@ -72,13 +72,15 @@ jobs:
           const { execFileSync } = require('node:child_process')
           const { appendFileSync } = require('node:fs')
 
-          const status = execFileSync('npx', ['supabase', 'status'], {
+          const status = execFileSync('npx', ['supabase', 'status', '-o', 'env'], {
             encoding: 'utf8',
           })
-          const anonKey = status.match(/anon key:\s*(.+)/i)?.[1]?.trim()
+          const publicKey =
+            status.match(/^PUBLISHABLE_KEY="?([^"\r\n]+)"?/m)?.[1]?.trim() ??
+            status.match(/^ANON_KEY="?([^"\r\n]+)"?/m)?.[1]?.trim()
 
-          if (!anonKey) {
-            throw new Error('Supabase anon key not found in local status output')
+          if (!publicKey) {
+            throw new Error('Supabase public key not found in local status output')
           }
 
           appendFileSync(
@@ -87,7 +89,7 @@ jobs:
           )
           appendFileSync(
             process.env.GITHUB_ENV,
-            `VITE_SUPABASE_ANON_KEY=${anonKey}\n`
+            `VITE_SUPABASE_ANON_KEY=${publicKey}\n`
           )
           NODE
 

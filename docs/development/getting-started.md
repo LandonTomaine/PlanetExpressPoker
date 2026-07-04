@@ -34,7 +34,7 @@ The package scripts themselves still use normal `npm run ...` flows.
    - `npm run supabase:start`
 4. Check local Supabase connection info
    - `npm run supabase:status`
-5. Copy the displayed local anon key into `.env` as `VITE_SUPABASE_ANON_KEY`.
+5. Copy the displayed local publishable or anon public key into `.env` as `VITE_SUPABASE_ANON_KEY`.
 6. Start the frontend
    - `npm run dev`
 

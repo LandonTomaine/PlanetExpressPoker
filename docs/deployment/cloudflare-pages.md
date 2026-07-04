@@ -20,7 +20,7 @@ Required GitHub repository secrets:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
-Only use the public Supabase anon key. Never add the Supabase service-role key to GitHub or Cloudflare for this frontend.
+Only use the Supabase anon/publishable public key. Never add the Supabase secret or service-role key to GitHub or Cloudflare for this frontend.
 
 Cloudflare project settings:
 
@@ -51,7 +51,7 @@ Required values from Supabase:
 - Project ref
 - Database password
 - Project URL
-- Anon public key
+- Anon or publishable public key
 - Personal access token for CLI automation
 
 ```powershell
@@ -61,7 +61,7 @@ npx.cmd supabase link --project-ref <project-ref>
 npx.cmd supabase db push
 ```
 
-Copy the hosted Project URL and anon public key into GitHub repository secrets as `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+Copy the hosted Project URL and anon/publishable public key into GitHub repository secrets as `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
 
 ## Direct Cloudflare Upload
 
@@ -71,7 +71,7 @@ This is useful before GitHub integration is finished.
 
 ```text
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-public-key>
+VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
 ```
 
 2. Log in and deploy:

@@ -39,7 +39,7 @@ Use this when you want to run the app on another computer but still point at a h
 
 ```text
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-public-key>
+VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
 ```
 
 2. Start Vite:
@@ -80,7 +80,7 @@ npm.cmd run supabase:start
 npm.cmd run supabase:status
 ```
 
-5. Copy the displayed local anon key into `.env` as `VITE_SUPABASE_ANON_KEY`.
+5. Copy the displayed local publishable or anon public key into `.env` as `VITE_SUPABASE_ANON_KEY`.
 
 6. Start Vite:
 
@@ -109,7 +109,7 @@ npm.cmd run supabase:stop
 - Project ref
 - Database password
 - Project URL
-- Anon public key
+- Anon or publishable public key
 
 3. Create a Supabase personal access token from the Supabase dashboard.
 
@@ -131,10 +131,10 @@ npx.cmd supabase db push
 
 ```text
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-public-key>
+VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
 ```
 
-Use only the Supabase anon public key in frontend or GitHub configuration. Never use the service-role key in this app.
+Use only the Supabase anon/publishable public key in frontend or GitHub configuration. Never use the secret or service-role key in this app.
 
 ## Public Repo Notes
 
@@ -185,7 +185,7 @@ Use this only when you want to deploy from your local machine instead of GitHub 
 
 ```text
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-public-key>
+VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
 ```
 
 2. Log in to Cloudflare:
