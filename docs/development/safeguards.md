@@ -51,6 +51,13 @@ GitHub Actions protects pushes and pull requests with:
 
 Deployment is handled by a separate Cloudflare Pages workflow guarded to the intended repository.
 
+## Repository Controls
+
+- `main` is the trunk branch.
+- `CODEOWNERS` requires `@LandonTomaine` review.
+- Public issues are enabled for bug reports and enhancement requests.
+- Pull request merges require owner approval.
+
 ## Security And Public-Repo Checks
 
 Security safeguards include:
