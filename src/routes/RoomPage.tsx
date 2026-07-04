@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import {
   getAvatarOption,
   avatarOptions,
@@ -56,7 +56,12 @@ import {
   getCardMeaningLabel,
   numericCardValues,
 } from '../features/room/voting'
-import type { JoinedParticipant, Room } from '../features/room/types'
+import type {
+  JoinedParticipant,
+  Participant,
+  PresenceParticipant,
+  Room,
+} from '../features/room/types'
 
 type RoundReactionKind =
   | 'coffee1'
@@ -215,6 +220,18 @@ export function RoomPage() {
   const [participantActionError, setParticipantActionError] = useState<
     string | null
   >(null)
+  const [devClientIdByParticipantId, setDevClientIdByParticipantId] = useState<
+    Record<string, string>
+  >({})
+  const [loadedDevClientIdMapRoomId, setLoadedDevClientIdMapRoomId] = useState<
+    string | null
+  >(null)
+  const [devVoteParticipantId, setDevVoteParticipantId] = useState<
+    string | null
+  >(null)
+  const [isDevParticipantJoining, setIsDevParticipantJoining] = useState(false)
+  const [pendingDevVoteParticipantId, setPendingDevVoteParticipantId] =
+    useState<string | null>(null)
   const [pendingParticipantActionId, setPendingParticipantActionId] = useState<
     string | null
   >(null)
@@ -258,6 +275,17 @@ export function RoomPage() {
     selfParticipant?.participantId === roomOwnerParticipantId
   const effectiveSelfRole = selfRosterParticipant?.role ?? selfParticipant?.role
   const isJoinedToRoom = Boolean(selfParticipant && selfRosterParticipant)
+  const displayedPresenceByParticipantId = import.meta.env.DEV
+    ? addDevPresenceParticipants({
+        devClientIdByParticipantId,
+        participants,
+        presenceByParticipantId,
+      })
+    : presenceByParticipantId
+  const devVoteParticipant =
+    participants.find(
+      (participant) => participant.id === devVoteParticipantId
+    ) ?? null
   const countdownAttemptRef = useRef<string | null>(null)
   const lastSeenRoundNumberRef = useRef<number | null>(null)
   const locallyObservedRoundIdsRef = useRef<Set<string>>(new Set())
@@ -492,6 +520,52 @@ export function RoomPage() {
   useEffect(() => {
     selfParticipantSyncGraceUntilRef.current = 0
   }, [room?.id])
+
+  useEffect(() => {
+    let isCancelled = false
+
+    if (!import.meta.env.DEV || !room) {
+      queueMicrotask(() => {
+        if (isCancelled) {
+          return
+        }
+
+        setDevClientIdByParticipantId({})
+        setLoadedDevClientIdMapRoomId(null)
+      })
+
+      return () => {
+        isCancelled = true
+      }
+    }
+
+    const roomId = room.id
+
+    queueMicrotask(() => {
+      if (isCancelled) {
+        return
+      }
+
+      setDevClientIdByParticipantId(readDevClientIdMap(roomId))
+      setLoadedDevClientIdMapRoomId(roomId)
+    })
+
+    return () => {
+      isCancelled = true
+    }
+  }, [room])
+
+  useEffect(() => {
+    if (
+      !import.meta.env.DEV ||
+      !room ||
+      loadedDevClientIdMapRoomId !== room.id
+    ) {
+      return
+    }
+
+    saveDevClientIdMap(room.id, devClientIdByParticipantId)
+  }, [devClientIdByParticipantId, loadedDevClientIdMapRoomId, room])
 
   async function handleJoin(input?: {
     displayName: string
@@ -1017,6 +1091,79 @@ export function RoomPage() {
       )
     } finally {
       setIsVoteSubmitting(false)
+    }
+  }
+
+  async function handleSpawnDevParticipant() {
+    if (!import.meta.env.DEV || !room) {
+      return
+    }
+
+    const avatar = pickRandomAvatar()
+    const displayName = createDevDisplayName(
+      participants.map((participant) => participant.displayName)
+    )
+    const clientId = createClientId()
+
+    setIsDevParticipantJoining(true)
+    setParticipantActionError(null)
+
+    try {
+      const participant = await joinRoom({
+        roomName: room.name,
+        clientId,
+        displayName,
+        avatarKey: avatar.key,
+      })
+
+      setDevClientIdByParticipantId((currentClientIds) => ({
+        ...currentClientIds,
+        [participant.participantId]: clientId,
+      }))
+    } catch (error) {
+      setParticipantActionError(
+        error instanceof Error
+          ? error.message
+          : 'Failed to spawn local dev user.'
+      )
+    } finally {
+      setIsDevParticipantJoining(false)
+    }
+  }
+
+  async function handleDevVote(cardValue: string) {
+    if (!import.meta.env.DEV || !room || !devVoteParticipant) {
+      return
+    }
+
+    const devClientId =
+      devVoteParticipant.id === selfParticipant?.participantId
+        ? identity.clientId
+        : devClientIdByParticipantId[devVoteParticipant.id]
+
+    if (!devClientId) {
+      setParticipantActionError(
+        'This participant was not spawned by this browser.'
+      )
+      return
+    }
+
+    setPendingDevVoteParticipantId(devVoteParticipant.id)
+    setParticipantActionError(null)
+
+    try {
+      await submitVote({
+        roomId: room.id,
+        clientId: devClientId,
+        cardValue,
+      })
+      setDevVoteParticipantId(null)
+    } catch (error) {
+      setParticipantActionError(
+        error instanceof Error ? error.message : 'Failed to submit dev vote.'
+      )
+    } finally {
+      setPendingDevVoteParticipantId(null)
     }
   }
 
@@ -1642,7 +1789,7 @@ export function RoomPage() {
             {participants.length} people
           </div>
           <div className="inline-flex min-h-9 items-center rounded-[10px] bg-emerald-50 px-3 py-2 text-xs font-black uppercase leading-none text-emerald-700">
-            {Object.keys(presenceByParticipantId).length} online
+            {Object.keys(displayedPresenceByParticipantId).length} online
           </div>
         </div>
       </div>
@@ -1656,7 +1803,9 @@ export function RoomPage() {
       <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(13rem,13rem))] gap-2.5">
         {participants.map((participant, index) => {
           const avatar = getAvatarOption(participant.avatarKey)
-          const isOnline = Boolean(presenceByParticipantId[participant.id])
+          const isOnline = Boolean(
+            displayedPresenceByParticipantId[participant.id]
+          )
           const isSelf = participant.id === selfParticipant?.participantId
           const isRoomOwner = participant.id === roomOwnerParticipantId
           const hasSubmittedVote =
@@ -1668,6 +1817,12 @@ export function RoomPage() {
           const nextRole = participant.role === 'voter' ? 'spectator' : 'voter'
           const isParticipantActionPending =
             pendingParticipantActionId === participant.id
+          const canDevVoteAsParticipant =
+            import.meta.env.DEV &&
+            isJoinedToRoom &&
+            activeRound?.status === 'voting' &&
+            participant.role === 'voter' &&
+            (isSelf || Boolean(devClientIdByParticipantId[participant.id]))
 
           return (
             <motion.article
@@ -1748,6 +1903,22 @@ export function RoomPage() {
                   </div>
                   {isJoinedToRoom ? (
                     <div className="mt-3 flex items-center gap-1.5">
+                      {canDevVoteAsParticipant ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDevVoteParticipantId(participant.id)
+                          }
+                          disabled={
+                            pendingDevVoteParticipantId === participant.id
+                          }
+                          className="rounded-full border-2 border-[var(--pep-accent-2)] bg-white px-2.5 py-1 text-[10px] font-black uppercase text-[var(--pep-accent-2)] shadow-[0_5px_12px_rgba(31,152,134,0.14)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                        >
+                          {pendingDevVoteParticipantId === participant.id
+                            ? 'Voting...'
+                            : 'Dev vote'}
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         aria-label={`Switch ${participant.displayName} to ${nextRole} mode`}
@@ -1913,6 +2084,72 @@ export function RoomPage() {
     </div>
   ) : null
 
+  const devVoteDialog =
+    import.meta.env.DEV && devVoteParticipant ? (
+      <div className="fixed inset-0 z-[70] grid place-items-center bg-[rgba(20,38,51,0.62)] px-4 py-8 backdrop-blur-sm">
+        <motion.section
+          initial={{ opacity: 0, scale: 0.96, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.18 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dev-vote-title"
+          className="w-full max-w-2xl rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
+        >
+          <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--pep-accent-2)]">
+            Local dev vote
+          </p>
+          <h2
+            id="dev-vote-title"
+            className="mt-2 font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)]"
+          >
+            {devVoteParticipant.displayName}
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[var(--pep-ink-soft)]">
+            Submit a vote as this participant on the real room page.
+          </p>
+
+          <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+            {fibonacciDeck.map((cardValue) => {
+              const cardMeaningLabel = getCardMeaningLabel(cardValue)
+
+              return (
+                <button
+                  key={cardValue}
+                  type="button"
+                  onClick={() => void handleDevVote(cardValue)}
+                  disabled={
+                    pendingDevVoteParticipantId === devVoteParticipant.id ||
+                    activeRound?.status !== 'voting'
+                  }
+                  className="min-h-16 rounded-[12px] border-2 border-[var(--pep-line-strong)] bg-white px-3 py-2 text-sm font-black text-[var(--pep-ink)] shadow-[0_7px_0_rgba(20,38,51,0.1)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none disabled:hover:translate-y-0"
+                >
+                  <span className="block">
+                    {cardMeaningLabel ?? getCardDisplayLabel(cardValue)}
+                  </span>
+                  {cardMeaningLabel ? (
+                    <span className="mt-1 block text-[0.65rem] uppercase opacity-70">
+                      {getCardDisplayLabel(cardValue)}
+                    </span>
+                  ) : null}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="mt-5 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setDevVoteParticipantId(null)}
+              className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-2.5 text-sm font-black uppercase text-[var(--pep-ink)] transition hover:-translate-y-0.5"
+            >
+              Cancel
+            </button>
+          </div>
+        </motion.section>
+      </div>
+    ) : null
+
   return (
     <div className="space-y-4">
       <FunLayer event={activeFunEvent} reaction={activeRoundReactionDisplay} />
@@ -1983,6 +2220,31 @@ export function RoomPage() {
                 </button>
               ) : null}
 
+              {import.meta.env.DEV && isJoinedToRoom ? (
+                <div className="mt-4 rounded-[14px] border border-dashed border-[var(--pep-accent-2)]/60 bg-[var(--pep-accent-2)]/10 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-black uppercase text-[var(--pep-accent-2)]">
+                        Local dev tools
+                      </p>
+                      <p className="mt-1 text-sm leading-5 text-[var(--pep-ink-soft)]">
+                        Spawn fake voters, then use Dev vote on their cards.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleSpawnDevParticipant()}
+                      disabled={!room || isDevParticipantJoining}
+                      className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                    >
+                      {isDevParticipantJoining
+                        ? 'Spawning...'
+                        : 'Spawn fake user'}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-3 flex flex-wrap gap-2">
                 <button
                   type="button"
@@ -1991,14 +2253,6 @@ export function RoomPage() {
                 >
                   Copy invite link
                 </button>
-                {import.meta.env.DEV ? (
-                  <Link
-                    to={`/dev/multiplayer?room=${encodeURIComponent(normalizedRoomName)}`}
-                    className="rounded-[10px] border border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#ffffff,_#e3edf0)] px-3 py-2 text-sm font-semibold text-[var(--pep-ink)] transition hover:-translate-y-0.5"
-                  >
-                    Dev multiplayer
-                  </Link>
-                ) : null}
                 <button
                   type="button"
                   onClick={() => void handleFunLevelToggle()}
@@ -2301,7 +2555,103 @@ export function RoomPage() {
       </div>
       {joinModal}
       {shutdownConfirmDialog}
+      {devVoteDialog}
     </div>
+  )
+}
+
+function getDevClientIdStorageKey(roomId: string) {
+  return `pep.dev-room-clients.v1:${roomId}`
+}
+
+function addDevPresenceParticipants(input: {
+  devClientIdByParticipantId: Record<string, string>
+  participants: Array<
+    Pick<Participant, 'avatarKey' | 'displayName' | 'id' | 'role'>
+  >
+  presenceByParticipantId: Record<string, PresenceParticipant>
+}) {
+  const nextPresenceByParticipantId = { ...input.presenceByParticipantId }
+
+  for (const participant of input.participants) {
+    if (
+      !input.devClientIdByParticipantId[participant.id] ||
+      nextPresenceByParticipantId[participant.id]
+    ) {
+      continue
+    }
+
+    nextPresenceByParticipantId[participant.id] = {
+      participantId: participant.id,
+      displayName: participant.displayName,
+      avatarKey: participant.avatarKey,
+      role: participant.role,
+      onlineAt: 'local-dev',
+    }
+  }
+
+  return nextPresenceByParticipantId
+}
+
+function readDevClientIdMap(roomId: string) {
+  try {
+    const rawValue = window.sessionStorage.getItem(
+      getDevClientIdStorageKey(roomId)
+    )
+
+    if (!rawValue) {
+      return {}
+    }
+
+    const parsedValue = JSON.parse(rawValue) as Record<string, unknown>
+
+    return Object.fromEntries(
+      Object.entries(parsedValue).filter(
+        (entry): entry is [string, string] =>
+          typeof entry[0] === 'string' &&
+          typeof entry[1] === 'string' &&
+          Boolean(entry[0]) &&
+          Boolean(entry[1])
+      )
+    )
+  } catch {
+    return {}
+  }
+}
+
+function saveDevClientIdMap(
+  roomId: string,
+  clientIdByParticipantId: Record<string, string>
+) {
+  window.sessionStorage.setItem(
+    getDevClientIdStorageKey(roomId),
+    JSON.stringify(clientIdByParticipantId)
+  )
+}
+
+function pickRandomAvatar() {
+  return avatarOptions[Math.floor(Math.random() * avatarOptions.length)]
+}
+
+function createDevDisplayName(existingDisplayNames: string[]) {
+  const existingDisplayNameSet = new Set(
+    existingDisplayNames.map((displayName) => displayName.toLowerCase())
+  )
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const candidate = `Dev-${Math.random().toString(36).slice(2, 8)}`.slice(
+      0,
+      maxDisplayNameLength
+    )
+
+    if (!existingDisplayNameSet.has(candidate.toLowerCase())) {
+      return candidate
+    }
+  }
+
+  return `Dev-${Date.now().toString(36).slice(-6)}`.slice(
+    0,
+    maxDisplayNameLength
   )
 }
 
