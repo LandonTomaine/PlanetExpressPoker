@@ -213,7 +213,7 @@ npm.cmd run test:architecture
 npm.cmd run build
 ```
 
-Run the browser smoke test when local Supabase is running:
+Run the browser smoke test when `.env` points at a local or hosted Supabase project:
 
 ```powershell
 npm.cmd run test:e2e

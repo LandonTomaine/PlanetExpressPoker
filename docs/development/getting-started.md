@@ -53,4 +53,4 @@ Expected local URLs:
 - unit tests: `npm run test:unit`
 - architecture checks: `npm run test:architecture`
 - build: `npm run build`
-- E2E smoke, with local Supabase running: `npm run test:e2e`
+- E2E smoke, with `.env` pointed at local or hosted Supabase: `npm run test:e2e`

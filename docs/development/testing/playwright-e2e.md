@@ -8,12 +8,16 @@ Playwright protects one high-value browser path. Keep it sparse.
 npm.cmd run test:e2e
 ```
 
-Requires local Supabase env values. Start local Supabase first:
+Requires `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `.env` or process environment.
+
+For a local Supabase stack:
 
 ```powershell
 npm.cmd run supabase:start
 npm.cmd run supabase:status
 ```
+
+For hosted Supabase, point `.env` at the hosted Project URL and anon/publishable public key.
 
 ## Scope
 
