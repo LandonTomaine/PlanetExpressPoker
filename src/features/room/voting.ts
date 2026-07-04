@@ -18,11 +18,31 @@ export function isNumericCardValue(cardValue: string) {
 
 export function getCardDisplayLabel(cardValue: string) {
   if (cardValue === 'nibbler') {
+    return '?'
+  }
+
+  if (cardValue === 'ship') {
+    return '∞'
+  }
+
+  if (cardValue === 'BIG') {
+    return 'BIG'
+  }
+
+  if (cardValue === 'coffee') {
+    return 'N/A'
+  }
+
+  return cardValue
+}
+
+export function getCardArtworkLabel(cardValue: string) {
+  if (cardValue === 'nibbler') {
     return 'Nibbler'
   }
 
   if (cardValue === 'ship') {
-    return 'Planet Express'
+    return 'Planet Express ship'
   }
 
   if (cardValue === 'BIG') {
@@ -33,20 +53,17 @@ export function getCardDisplayLabel(cardValue: string) {
     return 'Coffee'
   }
 
-  return cardValue
+  return getCardDisplayLabel(cardValue)
 }
 
 export function getCardMeaningLabel(cardValue: string) {
-  if (cardValue === 'nibbler') {
-    return '?'
-  }
-
-  if (cardValue === 'ship') {
-    return '∞'
-  }
-
-  if (cardValue === 'BIG') {
-    return 'BIG'
+  if (
+    cardValue === 'nibbler' ||
+    cardValue === 'ship' ||
+    cardValue === 'BIG' ||
+    cardValue === 'coffee'
+  ) {
+    return getCardDisplayLabel(cardValue)
   }
 
   return null

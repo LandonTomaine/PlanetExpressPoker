@@ -52,6 +52,7 @@ import { getRoomNameError, normalizeRoomName } from '../features/room/roomName'
 import { buildScoreSummary } from '../features/room/summary'
 import {
   fibonacciDeck,
+  getCardArtworkLabel,
   getCardDisplayLabel,
   getCardMeaningLabel,
   numericCardValues,
@@ -395,6 +396,10 @@ export function RoomPage() {
       caption: deliveryStormCaption,
       mode: 'deliveryStorm',
     })
+  })
+
+  const triggerHypnotoadLogoClickEvent = useEffectEvent(() => {
+    void handleHypnotoadLogoClick()
   })
 
   function resetForSelfKick() {
@@ -817,6 +822,21 @@ export function RoomPage() {
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [areFunEffectsEnabled, isJoinedToRoom])
+
+  useEffect(() => {
+    function handleSiteLogoClick() {
+      triggerHypnotoadLogoClickEvent()
+    }
+
+    window.addEventListener('pep:hypnotoad-logo-click', handleSiteLogoClick)
+
+    return () => {
+      window.removeEventListener(
+        'pep:hypnotoad-logo-click',
+        handleSiteLogoClick
+      )
+    }
+  }, [])
 
   useEffect(() => {
     if (activeRound?.status !== 'countdown') {
@@ -1558,6 +1578,7 @@ export function RoomPage() {
                     : null
           const cardLabel = getCardDisplayLabel(card)
           const cardMeaningLabel = getCardMeaningLabel(card)
+          const cardArtworkLabel = getCardArtworkLabel(card)
 
           return (
             <motion.div
@@ -1573,7 +1594,7 @@ export function RoomPage() {
                 type="button"
                 aria-label={
                   cardMeaningLabel
-                    ? `${cardLabel} card, ${cardMeaningLabel}`
+                    ? `${cardArtworkLabel} card, ${cardMeaningLabel}`
                     : `${cardLabel} card`
                 }
                 onClick={() => void handleVote(card)}
@@ -1597,7 +1618,7 @@ export function RoomPage() {
                   <span className="flex min-h-14 items-center justify-center sm:min-h-16">
                     <img
                       src={imageCardPath}
-                      alt={cardLabel}
+                      alt={cardArtworkLabel}
                       className={[
                         'object-contain',
                         card === 'ship'
@@ -2108,6 +2129,7 @@ export function RoomPage() {
           <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
             {fibonacciDeck.map((cardValue) => {
               const cardMeaningLabel = getCardMeaningLabel(cardValue)
+              const cardArtworkLabel = getCardArtworkLabel(cardValue)
 
               return (
                 <button
@@ -2123,9 +2145,9 @@ export function RoomPage() {
                   <span className="block">
                     {cardMeaningLabel ?? getCardDisplayLabel(cardValue)}
                   </span>
-                  {cardMeaningLabel ? (
+                  {cardMeaningLabel && cardArtworkLabel !== cardMeaningLabel ? (
                     <span className="mt-1 block text-[0.65rem] uppercase opacity-70">
-                      {getCardDisplayLabel(cardValue)}
+                      {cardArtworkLabel}
                     </span>
                   ) : null}
                 </button>
@@ -2177,20 +2199,13 @@ export function RoomPage() {
                     {normalizedRoomName || 'Unknown room'}
                   </h2>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => void handleHypnotoadLogoClick()}
-                  disabled={!isJoinedToRoom || !areFunEffectsEnabled}
-                  title="Planet Express"
-                  aria-label="Planet Express logo"
-                  className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-white shadow-[0_10px_20px_rgba(12,32,42,0.1)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-70 disabled:hover:translate-y-0"
-                >
+                <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-white shadow-[0_10px_20px_rgba(12,32,42,0.1)]">
                   <img
                     src="/planet-express-logo.png"
-                    alt=""
+                    alt="Planet Express logo"
                     className="h-10 w-10 object-contain"
                   />
-                </button>
+                </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-[var(--pep-ink-soft)]">
                 Join, copy the link, and start estimating.
