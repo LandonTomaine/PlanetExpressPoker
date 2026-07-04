@@ -11,6 +11,7 @@ This repository uses:
 ## Prerequisites
 
 - Node.js `24.x` is the current known-good local version in this repo
+- Git `2.32+`
 - Docker Desktop for the local Supabase stack
 
 ## PowerShell Note

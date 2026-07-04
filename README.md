@@ -15,7 +15,7 @@ Lightweight planning poker with realtime rooms, persistent room state, animated 
 ## Prerequisites
 
 - Node.js 24.x
-- Git
+- Git 2.32+
 - Docker Desktop, only if you want to run a local Supabase stack
 - A Supabase account for hosted shared rooms
 - A Cloudflare account for hosted static frontend deployment
