@@ -46,6 +46,9 @@ Use this as the implementation checklist for a theme swap.
 ## Product And Docs
 
 - [ ] `README.md`: app name/description/public asset notes
+- [ ] `ASSET_NOTICES.md`: replacement asset sources, licenses, permissions, or ownership notes
+- [ ] `LICENSE.md`: update only if source-code or asset boundary changes
+- [ ] `CONTRIBUTING.md`: update if asset contribution rules change
 - [ ] `docs/product/overview.md`: product name and theme description
 - [ ] `docs/product/requirements/00-product-prd.md`: current product scope if theme changed permanently
 - [ ] `docs/product/easter-eggs-and-animation.md`: trigger rules, captions, reaction priority

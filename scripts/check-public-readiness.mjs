@@ -15,6 +15,16 @@ function fail(message) {
 const failures = []
 const trackedFiles = git(['ls-files']).split(/\r?\n/).filter(Boolean)
 
+for (const requiredFile of [
+  'LICENSE.md',
+  'ASSET_NOTICES.md',
+  'CONTRIBUTING.md',
+]) {
+  if (!trackedFiles.includes(requiredFile)) {
+    fail(`missing public-repo file: ${requiredFile}`)
+  }
+}
+
 const forbiddenTrackedFiles = trackedFiles.filter(
   (filePath) => /^\.env(?:\.|$)/.test(filePath) && filePath !== '.env.example'
 )

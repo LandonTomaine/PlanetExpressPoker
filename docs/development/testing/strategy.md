@@ -49,6 +49,7 @@ Use `npm run test:architecture` for:
 
 - no tracked local env files
 - no obvious committed secrets
+- required public-repo files such as license, asset notices, and contribution guidance
 - no unsafe HTML rendering
 - no direct frontend reads from sensitive room tables
 - Supabase client imports staying behind room data/realtime boundaries

@@ -140,7 +140,11 @@ Use only the Supabase anon/publishable public key in frontend or GitHub configur
 
 This repository intentionally ignores local `.env` files. Do not commit hosted Supabase keys, Cloudflare API tokens, database passwords, or Supabase access tokens.
 
-The app includes Futurama/Planet Express-inspired media assets for personal use. Review or replace those assets before treating this as a reusable open-source project.
+The app includes Futurama/Planet Express-inspired media assets for private, personal, non-commercial use. The source code is MIT-licensed, but bundled media/theme assets are not. Do not sell or monetize the app as shipped. Replace the themed assets before commercial use or reusable public-product use.
+
+- License: [LICENSE.md](LICENSE.md)
+- Asset notices: [ASSET_NOTICES.md](ASSET_NOTICES.md)
+- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## GitHub Secrets For Deployment
 
@@ -168,6 +172,12 @@ This repo deploys through GitHub Actions on every push to `main`.
 ```text
 planet-express-poker
 ```
+
+If you want a different Cloudflare Pages project name, update all three places:
+
+- `wrangler.jsonc`
+- `package.json` script `deploy:cloudflare`
+- `.github/workflows/deploy-cloudflare.yml`
 
 4. Push to `main`:
 
