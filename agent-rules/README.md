@@ -50,6 +50,8 @@ Use these routes only when the task actually needs them:
   - [../docs/product/workflows.md](../docs/product/workflows.md)
 - Engineering standards and setup:
   - [../docs/development/README.md](../docs/development/README.md)
+- Pull request, push, or ship workflow:
+  - [../docs/development/pull-requests.md](../docs/development/pull-requests.md)
 - Documentation maintenance:
   - [../docs/development/documentation.md](../docs/development/documentation.md)
 - Deployment or hosting questions:
