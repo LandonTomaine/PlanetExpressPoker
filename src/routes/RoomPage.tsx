@@ -48,7 +48,11 @@ import { useRoomFunEvents } from '../features/room/realtime/useRoomFunEvents'
 import { useRoomLiveState } from '../features/room/realtime/useRoomLiveState'
 import { useRoomSettingsLiveState } from '../features/room/realtime/useRoomSettingsLiveState'
 import { useVotingLiveState } from '../features/room/realtime/useVotingLiveState'
-import { getRoomNameError, normalizeRoomName } from '../features/room/roomName'
+import {
+  getRoomNameError,
+  maxRoomNameLength,
+  normalizeRoomName,
+} from '../features/room/roomName'
 import { buildScoreSummary } from '../features/room/summary'
 import {
   fibonacciDeck,
@@ -193,10 +197,20 @@ const deliveryStormSequence = [
 ] as const
 const specialCardValues = ['ship', 'BIG', 'nibbler', 'coffee'] as const
 
-export function RoomPage() {
+type RoomPageProps = {
+  mode?: 'normal' | 'simulator'
+}
+
+export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const navigate = useNavigate()
   const { roomName: roomNameParam = '' } = useParams()
-  const normalizedRoomName = normalizeRoomName(roomNameParam)
+  const displayRoomName = normalizeRoomName(roomNameParam)
+  const backingRoomName =
+    mode === 'simulator'
+      ? getSimulatorRoomName(displayRoomName)
+      : displayRoomName
+  const isSimulatorMode = mode === 'simulator'
+  const normalizedRoomName = displayRoomName
   const roomNameError = getRoomNameError(roomNameParam)
   const autoJoinAttemptedRef = useRef(false)
   const selfParticipantSyncGraceUntilRef = useRef(0)
@@ -276,7 +290,7 @@ export function RoomPage() {
     selfParticipant?.participantId === roomOwnerParticipantId
   const effectiveSelfRole = selfRosterParticipant?.role ?? selfParticipant?.role
   const isJoinedToRoom = Boolean(selfParticipant && selfRosterParticipant)
-  const displayedPresenceByParticipantId = import.meta.env.DEV
+  const displayedPresenceByParticipantId = isSimulatorMode
     ? addDevPresenceParticipants({
         devClientIdByParticipantId,
         participants,
@@ -402,16 +416,10 @@ export function RoomPage() {
     void handleHypnotoadLogoClick()
   })
 
-  function resetForSelfKick() {
-    clearActiveRoomName()
-    setSelfParticipant(null)
-    setOptimisticOwnCardValue(null)
-    setVoteError('You were kicked from this room.')
-    setParticipantActionError(null)
-  }
-
   function resetForSelfLeave() {
-    clearActiveRoomName()
+    if (!isSimulatorMode) {
+      clearActiveRoomName()
+    }
     setSelfParticipant(null)
     setOptimisticOwnCardValue(null)
     setVoteError(null)
@@ -436,7 +444,7 @@ export function RoomPage() {
       }
 
       try {
-        const nextRoom = await createOrGetRoom(normalizedRoomName)
+        const nextRoom = await createOrGetRoom(backingRoomName)
 
         if (!isCancelled) {
           setRoom(nextRoom)
@@ -460,14 +468,19 @@ export function RoomPage() {
     return () => {
       isCancelled = true
     }
-  }, [normalizedRoomName, roomNameError])
+  }, [backingRoomName, roomNameError])
 
   useEffect(() => {
     if (!room || selfParticipant || autoJoinAttemptedRef.current) {
       return
     }
 
-    if (readActiveRoomName() !== room.name) {
+    const activeRoomName = readActiveRoomName()
+
+    if (
+      activeRoomName !== room.name &&
+      (!isSimulatorMode || activeRoomName !== displayRoomName)
+    ) {
       return
     }
 
@@ -477,7 +490,7 @@ export function RoomPage() {
 
     autoJoinAttemptedRef.current = true
     void attemptAutoJoin()
-  }, [identity, room, selfParticipant])
+  }, [displayRoomName, identity, isSimulatorMode, room, selfParticipant])
 
   useEffect(() => {
     if (!selfParticipant) {
@@ -518,9 +531,21 @@ export function RoomPage() {
     }
 
     queueMicrotask(() => {
-      resetForSelfKick()
+      if (!isSimulatorMode) {
+        clearActiveRoomName()
+      }
+      setSelfParticipant(null)
+      setOptimisticOwnCardValue(null)
+      setVoteError('You were kicked from this room.')
+      setParticipantActionError(null)
     })
-  }, [identity.clientId, participants, room?.name, selfParticipant])
+  }, [
+    identity.clientId,
+    isSimulatorMode,
+    participants,
+    room?.name,
+    selfParticipant,
+  ])
 
   useEffect(() => {
     selfParticipantSyncGraceUntilRef.current = 0
@@ -529,7 +554,7 @@ export function RoomPage() {
   useEffect(() => {
     let isCancelled = false
 
-    if (!import.meta.env.DEV || !room) {
+    if (!isSimulatorMode || !room) {
       queueMicrotask(() => {
         if (isCancelled) {
           return
@@ -558,19 +583,20 @@ export function RoomPage() {
     return () => {
       isCancelled = true
     }
-  }, [room])
+  }, [isSimulatorMode, room])
 
   useEffect(() => {
-    if (
-      !import.meta.env.DEV ||
-      !room ||
-      loadedDevClientIdMapRoomId !== room.id
-    ) {
+    if (!isSimulatorMode || !room || loadedDevClientIdMapRoomId !== room.id) {
       return
     }
 
     saveDevClientIdMap(room.id, devClientIdByParticipantId)
-  }, [devClientIdByParticipantId, loadedDevClientIdMapRoomId, room])
+  }, [
+    devClientIdByParticipantId,
+    isSimulatorMode,
+    loadedDevClientIdMapRoomId,
+    room,
+  ])
 
   async function handleJoin(input?: {
     displayName: string
@@ -633,7 +659,9 @@ export function RoomPage() {
 
       selfParticipantSyncGraceUntilRef.current = Date.now() + 4_000
       saveStoredIdentity(nextIdentity)
-      saveActiveRoomName(activeRoom.name)
+      if (!isSimulatorMode) {
+        saveActiveRoomName(activeRoom.name)
+      }
       setIdentity(nextIdentity)
       setDisplayName(participant.displayName)
       setAvatarKey(participant.avatarKey)
@@ -1115,7 +1143,7 @@ export function RoomPage() {
   }
 
   async function handleSpawnDevParticipant() {
-    if (!import.meta.env.DEV || !room) {
+    if (!isSimulatorMode || !room) {
       return
     }
 
@@ -1152,7 +1180,7 @@ export function RoomPage() {
   }
 
   async function handleDevVote(cardValue: string) {
-    if (!import.meta.env.DEV || !room || !devVoteParticipant) {
+    if (!isSimulatorMode || !room || !devVoteParticipant) {
       return
     }
 
@@ -1663,7 +1691,8 @@ export function RoomPage() {
   const activeRoomName = readActiveRoomName()
   const hasStoredAutoJoinTarget = Boolean(
     identity.displayName.trim() &&
-    activeRoomName === (room?.name ?? normalizedRoomName)
+    activeRoomName ===
+      (isSimulatorMode ? displayRoomName : (room?.name ?? displayRoomName))
   )
   const shouldDeferJoinModal =
     !isJoinedToRoom &&
@@ -1692,7 +1721,7 @@ export function RoomPage() {
           </div>
           <div>
             <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--pep-accent)]">
-              Join room
+              {isSimulatorMode ? 'Join simulator' : 'Join room'}
             </p>
             <h2
               id="join-room-title"
@@ -1701,7 +1730,9 @@ export function RoomPage() {
               {normalizedRoomName || 'Room'}
             </h2>
             <p className="mt-2 text-sm leading-6 text-[var(--pep-ink-soft)]">
-              Enter your name and choose an avatar before viewing the room.
+              {isSimulatorMode
+                ? 'Enter your name and choose an avatar before testing the sandbox room.'
+                : 'Enter your name and choose an avatar before viewing the room.'}
             </p>
           </div>
         </div>
@@ -1839,7 +1870,7 @@ export function RoomPage() {
           const isParticipantActionPending =
             pendingParticipantActionId === participant.id
           const canDevVoteAsParticipant =
-            import.meta.env.DEV &&
+            isSimulatorMode &&
             isJoinedToRoom &&
             activeRound?.status === 'voting' &&
             participant.role === 'voter' &&
@@ -2102,7 +2133,7 @@ export function RoomPage() {
   ) : null
 
   const devVoteDialog =
-    import.meta.env.DEV && devVoteParticipant ? (
+    isSimulatorMode && devVoteParticipant ? (
       <div className="fixed inset-0 z-[70] grid place-items-center bg-[rgba(20,38,51,0.62)] px-4 py-8 backdrop-blur-sm">
         <motion.section
           initial={{ opacity: 0, scale: 0.96, y: 10 }}
@@ -2193,7 +2224,7 @@ export function RoomPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
-                    Room
+                    {isSimulatorMode ? 'Simulator room' : 'Room'}
                   </p>
                   <h2 className="mt-2 break-words font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)]">
                     {normalizedRoomName || 'Unknown room'}
@@ -2208,8 +2239,17 @@ export function RoomPage() {
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-[var(--pep-ink-soft)]">
-                Join, copy the link, and start estimating.
+                {isSimulatorMode
+                  ? 'Sandboxed simulator for testing votes, reveals, and animations.'
+                  : 'Join, copy the link, and start estimating.'}
               </p>
+
+              {isSimulatorMode ? (
+                <p className="mt-3 rounded-[12px] border border-[var(--pep-accent-2)]/30 bg-[var(--pep-accent-2)]/10 px-3 py-2 text-sm font-semibold text-[var(--pep-ink-soft)]">
+                  Writes go to sandbox room {backingRoomName}, not the real
+                  room.
+                </p>
+              ) : null}
 
               {isJoinedToRoom && areFunEffectsEnabled ? (
                 <button
@@ -2231,12 +2271,12 @@ export function RoomPage() {
                 </button>
               ) : null}
 
-              {import.meta.env.DEV && isJoinedToRoom ? (
+              {isSimulatorMode && isJoinedToRoom ? (
                 <div className="mt-4 rounded-[14px] border border-dashed border-[var(--pep-accent-2)]/60 bg-[var(--pep-accent-2)]/10 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="text-xs font-black uppercase text-[var(--pep-accent-2)]">
-                        Local dev tools
+                        Simulator tools
                       </p>
                       <p className="mt-1 text-sm leading-5 text-[var(--pep-ink-soft)]">
                         Spawn fake voters, then simulate votes from their cards.
@@ -2664,6 +2704,22 @@ function createDevDisplayName(existingDisplayNames: string[]) {
     0,
     maxDisplayNameLength
   )
+}
+
+function getSimulatorRoomName(roomName: string) {
+  const normalizedRoomName = normalizeRoomName(roomName) || 'room'
+  const suffix = `_${Math.abs(hashString(normalizedRoomName)).toString(36)}`
+  const prefix = 'dev_'
+  const maxBaseLength = maxRoomNameLength - prefix.length - suffix.length
+  const baseRoomName = normalizedRoomName.slice(0, maxBaseLength)
+
+  return `${prefix}${baseRoomName}${suffix}`
+}
+
+function hashString(value: string) {
+  return value.split('').reduce((hash, character) => {
+    return (hash << 5) - hash + character.charCodeAt(0)
+  }, 0)
 }
 
 function EyeIcon({ crossed = false }: { crossed?: boolean }) {

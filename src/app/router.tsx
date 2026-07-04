@@ -15,6 +15,10 @@ export const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
+        path: 'rooms/:roomName/dev',
+        element: <RoomPage mode="simulator" />,
+      },
+      {
         path: 'rooms/:roomName',
         element: <RoomPage />,
       },
