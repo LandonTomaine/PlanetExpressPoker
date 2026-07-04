@@ -8,8 +8,9 @@ Use the smallest doc that fits the current task. Do not treat this index as a re
 
 - [architecture/overview.md](architecture/overview.md): system structure and architectural decisions
 - [product/README.md](product/README.md): product overview, vocabulary, personas, workflows, and requirements
-- [development/README.md](development/README.md): setup, standards, workflow, tooling, and testing
+- [development/README.md](development/README.md): setup, standards, workflow, tooling, testing, and safeguards
 - [deployment/cloudflare-pages.md](deployment/cloudflare-pages.md): Cloudflare Pages and hosted Supabase deployment
+- [deployment/fork-setup.md](deployment/fork-setup.md): checklist for deploying a fork with your own resources
 - [backlog/README.md](backlog/README.md): delivery tracking and implementation planning
 - [drafts/README.md](drafts/README.md): working drafts that are not yet stable reference docs
 

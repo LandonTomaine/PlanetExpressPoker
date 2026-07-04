@@ -1,0 +1,23 @@
+name: Enhancement Request
+description: Suggest a product or developer-experience improvement.
+title: '[Enhancement]: '
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: request
+    attributes:
+      label: What would you like to improve?
+      description: Describe the requested change and why it matters.
+    validations:
+      required: true
+  - type: textarea
+    id: usage
+    attributes:
+      label: How would this be used?
+      description: Include the planning-poker workflow or developer workflow this supports.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Links, screenshots, examples, or constraints.

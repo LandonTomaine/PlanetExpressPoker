@@ -10,6 +10,7 @@ Load only the docs needed for the current task.
 - [backend.md](backend.md): backend standards and patterns
 - [frontend.md](frontend.md): frontend standards and patterns
 - [testing/README.md](testing/README.md): testing docs index
+- [safeguards.md](safeguards.md): quality, test, CI, and security safeguards
 - [tooling.md](tooling.md): command reference and developer tooling
 - [workflow.md](workflow.md): development workflow
 - [documentation.md](documentation.md): when and how to update repo docs
