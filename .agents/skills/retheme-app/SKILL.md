@@ -61,6 +61,7 @@ Load product docs only when user-facing behavior or wording changes:
    - Run `npm.cmd run lint`.
    - Run `npm.cmd run typecheck`.
    - Run `npm.cmd run test:unit`.
+   - Run `npm.cmd run test:integration`.
    - Run `npm.cmd run test:architecture`.
    - Run `npm.cmd run build`.
    - Run `npm.cmd run test:e2e` when `.env` points at a usable Supabase project.

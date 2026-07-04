@@ -79,6 +79,7 @@ Use this as the implementation checklist for a theme swap.
 - [ ] `npm.cmd run lint`
 - [ ] `npm.cmd run typecheck`
 - [ ] `npm.cmd run test:unit`
+- [ ] `npm.cmd run test:integration`
 - [ ] `npm.cmd run test:architecture`
 - [ ] `npm.cmd run build`
 - [ ] `npm.cmd run test:e2e` when Supabase env is available
