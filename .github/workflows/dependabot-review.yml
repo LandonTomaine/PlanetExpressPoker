@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Scan open Dependabot pull requests
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           LOCAL_TZ: America/New_York
         with:
