@@ -21,6 +21,7 @@ for (const requiredFile of [
   'CONTRIBUTING.md',
   'SECURITY.md',
   '.github/dependabot.yml',
+  '.github/workflows/codeql.yml',
 ]) {
   if (!trackedFiles.includes(requiredFile)) {
     fail(`missing public-repo file: ${requiredFile}`)
@@ -38,8 +39,18 @@ for (const workflowFile of workflowFiles) {
     fail(`unsafe pull_request_target trigger in ${workflowFile}`)
   }
 
-  if (!/^permissions:\r?\n\s+contents: read/m.test(content)) {
-    fail(`workflow missing explicit read-only permissions: ${workflowFile}`)
+  if (
+    !/^permissions:\r?\n(?:\s+[a-z-]+: (?:read|write)\r?\n)+/m.test(content)
+  ) {
+    fail(`workflow missing explicit permissions block: ${workflowFile}`)
+  }
+
+  if (!/^\s+contents: read$/m.test(content)) {
+    fail(`workflow missing explicit contents: read permission: ${workflowFile}`)
+  }
+
+  if (/^\s+contents: write$/m.test(content)) {
+    fail(`workflow grants write access to repository contents: ${workflowFile}`)
   }
 }
 

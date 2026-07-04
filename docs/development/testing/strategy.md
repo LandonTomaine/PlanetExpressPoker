@@ -24,7 +24,7 @@ Use `npm run test:unit` for:
 
 ### Component / Integration
 
-Use component or integration tests for:
+Use `npm run test:integration` for:
 
 - join flow
 - room roster rendering
@@ -49,6 +49,7 @@ Use `npm run test:architecture` for:
 
 - no tracked local env files
 - no obvious committed secrets
+- CodeQL workflow presence
 - required public-repo files such as license, asset notices, and contribution guidance
 - Dependabot config exists for dependency update visibility
 - GitHub Actions workflows avoid unsafe fork/deploy triggers
