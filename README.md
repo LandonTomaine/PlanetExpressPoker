@@ -263,4 +263,5 @@ npm.cmd run supabase:status
 - Project safeguards: `docs/development/safeguards.md`
 - Tooling: `docs/development/tooling.md`
 - Deployment: `docs/deployment/cloudflare-pages.md`
+- Fork setup: `docs/deployment/fork-setup.md`
 - Architecture: `docs/architecture/overview.md`

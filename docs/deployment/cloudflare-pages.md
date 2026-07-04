@@ -7,6 +7,8 @@ Planet Express Poker deploys as:
 
 Cloudflare Pages alone is not enough because the app needs Supabase for shared room state.
 
+If you are deploying a fork with your own Cloudflare and Supabase resources, start with [fork-setup.md](fork-setup.md).
+
 ## GitHub Actions + Cloudflare Pages
 
 Use this for the normal hosted path.
