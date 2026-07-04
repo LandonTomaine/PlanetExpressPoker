@@ -28,13 +28,13 @@ The package scripts themselves still use normal `npm run ...` flows.
 
 1. Install frontend and repo tooling dependencies
    - `npm install`
-2. Copy environment defaults if needed
+2. Copy environment defaults
    - `.env.example` -> `.env`
 3. Start the local Supabase stack
    - `npm run supabase:start`
-4. The repo-local `.env` already targets the working local API URL and anon key.
-5. Check local Supabase connection info if needed
+4. Check local Supabase connection info
    - `npm run supabase:status`
+5. Copy the displayed local anon key into `.env` as `VITE_SUPABASE_ANON_KEY`.
 6. Start the frontend
    - `npm run dev`
 

@@ -1,11 +1,36 @@
 import { useEffect, useRef, useState } from 'react'
+import { z } from 'zod'
 import { supabase } from '../../../lib/supabase/client'
 import type { RoomFunEvent } from '../fun'
 import type { Room } from '../types'
 
-type BroadcastFunEvent = RoomFunEvent & {
-  id: string
-}
+const broadcastFunEventSchema = z
+  .object({
+    id: z.string().uuid(),
+    caption: z.string().min(1).max(64),
+    mode: z.enum([
+      'celebration',
+      'chaos',
+      'delivery',
+      'deliveryStorm',
+      'flyby',
+      'hypnotoad',
+      'milestone',
+    ]),
+    quote: z
+      .object({
+        avatarPath: z
+          .string()
+          .regex(/^\/(?:avatars|cards)\//)
+          .max(128),
+        speaker: z.string().min(1).max(64),
+        text: z.string().min(1).max(160),
+      })
+      .optional(),
+  })
+  .strict()
+
+type BroadcastFunEvent = z.infer<typeof broadcastFunEventSchema>
 
 export function useRoomFunEvents(room: Room | null) {
   const [incomingFunEvent, setIncomingFunEvent] =
@@ -31,7 +56,11 @@ export function useRoomFunEvents(room: Room | null) {
 
     channel
       .on('broadcast', { event: 'fun-event' }, ({ payload }) => {
-        setIncomingFunEvent(payload as BroadcastFunEvent)
+        const parsedPayload = broadcastFunEventSchema.safeParse(payload)
+
+        if (parsedPayload.success) {
+          setIncomingFunEvent(parsedPayload.data)
+        }
       })
       .subscribe((status) => {
         setIsSubscribed(status === 'SUBSCRIBED')

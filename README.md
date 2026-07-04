@@ -80,13 +80,15 @@ npm.cmd run supabase:start
 npm.cmd run supabase:status
 ```
 
-5. Start Vite:
+5. Copy the displayed local anon key into `.env` as `VITE_SUPABASE_ANON_KEY`.
+
+6. Start Vite:
 
 ```powershell
 npm.cmd run dev
 ```
 
-6. Open:
+7. Open:
 
 ```text
 http://127.0.0.1:5173
@@ -133,6 +135,12 @@ VITE_SUPABASE_ANON_KEY=<anon-public-key>
 ```
 
 Use only the Supabase anon public key in frontend or GitHub configuration. Never use the service-role key in this app.
+
+## Public Repo Notes
+
+This repository intentionally ignores local `.env` files. Do not commit hosted Supabase keys, Cloudflare API tokens, database passwords, or Supabase access tokens.
+
+The app includes Futurama/Planet Express-inspired media assets for personal use. Review or replace those assets before treating this as a reusable open-source project.
 
 ## GitHub Secrets For Deployment
 
