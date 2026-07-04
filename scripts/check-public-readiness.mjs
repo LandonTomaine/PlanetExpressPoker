@@ -20,6 +20,7 @@ for (const requiredFile of [
   'ASSET_NOTICES.md',
   'CONTRIBUTING.md',
   'SECURITY.md',
+  '.github/dependabot.yml',
 ]) {
   if (!trackedFiles.includes(requiredFile)) {
     fail(`missing public-repo file: ${requiredFile}`)

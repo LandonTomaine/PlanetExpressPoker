@@ -50,6 +50,7 @@ Use `npm run test:architecture` for:
 - no tracked local env files
 - no obvious committed secrets
 - required public-repo files such as license, asset notices, and contribution guidance
+- Dependabot config exists for dependency update visibility
 - GitHub Actions workflows avoid unsafe fork/deploy triggers
 - no unsafe HTML rendering
 - no direct frontend reads from sensitive room tables

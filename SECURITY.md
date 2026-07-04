@@ -32,19 +32,24 @@ If you fork this repo and want your fork to deploy, update `.github/workflows/de
 Configure these in GitHub before making the repo public:
 
 - Disable auto-merge unless you intentionally want it.
-- Protect `main` with a ruleset or branch protection rule.
+- Protect `main` with a ruleset or branch protection rule. If GitHub blocks this while the repo is private, make the repo public and then immediately add the protection rule.
 - Require pull requests before merging to `main`.
 - Require status checks before merge.
 - Require the CI checks for formatting, lint, typecheck, unit tests, architecture checks, build, and E2E.
 - Block force pushes and branch deletion on `main`.
 - Do not allow bypassing branch protection except for explicitly trusted maintainers.
 - Set Actions workflow permissions to read-only by default.
+- Restrict allowed Actions to GitHub-owned actions and the trusted actions this repo uses, or to an explicit selected-action allow list.
 - Require approval for first-time contributor workflow runs.
 - Protect the `production` environment and require manual approval before deploy, if available for the repository plan.
 
 ## Cloudflare Token Scope
 
 Use a least-privilege Cloudflare API token. It should only be able to deploy the intended Pages project/account. Do not use a broad account-admin token.
+
+## Dependency Updates
+
+Dependabot is enabled for npm packages and GitHub Actions. Review and merge those PRs manually; do not auto-merge dependency updates without a passing CI run.
 
 ## Reporting
 
