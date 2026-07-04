@@ -1,13 +1,15 @@
 # Pull Request Guidance
 
-This repository may use direct commits to `main` for small local setup work, but pull requests are still the preferred path for larger or review-worthy changes.
+All changes must enter `main` through a pull request.
 
-## Use A Pull Request When
+## Required Flow
 
-- the change is non-trivial
-- the change affects architecture or schema shape
-- the change benefits from review before merge
-- the branch contains several related commits
+1. Create a short-lived branch from `main`.
+2. Keep the change focused.
+3. Run the relevant local validation before pushing.
+4. Open a pull request.
+5. Wait for required CI, CodeQL, CodeRabbit, and owner review.
+6. Merge only after approval.
 
 ## Pull Request Expectations
 
@@ -18,5 +20,5 @@ This repository may use direct commits to `main` for small local setup work, but
 
 ## Non-Goals
 
-- Do not turn small repo-setup changes into process-heavy ceremony.
 - Do not open broad "everything changed" pull requests when the work can be split.
+- Do not bypass the pull request path for local setup, documentation, dependency, or automation changes.

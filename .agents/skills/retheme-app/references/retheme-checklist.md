@@ -75,12 +75,7 @@ Use this as the implementation checklist for a theme swap.
 
 ## Validation
 
-- [ ] `npm.cmd run format:check`
-- [ ] `npm.cmd run lint`
-- [ ] `npm.cmd run typecheck`
-- [ ] `npm.cmd run test:unit`
-- [ ] `npm.cmd run test:architecture`
-- [ ] `npm.cmd run build`
+- [ ] Current local gate from `docs/development/safeguards.md`
 - [ ] `npm.cmd run test:e2e` when Supabase env is available
 - [ ] Browser smoke: home page
 - [ ] Browser smoke: create/join room

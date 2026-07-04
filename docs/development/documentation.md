@@ -7,7 +7,7 @@ Documentation is part of the change when behavior, commands, setup, deployment, 
 - Product truth: `docs/product/`
 - Architecture and data boundaries: `docs/architecture/`
 - Setup, tooling, workflow, and validation: `docs/development/`
-- Deployment: `docs/deployment/cloudflare-pages.md`
+- Deployment: `docs/deployment/`
 - Agent routing only: `AGENTS.md` and `agent-rules/`
 
 ## Update Triggers

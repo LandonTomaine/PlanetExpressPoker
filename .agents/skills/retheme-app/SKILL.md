@@ -57,12 +57,7 @@ Load product docs only when user-facing behavior or wording changes:
    - Do not rewrite historical backlog material unless it is routed as current guidance or would mislead future work.
 
 5. Validate.
-   - Run `npm.cmd run format:check`.
-   - Run `npm.cmd run lint`.
-   - Run `npm.cmd run typecheck`.
-   - Run `npm.cmd run test:unit`.
-   - Run `npm.cmd run test:architecture`.
-   - Run `npm.cmd run build`.
+   - Run the current local gate from `docs/development/safeguards.md`.
    - Run `npm.cmd run test:e2e` when `.env` points at a usable Supabase project.
    - Browser-check home, room join, avatar selection, special cards, reveal reactions, delivery/manual effect, and simulator route.
 

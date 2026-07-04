@@ -48,9 +48,11 @@ Expected local URLs:
 
 ## Default Validation
 
+- format check: `npm run format:check`
 - lint: `npm run lint`
 - typecheck: `npm run typecheck`
 - unit tests: `npm run test:unit`
+- integration tests: `npm run test:integration`
 - architecture checks: `npm run test:architecture`
 - build: `npm run build`
 - E2E smoke, with `.env` pointed at local or hosted Supabase: `npm run test:e2e`

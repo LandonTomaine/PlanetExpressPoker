@@ -1,0 +1,25 @@
+name: Bug Report
+description: Report something broken.
+title: '[Bug]: '
+labels:
+  - bug
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include room setup, votes, browser, and any relevant actions.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Screenshots, console errors, or other context.
