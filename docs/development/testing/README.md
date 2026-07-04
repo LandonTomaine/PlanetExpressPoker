@@ -5,12 +5,13 @@ This folder holds testing and validation guidance for the current stack.
 ## Current Docs
 
 - [strategy.md](strategy.md): test-layer choices and default validation expectations
-- [playwright-e2e.md](playwright-e2e.md): reserved guidance for browser E2E once the repo adopts Playwright
+- [playwright-e2e.md](playwright-e2e.md): current browser E2E scope and command
 
 ## Current State
 
-- unit and integration guidance is active now
-- browser E2E is intentionally deferred until the first real room workflow stabilizes
+- unit tests cover pure room rules
+- architecture checks guard public-repo and frontend boundary risks
+- one Playwright smoke test covers the simulator room happy path
 
 ## Manual Multiplayer Simulator
 

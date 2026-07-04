@@ -14,7 +14,7 @@ Use the lightest testing stack that still protects the multiplayer room flow.
 
 ### Unit
 
-Use unit tests for:
+Use `npm run test:unit` for:
 
 - average calculation
 - recommendation calculation
@@ -35,16 +35,29 @@ Use component or integration tests for:
 
 ### Browser E2E
 
-Use browser E2E tests sparingly for:
+Use `npm run test:e2e` sparingly for:
 
-- create/join room
 - two-participant happy-path vote and reveal
-- persisted room settings across reload
+- simulator room join
+- result summary smoke coverage
+
+Add persisted-room or reload E2E only after a real regression justifies it.
+
+### Architecture Checks
+
+Use `npm run test:architecture` for:
+
+- no tracked local env files
+- no obvious committed secrets
+- no unsafe HTML rendering
+- no direct frontend reads from sensitive room tables
+- Supabase client imports staying behind room data/realtime boundaries
 
 ## Default Validation Bias
 
 - Prefer unit/integration coverage for most product rules.
 - Use E2E for the main multiplayer confidence path, not every edge case.
+- Keep architecture checks cheap enough for pre-push and CI.
 - Validate user-visible animation behavior manually when automated checks would be brittle.
 
 ## What Must Be Verified Before Calling Work Done

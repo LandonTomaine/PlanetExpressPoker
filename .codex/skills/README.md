@@ -1,6 +1,6 @@
 # Repo-Local Skills
 
-These repo-local skills are a cleaned starting point for Planet Express Poker.
+Repo-local skills for Planet Express Poker.
 
 ## Active Skills
 
@@ -17,11 +17,7 @@ These repo-local skills are a cleaned starting point for Planet Express Poker.
 - `audit-skill-opportunities`
 - `audit-standards-docs`
 
-## Deferred Repo-Specific Skills
+## Possible Future Skills
 
-The copied repo also included skills tied to a different framework and app-host setup. Those were removed.
-
-The most likely future additions here are:
-
-- a browser-validation skill once the repo adopts a stable manual or Playwright flow
-- a Supabase schema or migration skill if that workflow becomes repetitive enough
+- Supabase migration workflow, if schema changes become frequent
+- Browser-validation workflow, if Playwright/manual testing grows beyond the current smoke path

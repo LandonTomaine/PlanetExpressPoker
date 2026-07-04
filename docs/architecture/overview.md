@@ -237,7 +237,7 @@ Still required:
 
 Expected deployment:
 
-- static frontend on `Vercel` or similar
+- static frontend on `Cloudflare Pages`
 - hosted `Supabase` project for database and realtime
 
 Do not plan around a user-hosted PC runtime for team usage.

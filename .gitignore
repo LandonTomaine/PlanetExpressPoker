@@ -13,6 +13,8 @@ dist-ssr
 .tools
 tmp
 .tmp-vite-dev*.log
+playwright-report
+test-results
 
 # Environment
 .env

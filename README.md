@@ -208,7 +208,15 @@ Run these before pushing changes:
 npm.cmd run format:check
 npm.cmd run lint
 npm.cmd run typecheck
+npm.cmd run test:unit
+npm.cmd run test:architecture
 npm.cmd run build
+```
+
+Run the browser smoke test when local Supabase is running:
+
+```powershell
+npm.cmd run test:e2e
 ```
 
 Dependency audit:
@@ -225,6 +233,9 @@ npm.cmd run build
 npm.cmd run preview
 npm.cmd run lint
 npm.cmd run typecheck
+npm.cmd run test:unit
+npm.cmd run test:architecture
+npm.cmd run test:e2e
 npm.cmd run format
 npm.cmd run supabase:start
 npm.cmd run supabase:stop

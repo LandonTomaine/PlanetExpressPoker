@@ -26,7 +26,7 @@ Primary lens: `Product/PRD`.
    - Prefer concrete requirements and acceptance bullets over long prose.
    - Include UX requirements only when they define product behavior.
    - For user-visible work, name key states, terms, and consequence copy.
-   - Separate readiness signals from full public booking readiness.
+   - Separate readiness signals from optional public-repo hardening.
 
 4. Update requirements discoverability.
    - Add the child requirement doc to `docs/product/requirements/README.md`.

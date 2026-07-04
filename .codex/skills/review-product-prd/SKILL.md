@@ -25,8 +25,8 @@ Find product-scope issues before a child PRD becomes backlog work.
 - Defines actor, outcome, scope, non-goals, dependencies, edge/recovery states, and UX requirements when product-relevant.
 - User-visible scope names key flows: first-time, edit, empty, error, blocked.
 - Risky concepts define user-facing terms and consequence copy.
-- Save/delete/hide/deactivate/publish flows explain client/booking impact.
-- Mobile/admin-density expectations exist when relevant.
+- Destructive or irreversible flows explain user impact.
+- Responsive expectations exist when relevant.
 - Avoids implementation design, handler names, schema choices, or task lists.
 - Uses product-facing language and avoids internal-only terms.
 - Leaves no blocking ambiguity for backlog slicing.

@@ -16,4 +16,4 @@ Track durable product facts and stable context here. Keep current product requir
 
 ## Current State
 
-Only the initial PRD is defined so far.
+The current requirement set starts with the initial PRD.

@@ -24,6 +24,12 @@ This repository uses:
   - `npm run dev`
 - typecheck
   - `npm run typecheck`
+- unit tests
+  - `npm run test:unit`
+- public-readiness architecture checks
+  - `npm run test:architecture`
+- browser E2E smoke test
+  - `npm run test:e2e`
 - lint
   - `npm run lint`
 - format
@@ -72,10 +78,12 @@ Current hooks:
 - `pre-push`
   - `npm run lint`
   - `npm run typecheck`
+  - `npm run test:unit`
+  - `npm run test:architecture`
   - `npm run build`
 
 ## Validation Philosophy
 
 - Keep local validation fast enough that it actually runs.
 - Put cheap checks earlier than expensive checks.
-- Use the pre-push hook as the default local quality gate until tests are added.
+- Keep E2E out of pre-push; run it when Supabase/browser behavior changed.

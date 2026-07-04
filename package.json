@@ -11,6 +11,10 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "preview": "vite preview",
+    "test": "vitest run src",
+    "test:architecture": "node scripts/check-public-readiness.mjs",
+    "test:e2e": "playwright test",
+    "test:unit": "vitest run src",
     "cloudflare:whoami": "wrangler whoami",
     "deploy:cloudflare": "npm run build && wrangler pages deploy dist --project-name planet-express-poker",
     "supabase:start": "supabase start",
@@ -38,6 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.1.17",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
@@ -54,6 +59,7 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.62.1",
     "vite": "^6.4.3",
+    "vitest": "^4.1.9",
     "wrangler": "^4.107.0"
   }
 }

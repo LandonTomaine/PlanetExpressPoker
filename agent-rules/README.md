@@ -50,6 +50,8 @@ Use these routes only when the task actually needs them:
   - [../docs/product/workflows.md](../docs/product/workflows.md)
 - Engineering standards and setup:
   - [../docs/development/README.md](../docs/development/README.md)
+- Deployment or hosting questions:
+  - [../docs/deployment/cloudflare-pages.md](../docs/deployment/cloudflare-pages.md)
 - Maintaining this guidance system:
   - [maintaining.md](maintaining.md)
 

@@ -32,8 +32,68 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Architecture checks
+        run: npm run test:architecture
+
       - name: Build
         run: npm run build
         env:
           VITE_SUPABASE_URL: http://127.0.0.1:54321
           VITE_SUPABASE_ANON_KEY: ci-public-anon-key
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start local Supabase
+        run: npx supabase start
+
+      - name: Export local Supabase env
+        run: |
+          node - <<'NODE'
+          const { execFileSync } = require('node:child_process')
+          const { appendFileSync } = require('node:fs')
+
+          const status = execFileSync('npx', ['supabase', 'status'], {
+            encoding: 'utf8',
+          })
+          const anonKey = status.match(/anon key:\s*(.+)/i)?.[1]?.trim()
+
+          if (!anonKey) {
+            throw new Error('Supabase anon key not found in local status output')
+          }
+
+          appendFileSync(
+            process.env.GITHUB_ENV,
+            `VITE_SUPABASE_URL=http://127.0.0.1:54321\n`
+          )
+          appendFileSync(
+            process.env.GITHUB_ENV,
+            `VITE_SUPABASE_ANON_KEY=${anonKey}\n`
+          )
+          NODE
+
+      - name: E2E tests
+        run: npm run test:e2e
+
+      - name: Stop local Supabase
+        if: always()
+        run: npx supabase stop --no-backup

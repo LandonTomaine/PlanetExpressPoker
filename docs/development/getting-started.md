@@ -50,4 +50,7 @@ Expected local URLs:
 
 - lint: `npm run lint`
 - typecheck: `npm run typecheck`
+- unit tests: `npm run test:unit`
+- architecture checks: `npm run test:architecture`
 - build: `npm run build`
+- E2E smoke, with local Supabase running: `npm run test:e2e`
