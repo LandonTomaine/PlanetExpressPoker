@@ -1,8 +1,6 @@
 ﻿# Ubiquitous Language
 
-Add durable product terms here once the domain language is stable.
-
-Suggested early terms:
+Current terms:
 
 - room
 - participant
