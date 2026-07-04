@@ -1829,6 +1829,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           const revealedCardValue = revealedVoteByParticipantId.get(
             participant.id
           )
+          const isRevealedShipCard = revealedCardValue === 'ship'
           const nextRole = participant.role === 'voter' ? 'spectator' : 'voter'
           const isParticipantActionPending =
             pendingParticipantActionId === participant.id
@@ -1883,7 +1884,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                       'mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
                       activeRound?.status === 'revealed'
                         ? revealedCardValue
-                          ? 'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-xl text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]'
+                          ? [
+                              'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
+                              isRevealedShipCard ? 'text-3xl' : 'text-xl',
+                            ].join(' ')
                           : 'border-slate-300 bg-slate-100 text-sm text-slate-500'
                         : 'border-transparent bg-transparent text-transparent',
                     ].join(' ')}
