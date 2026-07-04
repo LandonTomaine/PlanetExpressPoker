@@ -46,28 +46,29 @@ jobs:
               return;
             }
 
-          const owner = context.repo.owner;
-          const repo = context.repo.repo;
-          const codexLabel = 'codex-fix-required';
-          const codexLabelColor = '1d76db';
-          const codexLabelDescription = 'Needs manual follow-up or automated fix';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const codexLabel = 'codex-fix-required';
+            const codexLabelColor = '1d76db';
+            const codexLabelDescription = 'Needs manual follow-up or automated fix';
 
-          const pulls = await github.paginate(github.rest.pulls.list, {
-            owner,
-            repo,
-            state: 'open',
-            per_page: 100,
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: 'open',
+              per_page: 100,
             });
 
-            const dependabotPrs = pulls.filter((pr) =>
-              pr.user?.login === 'dependabot[bot]' ||
-              (pr.user?.login?.includes('dependabot') ?? false)
+            const dependabotPrs = pulls.filter(
+              (pr) =>
+                pr.user?.login === 'dependabot[bot]' ||
+                (pr.user?.login?.includes('dependabot') ?? false)
             );
 
             if (dependabotPrs.length === 0) {
               core.info('No open Dependabot PRs found.');
-            return;
-          }
+              return;
+            }
 
             try {
               await github.rest.issues.createLabel({
@@ -137,6 +138,7 @@ jobs:
               const hasCodexLabel = currentLabels.some(
                 (label) => (label.name ?? label) === codexLabel
               );
+
               if (currentPr.mergeable_state !== 'clean') {
                 blockers.push(`mergeable_state is ${currentPr.mergeable_state}`);
               }
@@ -166,23 +168,23 @@ jobs:
 
               if (blockers.length > 0) {
                 reportRows.push(
-                `| [#${pr.number}](${pr.html_url}) | blocked | ${blockers.join('; ')} |`
-              );
+                  `| [#${pr.number}](${pr.html_url}) | blocked | ${blockers.join('; ')} |`
+                );
 
-              if (!hasCodexLabel) {
-                try {
-                  await github.rest.issues.addLabels({
-                    owner,
-                    repo,
-                    issue_number: pr.number,
-                    labels: [codexLabel],
-                  });
-                } catch (labelError) {
-                  reportRows.push(
-                    `| [#${pr.number}](${pr.html_url}) | blocked | failed to add label: ${labelError.message} |`
-                  );
+                if (!hasCodexLabel) {
+                  try {
+                    await github.rest.issues.addLabels({
+                      owner,
+                      repo,
+                      issue_number: pr.number,
+                      labels: [codexLabel],
+                    });
+                  } catch (labelError) {
+                    reportRows.push(
+                      `| [#${pr.number}](${pr.html_url}) | blocked | failed to add label: ${labelError.message} |`
+                    );
+                  }
                 }
-              }
 
                 try {
                   await github.rest.issues.createComment({
