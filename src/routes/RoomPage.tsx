@@ -1822,7 +1822,7 @@ export function RoomPage() {
             isJoinedToRoom &&
             activeRound?.status === 'voting' &&
             participant.role === 'voter' &&
-            (isSelf || Boolean(devClientIdByParticipantId[participant.id]))
+            Boolean(devClientIdByParticipantId[participant.id])
 
           return (
             <motion.article
@@ -1902,23 +1902,7 @@ export function RoomPage() {
                     </span>
                   </div>
                   {isJoinedToRoom ? (
-                    <div className="mt-3 flex items-center gap-1.5">
-                      {canDevVoteAsParticipant ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setDevVoteParticipantId(participant.id)
-                          }
-                          disabled={
-                            pendingDevVoteParticipantId === participant.id
-                          }
-                          className="rounded-full border-2 border-[var(--pep-accent-2)] bg-white px-2.5 py-1 text-[10px] font-black uppercase text-[var(--pep-accent-2)] shadow-[0_5px_12px_rgba(31,152,134,0.14)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
-                        >
-                          {pendingDevVoteParticipantId === participant.id
-                            ? 'Voting...'
-                            : 'Dev vote'}
-                        </button>
-                      ) : null}
+                    <div className="mt-3 flex items-center gap-1.5 pr-11">
                       <button
                         type="button"
                         aria-label={`Switch ${participant.displayName} to ${nextRole} mode`}
@@ -1986,6 +1970,18 @@ export function RoomPage() {
                         </button>
                       )}
                     </div>
+                  ) : null}
+                  {canDevVoteAsParticipant ? (
+                    <button
+                      type="button"
+                      onClick={() => setDevVoteParticipantId(participant.id)}
+                      disabled={pendingDevVoteParticipantId === participant.id}
+                      className="mt-2 mr-11 inline-flex min-h-7 items-center rounded-full border border-[var(--pep-line-strong)] bg-white/86 px-2.5 py-1 text-[10px] font-black text-[var(--pep-ink)] shadow-[0_4px_10px_rgba(12,32,42,0.06)] transition hover:-translate-y-0.5 hover:border-[var(--pep-accent-2)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                    >
+                      {pendingDevVoteParticipantId === participant.id
+                        ? 'Voting...'
+                        : 'Simulate vote'}
+                    </button>
                   ) : null}
                 </div>
               </div>
@@ -2097,7 +2093,7 @@ export function RoomPage() {
           className="w-full max-w-2xl rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
         >
           <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--pep-accent-2)]">
-            Local dev vote
+            Simulate vote
           </p>
           <h2
             id="dev-vote-title"
@@ -2228,7 +2224,7 @@ export function RoomPage() {
                         Local dev tools
                       </p>
                       <p className="mt-1 text-sm leading-5 text-[var(--pep-ink-soft)]">
-                        Spawn fake voters, then use Dev vote on their cards.
+                        Spawn fake voters, then simulate votes from their cards.
                       </p>
                     </div>
                     <button
