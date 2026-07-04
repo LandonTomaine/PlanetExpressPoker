@@ -24,8 +24,6 @@ Repo-local skills live under `.agents/skills/`.
 
 Use a repo-local skill only when the task clearly matches it.
 
-The current skill set has been aligned to the chosen stack at a high level, but more repo-specific validation or migration skills may still be added later if repeated workflows justify them.
-
 ## Load Only When Needed
 
 Use these routes only when the task actually needs them:

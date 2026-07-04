@@ -24,8 +24,3 @@ Use a skill only when the task clearly matches it. Otherwise use the shared docs
 | `audit-skill-opportunities`  | Decide if a repeated workflow needs a skill.             |
 | `audit-standards-docs`       | Audit docs and agent guidance for JEC and drift.         |
 | `retheme-app`                | Replace the current theme while preserving app behavior. |
-
-## Possible Future Skills
-
-- Supabase migration workflow, if schema changes become frequent
-- Browser-validation workflow, if Playwright/manual testing grows beyond the current smoke path
