@@ -24,6 +24,7 @@ Repository workflows are intended to be safe for public forks:
 - Deploy runs only on `push` to `main`.
 - Deploy is guarded to run only in `LandonTomaine/PlanetExpressPoker`.
 - GitHub repository secrets are not copied to forks.
+- CodeRabbit configuration is public, but the GitHub App installation is account/repository-scoped and is not inherited by forks.
 
 If you fork this repo and want your fork to deploy, update `.github/workflows/deploy-cloudflare.yml`, `wrangler.jsonc`, and `package.json` to point at your own repository/project/resources.
 

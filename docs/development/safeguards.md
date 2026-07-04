@@ -51,6 +51,8 @@ GitHub Actions protects pushes and pull requests with:
 
 Deployment is handled by a separate Cloudflare Pages workflow guarded to the intended repository.
 
+CodeRabbit is configured by `.coderabbit.yaml` for optional automated pull request review. It is not a secret-backed local dependency, and forks must install CodeRabbit under their own GitHub account or organization if they want those reviews.
+
 ## Repository Controls
 
 - `main` is the trunk branch.
@@ -93,6 +95,7 @@ The architecture check currently guards:
 Keep these docs aligned when safeguards change:
 
 - [tooling.md](tooling.md): command and hook reference
+- [../deployment/fork-setup.md](../deployment/fork-setup.md): fork-owned hosting and optional review automation
 - [testing/strategy.md](testing/strategy.md): test layer expectations
 - [bootstrap-checklist.md](bootstrap-checklist.md): standards coverage ledger
 - [../../README.md](../../README.md): setup and common validation commands
