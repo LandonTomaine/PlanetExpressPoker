@@ -2188,7 +2188,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 isJoinedToRoom ? 'order-1' : 'order-2',
               ].join(' ')}
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start">
                 <div className="min-w-0">
                   <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
                     {isSimulatorMode ? 'Simulator room' : 'Room'}
@@ -2196,13 +2196,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   <h2 className="mt-2 break-words font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)]">
                     {normalizedRoomName || 'Unknown room'}
                   </h2>
-                </div>
-                <div className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-white shadow-[0_10px_20px_rgba(12,32,42,0.1)]">
-                  <img
-                    src="/planet-express-logo.png"
-                    alt="Planet Express logo"
-                    className="h-10 w-10 object-contain"
-                  />
                 </div>
               </div>
               <p className="mt-3 text-sm leading-6 text-[var(--pep-ink-soft)]">
