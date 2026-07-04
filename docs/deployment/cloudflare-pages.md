@@ -34,6 +34,10 @@ If deploying your own fork under another project name, update:
 - `package.json` script `deploy:cloudflare`
 - `.github/workflows/deploy-cloudflare.yml`
 
+The deploy workflow is guarded to run only in `LandonTomaine/PlanetExpressPoker`. Forks must update that guard before deploying to their own resources.
+
+Before making the repo public, protect the GitHub `production` environment and require manual deployment approval if the repository plan supports environment reviewers.
+
 ## Optional Cloudflare Git Integration
 
 Cloudflare Pages can also connect directly to GitHub through the Cloudflare dashboard, but this repo uses GitHub Actions instead so the build and deploy steps are explicit in source control.

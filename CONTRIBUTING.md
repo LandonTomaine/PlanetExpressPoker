@@ -39,6 +39,8 @@ npm.cmd run test:e2e
 
 - Do not commit `.env`, tokens, database passwords, service-role keys, or provider secrets.
 - Use only Supabase anon/publishable public keys in frontend or GitHub Actions config.
+- Keep fork/PR workflows secret-free. Do not use `pull_request_target` for untrusted code.
+- Deployments must run only from protected `main` and only against the intended Cloudflare/Supabase resources.
 - Do not add paid/commercial positioning while the bundled Futurama / Planet Express-inspired assets remain.
 - Do not add new third-party media without documenting source and usage rights in [ASSET_NOTICES.md](ASSET_NOTICES.md).
 - Prefer small changes with clear validation over broad refactors.

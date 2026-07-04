@@ -5,12 +5,16 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 concurrency:
   group: cloudflare-pages-production
   cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.repository == 'LandonTomaine/PlanetExpressPoker'
     runs-on: ubuntu-latest
     environment:
       name: production

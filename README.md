@@ -145,6 +145,7 @@ The app includes Futurama/Planet Express-inspired media assets for private, pers
 - License: [LICENSE.md](LICENSE.md)
 - Asset notices: [ASSET_NOTICES.md](ASSET_NOTICES.md)
 - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security: [SECURITY.md](SECURITY.md)
 
 ## GitHub Secrets For Deployment
 
@@ -178,6 +179,8 @@ If you want a different Cloudflare Pages project name, update all three places:
 - `wrangler.jsonc`
 - `package.json` script `deploy:cloudflare`
 - `.github/workflows/deploy-cloudflare.yml`
+
+The deploy workflow is intentionally guarded to run only in `LandonTomaine/PlanetExpressPoker`. If you fork the repo and want your fork to deploy to your own resources, update that guard in `.github/workflows/deploy-cloudflare.yml`.
 
 4. Push to `main`:
 

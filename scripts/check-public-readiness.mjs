@@ -19,9 +19,38 @@ for (const requiredFile of [
   'LICENSE.md',
   'ASSET_NOTICES.md',
   'CONTRIBUTING.md',
+  'SECURITY.md',
 ]) {
   if (!trackedFiles.includes(requiredFile)) {
     fail(`missing public-repo file: ${requiredFile}`)
+  }
+}
+
+const workflowFiles = trackedFiles.filter((filePath) =>
+  /^\.github\/workflows\/.+\.ya?ml$/.test(filePath)
+)
+
+for (const workflowFile of workflowFiles) {
+  const content = readFileSync(workflowFile, 'utf8')
+
+  if (content.includes('pull_request_target')) {
+    fail(`unsafe pull_request_target trigger in ${workflowFile}`)
+  }
+
+  if (!/^permissions:\r?\n\s+contents: read/m.test(content)) {
+    fail(`workflow missing explicit read-only permissions: ${workflowFile}`)
+  }
+}
+
+const deployWorkflow = '.github/workflows/deploy-cloudflare.yml'
+
+if (trackedFiles.includes(deployWorkflow)) {
+  const content = readFileSync(deployWorkflow, 'utf8')
+
+  if (
+    !content.includes("github.repository == 'LandonTomaine/PlanetExpressPoker'")
+  ) {
+    fail('deploy workflow missing repository guard')
   }
 }
 
