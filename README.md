@@ -260,6 +260,7 @@ npm.cmd run supabase:status
 ## More Docs
 
 - Local setup: `docs/development/getting-started.md`
+- Project safeguards: `docs/development/safeguards.md`
 - Tooling: `docs/development/tooling.md`
 - Deployment: `docs/deployment/cloudflare-pages.md`
 - Architecture: `docs/architecture/overview.md`
