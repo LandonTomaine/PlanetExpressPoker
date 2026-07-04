@@ -54,9 +54,11 @@ Deployment is handled by a separate Cloudflare Pages workflow guarded to the int
 ## Repository Controls
 
 - `main` is the trunk branch.
+- Direct pushes to `main` are blocked, including for admins.
+- All changes must merge through pull requests.
 - `CODEOWNERS` requires `@LandonTomaine` review.
 - Public issues are enabled for bug reports and enhancement requests.
-- Pull request merges require owner approval.
+- Pull request merges require owner approval and passing required checks.
 
 ## Security And Public-Repo Checks
 
