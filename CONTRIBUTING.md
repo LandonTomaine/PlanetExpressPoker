@@ -25,6 +25,7 @@ npm.cmd run format:check
 npm.cmd run lint
 npm.cmd run typecheck
 npm.cmd run test:unit
+npm.cmd run test:integration
 npm.cmd run test:architecture
 npm.cmd run build
 ```

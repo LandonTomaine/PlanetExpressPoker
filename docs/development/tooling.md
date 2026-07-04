@@ -26,6 +26,8 @@ This repository uses:
   - `npm run typecheck`
 - unit tests
   - `npm run test:unit`
+- integration tests
+  - `npm run test:integration`
 - public-readiness architecture checks
   - `npm run test:architecture`
 - browser E2E smoke test
@@ -79,8 +81,15 @@ Current hooks:
   - `npm run lint`
   - `npm run typecheck`
   - `npm run test:unit`
+  - `npm run test:integration`
   - `npm run test:architecture`
   - `npm run build`
+
+## CI And Security Scanning
+
+GitHub Actions runs formatting, linting, typechecking, unit tests, integration tests, architecture checks, build, and the Playwright smoke test.
+
+CodeQL runs on pushes to `main`, pull requests, and a weekly schedule. It is separate from local hooks because it depends on GitHub code scanning.
 
 ## Validation Philosophy
 

@@ -10,6 +10,7 @@ This folder holds testing and validation guidance for the current stack.
 ## Current State
 
 - unit tests cover pure room rules
+- integration tests cover the home create/join flow
 - architecture checks guard public-repo and frontend boundary risks
 - one Playwright smoke test covers the simulator room happy path
 
