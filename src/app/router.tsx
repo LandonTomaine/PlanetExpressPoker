@@ -1,8 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 import { App } from './App'
 import { AppErrorBoundary } from './AppErrorBoundary'
-import { HomePage } from '../routes/HomePage'
-import { RoomPage } from '../routes/RoomPage'
+import { HomeRoute, RoomRoute, SimulatorRoomRoute } from './routeElements'
 
 export const router = createBrowserRouter([
   {
@@ -12,15 +11,15 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <HomeRoute />,
       },
       {
         path: 'rooms/:roomName/dev',
-        element: <RoomPage mode="simulator" />,
+        element: <SimulatorRoomRoute />,
       },
       {
         path: 'rooms/:roomName',
-        element: <RoomPage />,
+        element: <RoomRoute />,
       },
     ],
   },
