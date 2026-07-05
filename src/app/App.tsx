@@ -1,5 +1,15 @@
 import { NavLink, Outlet, useLocation } from 'react-router'
 
+type DeploymentInfo = {
+  branchName: string
+  commitShortSha: string
+  commitUrl: string
+  deployedAt: string
+  repositoryUrl: string
+}
+
+declare const __PEP_DEPLOYMENT__: DeploymentInfo
+
 export function App() {
   const location = useLocation()
   const shouldShowNav = location.pathname !== '/'
@@ -49,6 +59,8 @@ export function App() {
         <main className="flex-1">
           <Outlet />
         </main>
+
+        <DeploymentStamp deploymentInfo={__PEP_DEPLOYMENT__} />
       </div>
     </div>
   )
@@ -76,4 +88,55 @@ function AppNavLink({ children, to }: AppNavLinkProps) {
       {children}
     </NavLink>
   )
+}
+
+function DeploymentStamp({
+  deploymentInfo,
+}: {
+  deploymentInfo: DeploymentInfo
+}) {
+  const deployedAt = formatDeploymentDate(deploymentInfo.deployedAt)
+  const commitLabel = deploymentInfo.commitShortSha || 'local'
+  const branchLabel = deploymentInfo.branchName || 'local build'
+
+  return (
+    <footer className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-[14px] border border-[var(--pep-line)] bg-white/62 px-4 py-3 text-[11px] font-black uppercase tracking-[0.08em] text-[var(--pep-ink-soft)] shadow-[0_10px_28px_rgba(12,32,42,0.06)]">
+      <span>Deployment</span>
+      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span>{deployedAt}</span>
+        <span aria-hidden="true">/</span>
+        <span>{branchLabel}</span>
+        <span aria-hidden="true">/</span>
+        {deploymentInfo.commitUrl ? (
+          <a
+            href={deploymentInfo.commitUrl}
+            className="text-[var(--pep-accent)] underline decoration-[var(--pep-accent)]/35 underline-offset-4"
+            rel="noreferrer"
+            target="_blank"
+          >
+            {commitLabel}
+          </a>
+        ) : (
+          <span>{commitLabel}</span>
+        )}
+      </span>
+    </footer>
+  )
+}
+
+function formatDeploymentDate(value: string) {
+  const date = new Date(value)
+
+  if (Number.isNaN(date.getTime())) {
+    return 'unknown time'
+  }
+
+  return new Intl.DateTimeFormat(undefined, {
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    month: 'short',
+    timeZoneName: 'short',
+    year: 'numeric',
+  }).format(date)
 }
