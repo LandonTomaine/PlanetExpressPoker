@@ -37,7 +37,10 @@ jobs:
             const localMinute = Number(localDateTime.find((p) => p.type === 'minute')?.value ?? '0');
             const localWeekday = localDateTime.find((p) => p.type === 'weekday')?.value;
 
-            if (!(localWeekday === 'Sun' && localHour === 7 && localMinute === 0)) {
+            if (
+              context.eventName !== 'workflow_dispatch' &&
+              !(localWeekday === 'Sun' && localHour === 7)
+            ) {
               core.info(
                 `Skipping run: local time is ${localWeekday} ${localHour
                   .toString()
@@ -87,7 +90,7 @@ jobs:
             const reportRows = ['| PR | Status | Details |', '| --- | --- | --- |'];
             const passingStatuses = new Set(['success', 'neutral', 'skipped']);
 
-            for (const pr of dependabotPRs) {
+            for (const pr of dependabotPrs) {
               const fullPr = await github.rest.pulls.get({
                 owner,
                 repo,
@@ -145,7 +148,7 @@ jobs:
               if (currentPr.mergeable === false) {
                 blockers.push('GitHub reports mergeability as false');
               }
-              if (status.data.state !== 'success') {
+              if (statusRows.length > 0 && status.data.state !== 'success') {
                 blockers.push(`status check state is ${status.data.state}`);
               }
               if (statusRows.length === 0 && checkRuns.length === 0) {
@@ -192,14 +195,14 @@ jobs:
                     repo,
                     issue_number: pr.number,
                     body: [
-                      'Dependabot review found blockers and could not auto-merge.',
+                      'Dependabot review found blockers and could not approve this PR.',
                       '',
-                      `- ${blockers.join('\\n- ')}`,
+                      `- ${blockers.join('\n- ')}`,
                       '',
                       `This PR is labeled '${codexLabel}' for Codex follow-up.`,
                       '',
                       'If you want Codex to handle this next, ask it to resolve this PR.',
-                    ].join('\\n'),
+                    ].join('\n'),
                   });
                 } catch (commentError) {
                   reportRows.push(
@@ -221,20 +224,12 @@ jobs:
                   });
                 }
 
-                const mergeResult = await github.rest.pulls.merge({
-                  owner,
-                  repo,
-                  pull_number: pr.number,
-                  merge_method: 'squash',
-                  commit_title: `chore: auto-merge dependabot PR #${pr.number}`,
-                });
-
                 reportRows.push(
-                  `| [#${pr.number}](${pr.html_url}) | merged | ${mergeResult.data.sha ? 'auto-approved and merged' : 'attempted merge'} |`
+                  `| [#${pr.number}](${pr.html_url}) | approved | clean passing Dependabot PR approved for maintainer merge |`
                 );
               } catch (mergeError) {
                 reportRows.push(
-                  `| [#${pr.number}](${pr.html_url}) | blocked | auto-approval/merge failed: ${mergeError.message} |`
+                  `| [#${pr.number}](${pr.html_url}) | blocked | auto-approval failed: ${mergeError.message} |`
                 );
               }
             }
