@@ -101,7 +101,7 @@ function DeploymentStamp({
   const branchLabel = deploymentInfo.branchName || 'local'
 
   return (
-    <p className="max-w-full rounded-full border border-[var(--pep-line)] bg-white/62 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--pep-ink-soft)] shadow-[0_6px_16px_rgba(12,32,42,0.06)]">
+    <p className="max-w-full rounded-[14px] border border-slate-300/80 bg-slate-100/78 px-3.5 py-2 text-[10px] font-black uppercase tracking-[0.08em] text-slate-600 shadow-[0_4px_12px_rgba(12,32,42,0.04)] backdrop-blur">
       <span className="sr-only">Deployment details: </span>
       <span className="flex max-w-full flex-wrap items-center gap-x-1.5 gap-y-1">
         <span>Build</span>
@@ -113,7 +113,7 @@ function DeploymentStamp({
         {deploymentInfo.commitUrl ? (
           <a
             href={deploymentInfo.commitUrl}
-            className="text-[var(--pep-accent)] underline decoration-[var(--pep-accent)]/35 underline-offset-4"
+            className="text-slate-700 underline decoration-slate-400/70 underline-offset-3"
             rel="noreferrer"
             target="_blank"
           >
