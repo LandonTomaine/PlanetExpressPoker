@@ -50,7 +50,7 @@ Use a least-privilege Cloudflare API token. It should only be able to deploy the
 
 ## Dependency Updates
 
-Dependabot is enabled for npm packages and GitHub Actions. Clean passing Dependabot PRs may be approved and merged by the weekly review workflow. Blocked dependency PRs are labeled for Codex follow-up. Do not merge dependency updates without a passing CI run.
+Dependabot is enabled for npm packages and GitHub Actions. The weekly review workflow reviews clean passing Dependabot PRs and labels blocked dependency PRs for Codex follow-up. Do not merge dependency updates without a passing CI run.
 
 ## Reporting
 

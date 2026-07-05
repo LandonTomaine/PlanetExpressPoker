@@ -67,7 +67,7 @@ Security safeguards include:
 
 - CodeQL scanning on pushes to `main`, pull requests, and a weekly schedule.
 - Dependabot alerts and weekly update PRs for npm and GitHub Actions.
-- Weekly Dependabot review automation labels blocked dependency PRs for Codex follow-up and may approve and merge clean passing updates.
+- Weekly Dependabot review automation reviews clean passing dependency PRs and labels blocked updates for Codex follow-up.
 - `npm audit --audit-level=moderate` for local dependency vulnerability checks.
 - `scripts/check-public-readiness.mjs` for repo-specific architecture/security checks.
 
