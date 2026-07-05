@@ -5,6 +5,15 @@ export type Room = {
   updatedAt: string
 }
 
+export type RoomSummary = {
+  roomId: string
+  roomName: string
+  participantCount: number
+  currentClientRole: ParticipantRole | null
+  isCurrentClientOwner: boolean
+  updatedAt: string
+}
+
 export type RoomFunLevel = 'disabled' | 'chaotic'
 
 export type RoomSettings = {

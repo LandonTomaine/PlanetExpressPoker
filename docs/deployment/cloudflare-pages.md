@@ -14,15 +14,19 @@ If you are deploying a fork with your own Cloudflare and Supabase resources, sta
 Use this for the normal hosted path.
 
 The repo deploys to Cloudflare Pages from GitHub Actions after pull requests are merged to `main`.
+Before the Cloudflare deploy step, the workflow links to the hosted Supabase project and runs `supabase db push` so production migrations land before the frontend is published.
 
 Required GitHub repository secrets:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
+- `SUPABASE_ACCESS_TOKEN`
+- `SUPABASE_DB_PASSWORD`
+- `SUPABASE_PROJECT_REF`
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
-Only use the Supabase anon/publishable public key. Never add the Supabase secret or service-role key to GitHub or Cloudflare for this frontend.
+Only use the Supabase anon/publishable public key for `VITE_SUPABASE_ANON_KEY`. Never add the Supabase service-role key to GitHub or Cloudflare for this frontend.
 
 Cloudflare project settings:
 
@@ -74,6 +78,7 @@ npx.cmd supabase db push
 ```
 
 Copy the hosted Project URL and anon/publishable public key into GitHub repository secrets as `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`.
+Also add `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`, and `SUPABASE_ACCESS_TOKEN` so the deploy workflow can apply migrations automatically.
 
 ## Direct Cloudflare Upload
 

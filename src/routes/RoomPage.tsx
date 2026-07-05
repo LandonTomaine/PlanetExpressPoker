@@ -1,6 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import {
   getAvatarOption,
   avatarOptions,
@@ -12,9 +12,11 @@ import {
 } from '../features/identity/displayName'
 import {
   clearActiveRoomName,
+  clearRoomNamePrefill,
   createClientId,
   readActiveRoomName,
   readStoredIdentity,
+  saveRoomNamePrefill,
   saveActiveRoomName,
   saveStoredIdentity,
 } from '../features/identity/storage'
@@ -64,6 +66,7 @@ import {
 import type {
   JoinedParticipant,
   Participant,
+  ParticipantRole,
   PresenceParticipant,
   Room,
   RoundReactionKind,
@@ -176,6 +179,7 @@ type RoomPageProps = {
 }
 
 export function RoomPage({ mode = 'normal' }: RoomPageProps) {
+  const location = useLocation()
   const navigate = useNavigate()
   const { roomName: roomNameParam = '' } = useParams()
   const displayRoomName = normalizeRoomName(roomNameParam)
@@ -248,6 +252,11 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const [avatarKey, setAvatarKey] = useState(
     () => readStoredIdentity().avatarKey
   )
+  const [joinRole, setJoinRole] = useState<ParticipantRole>(() => {
+    const searchParams = new URLSearchParams(location.search)
+
+    return searchParams.get('joinAs') === 'spectator' ? 'spectator' : 'voter'
+  })
   const { participants, presenceByParticipantId, errorMessage } =
     useRoomLiveState({ room, selfParticipant })
   const { roomSettings, errorMessage: roomSettingsErrorMessage } =
@@ -393,6 +402,15 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     void handleHypnotoadLogoClick()
   })
 
+  function navigateHomeWithRoomPrefill() {
+    if (!isSimulatorMode && displayRoomName) {
+      saveRoomNamePrefill(displayRoomName)
+      clearActiveRoomName()
+    }
+
+    navigate('/')
+  }
+
   function resetForSelfLeave() {
     if (!isSimulatorMode) {
       clearActiveRoomName()
@@ -508,17 +526,21 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
 
     queueMicrotask(() => {
-      if (!isSimulatorMode) {
-        clearActiveRoomName()
-      }
       setSelfParticipant(null)
       setOptimisticOwnCardValue(null)
       setVoteError('You were kicked from this room.')
       setParticipantActionError(null)
+      if (!isSimulatorMode && displayRoomName) {
+        saveRoomNamePrefill(displayRoomName)
+        clearActiveRoomName()
+      }
+      navigate('/')
     })
   }, [
+    displayRoomName,
     identity.clientId,
     isSimulatorMode,
+    navigate,
     participants,
     room?.name,
     selfParticipant,
@@ -578,6 +600,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   async function handleJoin(input?: {
     displayName: string
     avatarKey: string
+    role?: ParticipantRole
     silent?: boolean
   }) {
     if (!room) {
@@ -589,6 +612,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       input?.displayName ?? displayName
     )
     const nextAvatarKey = input?.avatarKey ?? avatarKey
+    const nextRole = input?.role ?? (input?.silent ? null : joinRole)
 
     setIsJoining(true)
     setJoinError(null)
@@ -626,6 +650,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         clientId,
         displayName: nextDisplayName,
         avatarKey: nextAvatarKey,
+        role: nextRole,
       })
 
       const nextIdentity = {
@@ -642,6 +667,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       setIdentity(nextIdentity)
       setDisplayName(participant.displayName)
       setAvatarKey(participant.avatarKey)
+      setJoinRole(participant.role)
       setSelfParticipant(participant)
       setVoteError(null)
       setRevealError(null)
@@ -1163,6 +1189,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         clientId,
         displayName,
         avatarKey: avatar.key,
+        role: 'voter',
       })
 
       setDevClientIdByParticipantId((currentClientIds) => ({
@@ -1482,6 +1509,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       })
 
       resetForSelfLeave()
+      navigateHomeWithRoomPrefill()
     } catch (error) {
       setParticipantActionError(
         error instanceof Error ? error.message : 'Failed to leave room.'
@@ -1507,6 +1535,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       })
 
       clearActiveRoomName()
+      clearRoomNamePrefill()
       setSelfParticipant(null)
       setIsShutdownConfirmOpen(false)
       navigate('/')
@@ -1779,6 +1808,47 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
           <div>
             <span className="text-xs font-black uppercase text-[var(--pep-ink-soft)]">
+              Join as
+            </span>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                aria-pressed={joinRole === 'voter'}
+                onClick={() => setJoinRole('voter')}
+                disabled={isJoining || isRoomLoading}
+                className={[
+                  'rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
+                  joinRole === 'voter'
+                    ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#fff6bf,_#f4d44f)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                    : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
+                ].join(' ')}
+              >
+                Voter
+              </button>
+              <button
+                type="button"
+                aria-pressed={joinRole === 'spectator'}
+                onClick={() => setJoinRole('spectator')}
+                disabled={isJoining || isRoomLoading}
+                className={[
+                  'rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
+                  joinRole === 'spectator'
+                    ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#e4f6ef,_#bfe7d8)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                    : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
+                ].join(' ')}
+              >
+                Spectator
+              </button>
+            </div>
+            <p className="mt-2 text-xs font-semibold text-[var(--pep-ink-soft)]">
+              {joinRole === 'spectator'
+                ? 'Spectators join immediately without voting cards.'
+                : "Voters can estimate right away. The room is created if it doesn't exist yet."}
+            </p>
+          </div>
+
+          <div>
+            <span className="text-xs font-black uppercase text-[var(--pep-ink-soft)]">
               Avatar
             </span>
             <div className="mt-2 grid grid-cols-5 gap-2 sm:grid-cols-8">
@@ -1823,7 +1893,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             }
             className="w-full rounded-[14px] border-2 border-[var(--pep-ink)] bg-[var(--pep-accent)] px-5 py-3 text-sm font-black uppercase text-white shadow-[0_8px_0_rgba(20,38,51,0.24)] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
           >
-            Join room
+            {joinRole === 'spectator' ? 'Join as spectator' : 'Join as voter'}
           </button>
         </div>
       </motion.section>
@@ -2303,6 +2373,24 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     ? 'Effects: on'
                     : 'Effects: off'}
                 </button>
+                {!isSelfRoomOwner && isJoinedToRoom ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      selfParticipant
+                        ? void handleLeaveRoom(selfParticipant.participantId)
+                        : undefined
+                    }
+                    disabled={
+                      !selfParticipant ||
+                      pendingParticipantActionId ===
+                        selfParticipant.participantId
+                    }
+                    className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                  >
+                    Leave room
+                  </button>
+                ) : null}
                 {isSelfRoomOwner ? (
                   <button
                     type="button"
