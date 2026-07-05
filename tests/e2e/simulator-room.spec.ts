@@ -9,7 +9,7 @@ test('simulator room supports join, voting, reveal, and result summary', async (
 
   const joinDialog = page.getByRole('dialog', { name: roomName })
   await joinDialog.getByPlaceholder('Hermes').fill('Leela E2E')
-  await joinDialog.getByRole('button', { name: 'Join room' }).click()
+  await joinDialog.getByRole('button', { name: 'Join as voter' }).click()
 
   await expect(page.getByText('Connected')).toBeVisible()
   await expect(

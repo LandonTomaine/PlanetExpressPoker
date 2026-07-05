@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
   avatarOptions,
@@ -10,25 +10,48 @@ import {
   normalizeDisplayName,
 } from '../features/identity/displayName'
 import {
+  clearActiveRoomName,
+  clearRoomNamePrefill,
   readActiveRoomName,
+  readRoomNamePrefill,
   readStoredIdentity,
   saveActiveRoomName,
+  saveRoomNamePrefill,
   saveStoredIdentity,
 } from '../features/identity/storage'
+import {
+  leaveRoom,
+  listClientRooms,
+  shutdownRoom,
+} from '../features/room/data/roomApi'
+import { useRoomPresenceCounts } from '../features/room/realtime/useRoomPresenceCounts'
 import {
   getRoomNameError,
   maxRoomNameLength,
   normalizeRoomName,
   roomNameInputPattern,
 } from '../features/room/roomName'
+import type { ParticipantRole, RoomSummary } from '../features/room/types'
 
 export function HomePage() {
   const navigate = useNavigate()
-  const [roomName, setRoomName] = useState(() => readActiveRoomName() ?? '')
+  const [roomName, setRoomName] = useState(
+    () => readRoomNamePrefill() ?? readActiveRoomName() ?? ''
+  )
   const [identity, setIdentity] = useState(() => readStoredIdentity())
+  const [joinRole, setJoinRole] = useState<ParticipantRole>('voter')
+  const [myRooms, setMyRooms] = useState<RoomSummary[]>([])
+  const [isMyRoomsLoading, setIsMyRoomsLoading] = useState(true)
+  const [myRoomsError, setMyRoomsError] = useState<string | null>(null)
+  const [pendingRoomActionId, setPendingRoomActionId] = useState<string | null>(
+    null
+  )
   const roomNameError = getRoomNameError(roomName)
   const hasDisplayName = Boolean(normalizeDisplayName(identity.displayName))
   const canOpenRoom = !roomNameError && hasDisplayName
+  const onlineCountByRoomName = useRoomPresenceCounts(
+    myRooms.map((roomSummary) => roomSummary.roomName)
+  )
 
   const openRoom = () => {
     const normalizedRoomName = normalizeRoomName(roomName)
@@ -43,7 +66,125 @@ export function HomePage() {
       displayName: normalizedDisplayName,
     })
     saveActiveRoomName(normalizedRoomName)
-    navigate(`/rooms/${encodeURIComponent(normalizedRoomName)}`)
+    saveRoomNamePrefill(normalizedRoomName)
+    navigate({
+      pathname: `/rooms/${encodeURIComponent(normalizedRoomName)}`,
+      search: joinRole === 'spectator' ? '?joinAs=spectator' : '',
+    })
+  }
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const loadMyRooms = async () => {
+      setIsMyRoomsLoading(true)
+
+      try {
+        const nextRooms = await listClientRooms(identity.clientId)
+
+        if (!isCancelled) {
+          setMyRooms(nextRooms)
+          setMyRoomsError(null)
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setMyRoomsError(
+            error instanceof Error
+              ? error.message
+              : 'Failed to load your rooms.'
+          )
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsMyRoomsLoading(false)
+        }
+      }
+    }
+
+    void loadMyRooms()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [identity.clientId])
+
+  async function refreshMyRooms() {
+    setIsMyRoomsLoading(true)
+
+    try {
+      const nextRooms = await listClientRooms(identity.clientId)
+      setMyRooms(nextRooms)
+      setMyRoomsError(null)
+    } catch (error) {
+      setMyRoomsError(
+        error instanceof Error ? error.message : 'Failed to load your rooms.'
+      )
+    } finally {
+      setIsMyRoomsLoading(false)
+    }
+  }
+
+  function openSavedRoom(summary: RoomSummary) {
+    saveActiveRoomName(summary.roomName)
+    saveRoomNamePrefill(summary.roomName)
+    navigate({
+      pathname: `/rooms/${encodeURIComponent(summary.roomName)}`,
+      search:
+        summary.currentClientRole === 'spectator' ? '?joinAs=spectator' : '',
+    })
+  }
+
+  async function handleLeaveSavedRoom(summary: RoomSummary) {
+    setPendingRoomActionId(summary.roomId)
+    setMyRoomsError(null)
+
+    try {
+      await leaveRoom({
+        roomId: summary.roomId,
+        actorClientId: identity.clientId,
+      })
+
+      if (readActiveRoomName() === summary.roomName) {
+        clearActiveRoomName()
+      }
+
+      await refreshMyRooms()
+    } catch (error) {
+      setMyRoomsError(
+        error instanceof Error ? error.message : 'Failed to leave room.'
+      )
+    } finally {
+      setPendingRoomActionId(null)
+    }
+  }
+
+  async function handleShutdownSavedRoom(summary: RoomSummary) {
+    if (!window.confirm(`Close room "${summary.roomName}" for everyone?`)) {
+      return
+    }
+
+    setPendingRoomActionId(summary.roomId)
+    setMyRoomsError(null)
+
+    try {
+      await shutdownRoom({
+        roomId: summary.roomId,
+        actorClientId: identity.clientId,
+      })
+
+      if (readActiveRoomName() === summary.roomName) {
+        clearActiveRoomName()
+        clearRoomNamePrefill()
+      }
+
+      await refreshMyRooms()
+    } catch (error) {
+      setMyRoomsError(
+        error instanceof Error ? error.message : 'Failed to close room.'
+      )
+    } finally {
+      setPendingRoomActionId(null)
+    }
   }
 
   return (
@@ -123,6 +264,44 @@ export function HomePage() {
             </label>
             <div>
               <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
+                Join as
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  aria-pressed={joinRole === 'voter'}
+                  onClick={() => setJoinRole('voter')}
+                  className={[
+                    'rounded-[10px] border px-4 py-3 text-sm font-black uppercase transition',
+                    joinRole === 'voter'
+                      ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#fff6bf,_#f4d44f)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                      : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
+                  ].join(' ')}
+                >
+                  Voter
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={joinRole === 'spectator'}
+                  onClick={() => setJoinRole('spectator')}
+                  className={[
+                    'rounded-[10px] border px-4 py-3 text-sm font-black uppercase transition',
+                    joinRole === 'spectator'
+                      ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#e4f6ef,_#bfe7d8)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                      : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
+                  ].join(' ')}
+                >
+                  Spectator
+                </button>
+              </div>
+              <p className="mt-2 text-xs font-semibold text-[var(--pep-ink-soft)]">
+                {joinRole === 'spectator'
+                  ? 'Spectators can watch the room from the start without voting.'
+                  : "Voters can estimate immediately. The room is created if it doesn't exist yet."}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
                 Avatar
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -168,13 +347,118 @@ export function HomePage() {
               disabled={!canOpenRoom}
               className="rounded-[10px] bg-[var(--pep-accent)] px-5 py-3 text-sm font-black uppercase text-white shadow-[0_10px_24px_rgba(212,47,38,0.28)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
             >
-              Create or join room
+              {joinRole === 'spectator' ? 'Join as spectator' : 'Join as voter'}
             </button>
           </div>
           <p className="mt-3 text-sm text-[var(--pep-ink-soft)]">
             Your name and avatar are remembered on this browser. Names are
             limited to {maxDisplayNameLength} characters.
           </p>
+        </div>
+
+        <div className="mt-5 max-w-2xl rounded-[14px] border border-[var(--pep-line)] bg-white/88 p-4 shadow-[0_14px_34px_rgba(12,32,42,0.08)]">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
+                Your rooms
+              </p>
+              <p className="mt-1 text-sm text-[var(--pep-ink-soft)]">
+                Active rooms for this browser identity.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void refreshMyRooms()}
+              disabled={isMyRoomsLoading}
+              className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+            >
+              Refresh
+            </button>
+          </div>
+
+          {myRoomsError ? (
+            <p className="mt-4 rounded-2xl border border-[var(--pep-accent)]/20 bg-[var(--pep-accent)]/10 px-4 py-3 text-sm font-medium text-[var(--pep-accent)]">
+              {myRoomsError}
+            </p>
+          ) : null}
+
+          {isMyRoomsLoading ? (
+            <p className="mt-4 rounded-[12px] border border-[var(--pep-line)] bg-white/70 px-4 py-3 text-sm text-[var(--pep-ink-soft)]">
+              Loading your rooms...
+            </p>
+          ) : myRooms.length === 0 ? (
+            <p className="mt-4 rounded-[12px] border border-dashed border-[var(--pep-line-strong)] bg-white/70 px-4 py-3 text-sm text-[var(--pep-ink-soft)]">
+              You are not currently part of any rooms on this browser.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {myRooms.map((roomSummary) => {
+                const isPending = pendingRoomActionId === roomSummary.roomId
+
+                return (
+                  <div
+                    key={roomSummary.roomId}
+                    className="rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94),_rgba(237,245,242,0.92))] p-3 shadow-[0_8px_20px_rgba(12,32,42,0.05)]"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate font-[var(--pep-font-display)] text-2xl text-[var(--pep-ink)]">
+                          {roomSummary.roomName}
+                        </h3>
+                        <div className="mt-2 flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-[0.06em]">
+                          <span className="rounded-full bg-emerald-100 px-2 py-1 text-emerald-800">
+                            {onlineCountByRoomName[roomSummary.roomName] ?? 0}{' '}
+                            online
+                          </span>
+                          <span className="rounded-full bg-slate-200 px-2 py-1 text-slate-700">
+                            {roomSummary.participantCount} in room
+                          </span>
+                          <span className="rounded-full bg-sky-100 px-2 py-1 text-sky-800">
+                            {roomSummary.isCurrentClientOwner
+                              ? 'owner'
+                              : (roomSummary.currentClientRole ??
+                                'participant')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openSavedRoom(roomSummary)}
+                          className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)]"
+                        >
+                          Open room
+                        </button>
+                        {roomSummary.isCurrentClientOwner ? (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handleShutdownSavedRoom(roomSummary)
+                            }
+                            disabled={isPending}
+                            className="rounded-[10px] border border-[var(--pep-accent)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-accent)] shadow-[0_6px_14px_rgba(212,47,38,0.12)] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+                          >
+                            Close room
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              void handleLeaveSavedRoom(roomSummary)
+                            }
+                            disabled={isPending}
+                            className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
+                          >
+                            Leave room
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2 text-xs font-black uppercase text-[var(--pep-ink)]">

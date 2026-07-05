@@ -2,6 +2,7 @@ import { defaultAvatar } from './avatars'
 
 const identityStorageKey = 'pep.identity.v1'
 const activeRoomStorageKey = 'pep.active-room.v1'
+const roomNamePrefillStorageKey = 'pep.room-name-prefill.v1'
 
 export type StoredIdentity = {
   clientId: string
@@ -93,4 +94,28 @@ export function clearActiveRoomName() {
   }
 
   window.sessionStorage.removeItem(activeRoomStorageKey)
+}
+
+export function readRoomNamePrefill() {
+  if (!isBrowser()) {
+    return null
+  }
+
+  return window.sessionStorage.getItem(roomNamePrefillStorageKey)
+}
+
+export function saveRoomNamePrefill(roomName: string) {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.sessionStorage.setItem(roomNamePrefillStorageKey, roomName)
+}
+
+export function clearRoomNamePrefill() {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.sessionStorage.removeItem(roomNamePrefillStorageKey)
 }

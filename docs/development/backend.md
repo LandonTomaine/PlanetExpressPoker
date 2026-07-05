@@ -49,6 +49,7 @@ Use:
 Keep backend access grouped by feature path:
 
 - room creation and lookup
+- room directory and browser-scoped membership summaries
 - participant join and leave
 - role and kick changes
 - vote submission

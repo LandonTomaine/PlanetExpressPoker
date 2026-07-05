@@ -7,6 +7,7 @@ import type {
   Room,
   RoomFunLevel,
   RoomSettings,
+  RoomSummary,
   Round,
   RoundReactionKind,
   SubmittedVote,
@@ -37,6 +38,15 @@ const roomSettingsSchema = z.object({
   reveal_countdown_enabled: z.boolean(),
   reveal_countdown_seconds: z.number().int().min(1),
   fun_level: z.enum(['disabled', 'chaotic']),
+  updated_at: z.string(),
+})
+
+const roomSummarySchema = z.object({
+  room_id: z.string().uuid(),
+  room_name: z.string().min(1),
+  participant_count: z.number().int().min(0),
+  current_client_role: z.enum(['voter', 'spectator']).nullable(),
+  current_client_is_owner: z.boolean(),
   updated_at: z.string(),
 })
 
@@ -181,6 +191,19 @@ function mapRoomSettings(
   }
 }
 
+function mapRoomSummary(
+  summary: z.infer<typeof roomSummarySchema>
+): RoomSummary {
+  return {
+    roomId: summary.room_id,
+    roomName: summary.room_name,
+    participantCount: summary.participant_count,
+    currentClientRole: summary.current_client_role,
+    isCurrentClientOwner: summary.current_client_is_owner,
+    updatedAt: summary.updated_at,
+  }
+}
+
 function mapJoinedParticipant(
   participant: z.infer<typeof joinedParticipantSchema>
 ): JoinedParticipant {
@@ -265,12 +288,14 @@ export async function joinRoom(input: {
   clientId: string
   displayName: string
   avatarKey: string
+  role?: ParticipantRole | null
 }) {
   const { data, error } = await supabase.rpc('join_room', {
     requested_room_name: input.roomName,
     participant_client_id: input.clientId,
     participant_display_name: input.displayName,
     participant_avatar_key: input.avatarKey,
+    participant_role: input.role ?? null,
   })
 
   if (error) {
@@ -292,6 +317,36 @@ export async function listParticipants(roomId: string) {
   }
 
   return z.array(participantSchema).parse(data).map(mapParticipant)
+}
+
+export async function listRooms(input: {
+  actorClientId: string
+  pageOffset?: number
+  pageSize?: number
+}) {
+  const { data, error } = await supabase.rpc('list_rooms', {
+    actor_client_id: input.actorClientId,
+    target_page_offset: input.pageOffset ?? 0,
+    target_page_size: input.pageSize ?? 25,
+  })
+
+  if (error) {
+    throw new Error(getMessage(error))
+  }
+
+  return z.array(roomSummarySchema).parse(data).map(mapRoomSummary)
+}
+
+export async function listClientRooms(actorClientId: string) {
+  const { data, error } = await supabase.rpc('list_client_rooms', {
+    actor_client_id: actorClientId,
+  })
+
+  if (error) {
+    throw new Error(getMessage(error))
+  }
+
+  return z.array(roomSummarySchema).parse(data).map(mapRoomSummary)
 }
 
 export async function getRoomSettings(roomId: string) {

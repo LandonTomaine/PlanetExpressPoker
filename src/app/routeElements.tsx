@@ -6,6 +6,11 @@ const HomePage = lazy(() =>
 const RoomPage = lazy(() =>
   import('../routes/RoomPage').then((module) => ({ default: module.RoomPage }))
 )
+const RoomsPage = lazy(() =>
+  import('../routes/RoomsPage').then((module) => ({
+    default: module.RoomsPage,
+  }))
+)
 
 export function HomeRoute() {
   return (
@@ -19,6 +24,14 @@ export function RoomRoute() {
   return (
     <RouteSuspense>
       <RoomPage />
+    </RouteSuspense>
+  )
+}
+
+export function RoomsRoute() {
+  return (
+    <RouteSuspense>
+      <RoomsPage />
     </RouteSuspense>
   )
 }

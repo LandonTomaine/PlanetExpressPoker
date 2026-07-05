@@ -84,11 +84,14 @@ Add these repository secrets to your fork:
 ```text
 CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
+SUPABASE_ACCESS_TOKEN
+SUPABASE_DB_PASSWORD
+SUPABASE_PROJECT_REF
 VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
 ```
 
-Use hosted Supabase values for `VITE_SUPABASE_*`, not local Supabase values.
+Use hosted Supabase values for `VITE_SUPABASE_*`, not local Supabase values. The deploy workflow also uses `SUPABASE_*` to apply migrations before deploying the frontend.
 
 ## 6. Optional Codex Reviews
 

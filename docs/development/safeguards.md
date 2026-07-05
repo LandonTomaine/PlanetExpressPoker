@@ -49,7 +49,7 @@ GitHub Actions protects pushes and pull requests with:
 - Production build
 - Playwright E2E smoke test with local Supabase
 
-Deployment is handled by a separate Cloudflare Pages workflow guarded to the intended repository.
+Deployment is handled by a separate Cloudflare Pages workflow guarded to the intended repository. That workflow also applies hosted Supabase migrations before publishing the frontend.
 
 Codex pull request review is handled by the ChatGPT/Codex GitHub connector. It is configured outside the repository, and forks must authorize their own Codex GitHub connector if they want automated reviews.
 
