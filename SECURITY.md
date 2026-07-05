@@ -24,7 +24,7 @@ Repository workflows are intended to be safe for public forks:
 - Deploy runs only on `push` to `main`.
 - Deploy is guarded to run only in `LandonTomaine/PlanetExpressPoker`.
 - GitHub repository secrets are not copied to forks.
-- CodeRabbit configuration is public, but the GitHub App installation is account/repository-scoped and is not inherited by forks.
+- Codex pull request review is configured through the ChatGPT/Codex GitHub app and is not inherited by forks.
 
 If you fork this repo and want your fork to deploy, update `.github/workflows/deploy-cloudflare.yml`, `wrangler.jsonc`, and `package.json` to point at your own repository/project/resources.
 
@@ -50,7 +50,7 @@ Use a least-privilege Cloudflare API token. It should only be able to deploy the
 
 ## Dependency Updates
 
-Dependabot is enabled for npm packages and GitHub Actions. Review and merge those PRs manually; do not auto-merge dependency updates without a passing CI run.
+Dependabot is enabled for npm packages and GitHub Actions. Clean passing Dependabot PRs may be approved and merged by the weekly review workflow. Blocked dependency PRs are labeled for Codex follow-up. Do not merge dependency updates without a passing CI run.
 
 ## Reporting
 

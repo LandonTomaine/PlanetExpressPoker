@@ -8,7 +8,7 @@ All changes must enter `main` through a pull request.
 2. Keep the change focused.
 3. Run the relevant local validation before pushing.
 4. Open a pull request.
-5. Wait for required CI, CodeQL, CodeRabbit, and owner review.
+5. Wait for required CI, CodeQL, Codex review, and owner review.
 6. Merge only after approval.
 
 ## Pull Request Expectations

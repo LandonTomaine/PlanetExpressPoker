@@ -43,7 +43,7 @@ npm.cmd run test:e2e
 - Use only Supabase anon/publishable public keys in frontend or GitHub Actions config.
 - Keep fork/PR workflows secret-free. Do not use `pull_request_target` for untrusted code.
 - Deployments must run only from protected `main` and only against the intended Cloudflare/Supabase resources.
-- Review Dependabot PRs manually; do not auto-merge dependency updates without passing CI.
+- Let the weekly Dependabot review workflow handle clean passing dependency PRs; do not merge dependency updates without passing CI.
 - Do not add paid/commercial positioning while the bundled Futurama / Planet Express-inspired assets remain.
 - Do not add new third-party media without documenting source and usage rights in [ASSET_NOTICES.md](ASSET_NOTICES.md).
 - Prefer small changes with clear validation over broad refactors.

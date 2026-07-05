@@ -90,18 +90,16 @@ VITE_SUPABASE_ANON_KEY
 
 Use hosted Supabase values for `VITE_SUPABASE_*`, not local Supabase values.
 
-## 6. Optional CodeRabbit Reviews
+## 6. Optional Codex Reviews
 
-This repository includes `.coderabbit.yaml` for concise pull request reviews that use the repo docs as guidance.
+This repository uses the ChatGPT/Codex GitHub connector for pull request review.
 
-CodeRabbit is optional. To enable it for your fork:
+Codex reviews are optional for forks. To enable them for your fork:
 
-1. Sign in to CodeRabbit with your own GitHub account.
-2. Install the CodeRabbit GitHub App for your account or organization.
-3. Grant access only to your forked repository.
-4. Confirm CodeRabbit comments or status checks appear on new pull requests.
-
-CodeRabbit documents an open-source option for public repositories. Check CodeRabbit's current plan and rate limits before depending on it.
+1. Connect GitHub from ChatGPT or Codex settings.
+2. Authorize the ChatGPT/Codex GitHub app for your forked repository.
+3. Enable automatic pull request reviews for the fork if desired.
+4. Confirm `chatgpt-codex-connector` reviews appear on new pull requests, or request one with `@codex review`.
 
 ## 7. Open A Pull Request And Deploy
 
