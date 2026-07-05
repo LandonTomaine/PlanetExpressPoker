@@ -49,18 +49,19 @@ export function App() {
             </div>
           </div>
 
-          {shouldShowNav ? (
-            <nav className="flex gap-2">
-              <AppNavLink to="/">Home</AppNavLink>
-            </nav>
-          ) : null}
+          <div className="flex flex-col items-start gap-2 sm:items-end">
+            {shouldShowNav ? (
+              <nav className="flex gap-2">
+                <AppNavLink to="/">Home</AppNavLink>
+              </nav>
+            ) : null}
+            <DeploymentStamp deploymentInfo={__PEP_DEPLOYMENT__} />
+          </div>
         </header>
 
         <main className="flex-1">
           <Outlet />
         </main>
-
-        <DeploymentStamp deploymentInfo={__PEP_DEPLOYMENT__} />
       </div>
     </div>
   )
@@ -97,12 +98,14 @@ function DeploymentStamp({
 }) {
   const deployedAt = formatDeploymentDate(deploymentInfo.deployedAt)
   const commitLabel = deploymentInfo.commitShortSha || 'local'
-  const branchLabel = deploymentInfo.branchName || 'local build'
+  const branchLabel = deploymentInfo.branchName || 'local'
 
   return (
-    <footer className="mt-5 flex flex-wrap items-center justify-between gap-2 rounded-[14px] border border-[var(--pep-line)] bg-white/62 px-4 py-3 text-[11px] font-black uppercase tracking-[0.08em] text-[var(--pep-ink-soft)] shadow-[0_10px_28px_rgba(12,32,42,0.06)]">
-      <span>Deployment</span>
-      <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+    <p className="max-w-full rounded-full border border-[var(--pep-line)] bg-white/62 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-[var(--pep-ink-soft)] shadow-[0_6px_16px_rgba(12,32,42,0.06)]">
+      <span className="sr-only">Deployment details: </span>
+      <span className="flex max-w-full flex-wrap items-center gap-x-1.5 gap-y-1">
+        <span>Build</span>
+        <span aria-hidden="true">/</span>
         <span>{deployedAt}</span>
         <span aria-hidden="true">/</span>
         <span>{branchLabel}</span>
@@ -120,7 +123,7 @@ function DeploymentStamp({
           <span>{commitLabel}</span>
         )}
       </span>
-    </footer>
+    </p>
   )
 }
 
