@@ -134,33 +134,6 @@ begin
 end;
 $$;
 
-create or replace function public.join_room(
-  requested_room_name text,
-  participant_client_id text,
-  participant_display_name text,
-  participant_avatar_key text
-)
-returns table (
-  result_participant_id uuid,
-  result_room_id uuid,
-  result_room_name text,
-  result_display_name text,
-  result_avatar_key text,
-  result_role text,
-  result_is_kicked boolean
-)
-language sql
-security definer
-set search_path = public
-as $$
-  select *
-  from public.join_room(
-    requested_room_name,
-    participant_client_id,
-    participant_display_name,
-    participant_avatar_key,
-    'voter'
-  );
-$$;
+drop function if exists public.join_room(text, text, text, text);
 
 grant execute on function public.join_room(text, text, text, text, text) to anon, authenticated;
