@@ -24,6 +24,27 @@ describe('App logo Hypnotoad trigger', () => {
 
     window.removeEventListener('pep:hypnotoad-logo-click', hypnotoadListener)
   })
+
+  it('suppresses each queued synthetic click after rapid touch activation', () => {
+    const hypnotoadListener = vi.fn()
+
+    window.addEventListener('pep:hypnotoad-logo-click', hypnotoadListener)
+
+    renderAppShell()
+
+    const logoButton = screen.getByRole('button', {
+      name: 'Planet Express logo',
+    })
+
+    fireEvent.touchEnd(logoButton)
+    fireEvent.touchEnd(logoButton)
+    fireEvent.click(logoButton)
+    fireEvent.click(logoButton)
+
+    expect(hypnotoadListener).toHaveBeenCalledTimes(2)
+
+    window.removeEventListener('pep:hypnotoad-logo-click', hypnotoadListener)
+  })
 })
 
 function renderAppShell() {

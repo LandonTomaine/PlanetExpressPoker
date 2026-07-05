@@ -14,18 +14,15 @@ declare const __PEP_DEPLOYMENT__: DeploymentInfo
 export function App() {
   const location = useLocation()
   const shouldShowNav = location.pathname !== '/'
-  const lastTouchLogoActivationAtRef = useRef<number | null>(null)
+  const pendingTouchLogoClickCountRef = useRef(0)
 
   function dispatchHypnotoadLogoClick() {
     window.dispatchEvent(new CustomEvent('pep:hypnotoad-logo-click'))
   }
 
   function handleLogoClick() {
-    if (
-      lastTouchLogoActivationAtRef.current !== null &&
-      Date.now() - lastTouchLogoActivationAtRef.current < 1000
-    ) {
-      lastTouchLogoActivationAtRef.current = null
+    if (pendingTouchLogoClickCountRef.current > 0) {
+      pendingTouchLogoClickCountRef.current -= 1
       return
     }
 
@@ -33,7 +30,7 @@ export function App() {
   }
 
   function handleLogoTouchEnd() {
-    lastTouchLogoActivationAtRef.current = Date.now()
+    pendingTouchLogoClickCountRef.current += 1
     dispatchHypnotoadLogoClick()
   }
 
