@@ -51,7 +51,7 @@ GitHub Actions protects pushes and pull requests with:
 
 Deployment is handled by a separate Cloudflare Pages workflow guarded to the intended repository.
 
-CodeRabbit is configured by `.coderabbit.yaml` for optional automated pull request review. It is not a secret-backed local dependency, and forks must install CodeRabbit under their own GitHub account or organization if they want those reviews.
+Codex pull request review is handled by the ChatGPT/Codex GitHub connector. It is configured outside the repository, and forks must authorize their own Codex GitHub connector if they want automated reviews.
 
 ## Repository Controls
 
@@ -67,6 +67,7 @@ Security safeguards include:
 
 - CodeQL scanning on pushes to `main`, pull requests, and a weekly schedule.
 - Dependabot alerts and weekly update PRs for npm and GitHub Actions.
+- Weekly Dependabot review automation reviews clean passing dependency PRs and labels blocked updates for Codex follow-up.
 - `npm audit --audit-level=moderate` for local dependency vulnerability checks.
 - `scripts/check-public-readiness.mjs` for repo-specific architecture/security checks.
 
@@ -95,7 +96,7 @@ The architecture check currently guards:
 Keep these docs aligned when safeguards change:
 
 - [tooling.md](tooling.md): command and hook reference
-- [../deployment/fork-setup.md](../deployment/fork-setup.md): fork-owned hosting and optional review automation
+- [../deployment/fork-setup.md](../deployment/fork-setup.md): fork-owned hosting and optional Codex review setup
 - [testing/strategy.md](testing/strategy.md): test layer expectations
 - [bootstrap-checklist.md](bootstrap-checklist.md): standards coverage ledger
 - [../../README.md](../../README.md): setup and common validation commands

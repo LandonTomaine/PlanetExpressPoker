@@ -147,13 +147,13 @@ The app includes Futurama/Planet Express-inspired media assets for private, pers
 - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 - Security: [SECURITY.md](SECURITY.md)
 
-## Optional CodeRabbit Reviews
+## Codex Pull Request Reviews
 
-This repo includes `.coderabbit.yaml` so CodeRabbit reviews use the project docs and stay concise.
+This repository uses the ChatGPT/Codex GitHub connector for pull request review.
 
-CodeRabbit is optional. To use it on a fork, install CodeRabbit for your own GitHub account or organization and grant access only to your fork. CodeRabbit documents an open-source option for public repositories, but check CodeRabbit's current plan limits before relying on it.
+Codex review is configured outside the repository through the ChatGPT/Codex GitHub app. It can automatically review new pull requests and can also be requested in a pull request with `@codex review`.
 
-Forks do not inherit this repository's CodeRabbit installation, GitHub secrets, Cloudflare account, or Supabase project.
+Forks do not inherit this repository's Codex GitHub connector configuration, GitHub secrets, Cloudflare account, or Supabase project.
 
 ## GitHub Secrets For Deployment
 

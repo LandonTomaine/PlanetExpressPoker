@@ -91,7 +91,7 @@ GitHub Actions runs formatting, linting, typechecking, unit tests, integration t
 
 CodeQL runs on pushes to `main`, pull requests, and a weekly schedule. It is separate from local hooks because it depends on GitHub code scanning.
 
-CodeRabbit review behavior is configured by `.coderabbit.yaml`. CodeRabbit is optional for forks; each fork owner must install it in their own GitHub account or organization if they want automated PR review.
+Codex pull request review is configured outside the repository through the ChatGPT/Codex GitHub connector. Fork owners must authorize their own connector if they want automated PR review.
 
 ## Validation Philosophy
 

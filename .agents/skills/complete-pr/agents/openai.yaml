@@ -1,4 +1,4 @@
 interface:
   display_name: 'Complete PR'
-  short_description: 'Finish PRs with checks and CodeRabbit review'
+  short_description: 'Finish PRs with checks and Codex review'
   default_prompt: 'Use $complete-pr to push this branch, open or update the PR, and complete the review workflow.'
