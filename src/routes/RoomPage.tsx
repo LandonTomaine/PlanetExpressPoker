@@ -168,6 +168,8 @@ const deliveryStormSequence = [
   'ArrowDown',
 ] as const
 const specialCardValues = ['ship', 'BIG', 'nibbler', 'coffee'] as const
+const revealCountdownDurationMs = 3_000
+const revealCountdownDurationSeconds = revealCountdownDurationMs / 1000
 
 type RoomPageProps = {
   mode?: 'normal' | 'simulator'
@@ -204,6 +206,12 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const [isShutdownSubmitting, setIsShutdownSubmitting] = useState(false)
   const [isShutdownConfirmOpen, setIsShutdownConfirmOpen] = useState(false)
   const [countdownNow, setCountdownNow] = useState(() => Date.now())
+  const [localCountdownStartedAt, setLocalCountdownStartedAt] = useState<
+    number | null
+  >(null)
+  const [optimisticRevealedRoundId, setOptimisticRevealedRoundId] = useState<
+    string | null
+  >(null)
   const [participantActionError, setParticipantActionError] = useState<
     string | null
   >(null)
@@ -660,6 +668,19 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const activeRoundVotes = votes.filter(
     (vote) => vote.roundId === activeRound?.id
   )
+  const isActiveRoundRevealedForDisplay = activeRound?.status === 'revealed'
+  const isActiveRoundFinalizingForDisplay =
+    !isActiveRoundRevealedForDisplay &&
+    Boolean(activeRound) &&
+    optimisticRevealedRoundId === activeRound?.id
+  const isActiveRoundVotingForDisplay =
+    activeRound?.status === 'voting' &&
+    localCountdownStartedAt === null &&
+    !isActiveRoundFinalizingForDisplay
+  const isActiveRoundCountdownForDisplay =
+    !isActiveRoundRevealedForDisplay &&
+    !isActiveRoundFinalizingForDisplay &&
+    (activeRound?.status === 'countdown' || localCountdownStartedAt !== null)
   const submittedVoteParticipantIds = new Set(
     activeRoundVotes.map((vote) => vote.participantId)
   )
@@ -669,18 +690,19 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     !isRevealSubmitting &&
     Boolean(activeRound) &&
     hasSubmittedVotes &&
-    activeRound?.status !== 'revealed'
+    !isActiveRoundRevealedForDisplay &&
+    !isActiveRoundFinalizingForDisplay
   const canStartCountdown =
     isJoinedToRoom &&
     !isCountdownSubmitting &&
     Boolean(activeRound) &&
     hasSubmittedVotes &&
-    activeRound?.status === 'voting'
+    isActiveRoundVotingForDisplay
   const canResetRound =
     isJoinedToRoom &&
     !isResetSubmitting &&
     Boolean(activeRound) &&
-    activeRound?.status === 'revealed'
+    isActiveRoundRevealedForDisplay
   const canShutdownRoom =
     isJoinedToRoom && isSelfRoomOwner && !isShutdownSubmitting
   const activeVoters = participants.filter(
@@ -702,7 +724,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const scoreSummary = buildScoreSummary(revealedCardValues)
   const hasMatchingNumericVotes = hasNumericConsensus(revealedCardValues)
   const isConsensusCelebration =
-    activeRound?.status === 'revealed' &&
+    isActiveRoundRevealedForDisplay &&
     allVotersHaveSubmitted &&
     scoreSummary.unanimousNumericValue !== null
   const roundReactionCategory =
@@ -710,26 +732,27 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       ? getRoundReactionCategory(revealedCardValues, hasMatchingNumericVotes)
       : null
   const isMilestoneRound =
-    activeRound?.status === 'revealed' && activeRound.roundNumber % 100 === 0
-
-  const effectiveCountdownSeconds =
-    activeRound?.status === 'countdown'
-      ? Math.min(activeRound.countdownSeconds, 3)
-      : null
-  const maxCountdownSeconds = effectiveCountdownSeconds ?? 3
-  const countdownSecondsRemaining =
+    activeRound !== null &&
+    isActiveRoundRevealedForDisplay &&
+    activeRound.roundNumber % 100 === 0
+  const serverCountdownStartedAt =
     activeRound?.status === 'countdown' && activeRound.countdownStartedAt
+      ? new Date(activeRound.countdownStartedAt).getTime()
+      : null
+  const countdownStartedAt = serverCountdownStartedAt ?? localCountdownStartedAt
+  const countdownEndsAt =
+    countdownStartedAt !== null
+      ? countdownStartedAt + revealCountdownDurationMs
+      : null
+  const countdownMsRemaining =
+    countdownEndsAt !== null && isActiveRoundCountdownForDisplay
+      ? Math.max(0, countdownEndsAt - countdownNow)
+      : null
+  const countdownSecondsRemaining =
+    countdownMsRemaining !== null && countdownMsRemaining > 0
       ? Math.min(
-          maxCountdownSeconds,
-          Math.max(
-            0,
-            Math.ceil(
-              (new Date(activeRound.countdownStartedAt).getTime() +
-                maxCountdownSeconds * 1000 -
-                countdownNow) /
-                1000
-            )
-          )
+          revealCountdownDurationSeconds,
+          Math.ceil(countdownMsRemaining / 1000)
         )
       : null
 
@@ -836,23 +859,42 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   }, [])
 
   useEffect(() => {
-    if (activeRound?.status !== 'countdown') {
+    if (!isActiveRoundCountdownForDisplay) {
       return
     }
 
     const intervalId = window.setInterval(() => {
       setCountdownNow(Date.now())
-    }, 250)
+    }, 100)
 
     return () => {
       window.clearInterval(intervalId)
     }
-  }, [activeRound?.countdownStartedAt, activeRound?.status])
+  }, [isActiveRoundCountdownForDisplay, countdownStartedAt])
 
   useEffect(() => {
     if (!activeRound) {
       lastSeenRoundNumberRef.current = null
+      queueMicrotask(() => {
+        setLocalCountdownStartedAt(null)
+        setOptimisticRevealedRoundId(null)
+      })
       return
+    }
+
+    if (
+      activeRound.status === 'countdown' ||
+      activeRound.status === 'revealed'
+    ) {
+      queueMicrotask(() => {
+        setLocalCountdownStartedAt(null)
+      })
+    }
+
+    if (activeRound.status === 'revealed') {
+      queueMicrotask(() => {
+        setOptimisticRevealedRoundId(null)
+      })
     }
 
     if (activeRound.status !== 'revealed') {
@@ -871,6 +913,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     lastSeenRoundNumberRef.current = activeRound.roundNumber
 
     queueMicrotask(() => {
+      setLocalCountdownStartedAt(null)
+      setOptimisticRevealedRoundId(null)
       setOptimisticOwnCardValue(null)
       setVoteError(null)
       setRevealError(null)
@@ -1053,19 +1097,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     if (
       !room ||
       !activeRound ||
-      activeRound.status !== 'countdown' ||
-      !activeRound.countdownStartedAt
+      !isActiveRoundCountdownForDisplay ||
+      countdownEndsAt === null
     ) {
       return
     }
 
-    const revealAt =
-      new Date(activeRound.countdownStartedAt).getTime() +
-      Math.min(activeRound.countdownSeconds, 3) * 1000
-    const revealDelayMs = Math.min(
-      Math.max(0, revealAt - Date.now()),
-      Math.min(activeRound.countdownSeconds, 3) * 1000
-    )
+    const revealDelayMs = Math.max(0, countdownEndsAt - Date.now())
     const timeoutId = window.setTimeout(() => {
       void finalizeRevealEvent()
     }, revealDelayMs)
@@ -1073,7 +1111,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     return () => {
       window.clearTimeout(timeoutId)
     }
-  }, [activeRound, room])
+  }, [activeRound, countdownEndsAt, isActiveRoundCountdownForDisplay, room])
 
   async function handleVote(cardValue: string) {
     if (!room || !selfParticipant) {
@@ -1183,6 +1221,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
+    setLocalCountdownStartedAt(Date.now())
+    setOptimisticRevealedRoundId(null)
+    setCountdownNow(Date.now())
     setIsCountdownSubmitting(true)
     setRevealError(null)
 
@@ -1197,6 +1238,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           ? error.message
           : 'Failed to start reveal countdown.'
       )
+      setLocalCountdownStartedAt(null)
       countdownAttemptRef.current = null
     } finally {
       setIsCountdownSubmitting(false)
@@ -1213,6 +1255,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     try {
       await revealRound({ roomId: room.id, actorClientId: identity.clientId })
+      setLocalCountdownStartedAt(null)
+      setOptimisticRevealedRoundId(activeRound?.id ?? null)
     } catch (error) {
       setRevealError(
         error instanceof Error ? error.message : 'Failed to reveal votes.'
@@ -1229,6 +1273,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     try {
       await revealRound({ roomId: room.id, actorClientId: identity.clientId })
+      setLocalCountdownStartedAt(null)
+      setOptimisticRevealedRoundId(activeRound?.id ?? null)
       setRevealError(null)
     } catch (error) {
       setRevealError(
@@ -1312,6 +1358,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         roomId: room.id,
         actorClientId: identity.clientId,
       })
+      setLocalCountdownStartedAt(null)
+      setOptimisticRevealedRoundId(null)
       setOptimisticOwnCardValue(null)
     } catch (error) {
       setRevealError(
@@ -1478,7 +1526,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       transition={{ duration: 0.2 }}
       className="mt-4 mb-4 min-h-[12rem] rounded-[18px] border-2 border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#fff7ce,_#ffffff_58%,_#d7f5eb)] p-4 shadow-[0_14px_34px_rgba(31,160,137,0.13)] sm:h-[12rem] sm:overflow-hidden"
     >
-      {activeRound?.status === 'revealed' ? (
+      {isActiveRoundRevealedForDisplay ? (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -1577,8 +1625,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.18, delay: index * 0.025 }}
-              whileHover={{ y: -3 }}
-              whileTap={{ scale: 0.97 }}
               className="h-24 sm:h-28"
             >
               <button
@@ -1593,10 +1639,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   !isJoinedToRoom ||
                   effectiveSelfRole !== 'voter' ||
                   isVoteSubmitting ||
-                  activeRound?.status !== 'voting'
+                  !isActiveRoundVotingForDisplay
                 }
                 className={[
-                  'relative flex h-full w-full flex-col justify-between rounded-[12px] border p-3 text-left shadow-[0_8px_18px_rgba(12,32,42,0.07)] transition',
+                  'relative flex h-full w-full flex-col justify-between rounded-[12px] border p-3 text-left shadow-[0_8px_18px_rgba(12,32,42,0.07)]',
                   isSelected
                     ? 'border-[var(--pep-accent)] bg-[linear-gradient(180deg,_#fff0b8,_#f4d44f)] ring-2 ring-[var(--pep-accent)]/20'
                     : 'border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#ffffff,_#dff7ef)] hover:border-[var(--pep-accent-2)]',
@@ -1748,7 +1794,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     disabled={isJoining || isRoomLoading}
                     title={avatarOption.label}
                     className={[
-                      'grid aspect-square place-items-center rounded-[12px] border p-1.5 transition',
+                      'grid aspect-square place-items-center rounded-[12px] border p-1.5',
                       isSelected
                         ? 'border-[var(--pep-accent)] bg-white shadow-[0_10px_24px_rgba(212,47,38,0.12)] ring-2 ring-[var(--pep-accent)]/12'
                         : 'border-[var(--pep-line)] bg-white/72 hover:border-[var(--pep-line-strong)]',
@@ -1775,13 +1821,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             disabled={
               isJoining || isRoomLoading || !displayName.trim() || !room
             }
-            className="w-full rounded-[14px] border-2 border-[var(--pep-ink)] bg-[var(--pep-accent)] px-5 py-3 text-sm font-black uppercase text-white shadow-[0_8px_0_rgba(20,38,51,0.24)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
+            className="w-full rounded-[14px] border-2 border-[var(--pep-ink)] bg-[var(--pep-accent)] px-5 py-3 text-sm font-black uppercase text-white shadow-[0_8px_0_rgba(20,38,51,0.24)] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-200 disabled:text-slate-500 disabled:shadow-none"
           >
-            {isJoining
-              ? 'Joining...'
-              : isRoomLoading
-                ? 'Opening room...'
-                : 'Join room'}
+            Join room
           </button>
         </div>
       </motion.section>
@@ -1836,7 +1878,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           const canDevVoteAsParticipant =
             isSimulatorMode &&
             isJoinedToRoom &&
-            activeRound?.status === 'voting' &&
+            isActiveRoundVotingForDisplay &&
             participant.role === 'voter' &&
             Boolean(devClientIdByParticipantId[participant.id])
 
@@ -1882,7 +1924,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   <p
                     className={[
                       'mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
-                      activeRound?.status === 'revealed'
+                      isActiveRoundRevealedForDisplay
                         ? revealedCardValue
                           ? [
                               'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
@@ -1892,7 +1934,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                         : 'border-transparent bg-transparent text-transparent',
                     ].join(' ')}
                   >
-                    {activeRound?.status === 'revealed'
+                    {isActiveRoundRevealedForDisplay
                       ? revealedCardValue
                         ? getCardDisplayLabel(revealedCardValue)
                         : 'No vote'
@@ -1935,17 +1977,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                         }
                         disabled={isParticipantActionPending}
                         className={[
-                          'grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
+                          'grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
                           nextRole === 'spectator'
                             ? 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)]'
                             : 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_5px_12px_rgba(31,152,134,0.18)]',
                         ].join(' ')}
                       >
-                        {isParticipantActionPending ? (
-                          <SpinnerIcon />
-                        ) : (
-                          <EyeIcon crossed={nextRole === 'spectator'} />
-                        )}
+                        <EyeIcon crossed={nextRole === 'spectator'} />
                       </button>
                       {isSelf && !isRoomOwner ? (
                         <button
@@ -1954,13 +1992,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                           title="Leave room"
                           onClick={() => void handleLeaveRoom(participant.id)}
                           disabled={isParticipantActionPending}
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                         >
-                          {isParticipantActionPending ? (
-                            <SpinnerIcon />
-                          ) : (
-                            <LeaveIcon />
-                          )}
+                          <LeaveIcon />
                         </button>
                       ) : isRoomOwner ? (
                         <span
@@ -1979,13 +2013,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                             void handleKick(participant.id, isRoomOwner)
                           }
                           disabled={isParticipantActionPending}
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_5px_12px_rgba(212,47,38,0.14)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_5px_12px_rgba(212,47,38,0.14)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                         >
-                          {isParticipantActionPending ? (
-                            <SpinnerIcon />
-                          ) : (
-                            <KickIcon />
-                          )}
+                          <KickIcon />
                         </button>
                       )}
                     </div>
@@ -1995,11 +2025,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                       type="button"
                       onClick={() => setDevVoteParticipantId(participant.id)}
                       disabled={pendingDevVoteParticipantId === participant.id}
-                      className="mt-2 mr-11 inline-flex min-h-7 items-center rounded-full border border-[var(--pep-line-strong)] bg-white/86 px-2.5 py-1 text-[10px] font-black text-[var(--pep-ink)] shadow-[0_4px_10px_rgba(12,32,42,0.06)] transition hover:-translate-y-0.5 hover:border-[var(--pep-accent-2)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                      className="mt-2 mr-11 inline-flex min-h-7 items-center rounded-full border border-[var(--pep-line-strong)] bg-white/86 px-2.5 py-1 text-[10px] font-black text-[var(--pep-ink)] shadow-[0_4px_10px_rgba(12,32,42,0.06)] hover:border-[var(--pep-accent-2)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                     >
-                      {pendingDevVoteParticipantId === participant.id
-                        ? 'Voting...'
-                        : 'Simulate vote'}
+                      Simulate vote
                     </button>
                   ) : null}
                 </div>
@@ -2010,7 +2038,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   hasSubmittedVote ? 'Vote submitted' : 'Waiting for vote'
                 }
                 className={[
-                  'absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2 transition',
+                  'absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
                   hasSubmittedVote
                     ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
                     : 'border-slate-300 bg-slate-100 text-slate-400',
@@ -2077,7 +2105,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             type="button"
             onClick={() => setIsShutdownConfirmOpen(false)}
             disabled={isShutdownSubmitting}
-            className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-2.5 text-sm font-black uppercase text-[var(--pep-ink)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:opacity-60"
+            className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-2.5 text-sm font-black uppercase text-[var(--pep-ink)] disabled:cursor-default disabled:opacity-60"
           >
             Cancel
           </button>
@@ -2086,13 +2114,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             onClick={() => void handleShutdownRoom()}
             disabled={!canShutdownRoom}
             className={[
-              'rounded-[10px] border-2 px-4 py-2.5 text-sm font-black uppercase transition',
+              'rounded-[10px] border-2 px-4 py-2.5 text-sm font-black uppercase',
               canShutdownRoom
-                ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-accent)] text-white shadow-[0_8px_0_rgba(20,38,51,0.22)] hover:-translate-y-0.5'
+                ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-accent)] text-white shadow-[0_8px_0_rgba(20,38,51,0.22)]'
                 : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
             ].join(' ')}
           >
-            {isShutdownSubmitting ? 'Closing...' : 'Close room'}
+            Close room
           </button>
         </div>
       </motion.section>
@@ -2136,9 +2164,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   onClick={() => void handleDevVote(cardValue)}
                   disabled={
                     pendingDevVoteParticipantId === devVoteParticipant.id ||
-                    activeRound?.status !== 'voting'
+                    !isActiveRoundVotingForDisplay
                   }
-                  className="min-h-16 rounded-[12px] border-2 border-[var(--pep-line-strong)] bg-white px-3 py-2 text-sm font-black text-[var(--pep-ink)] shadow-[0_7px_0_rgba(20,38,51,0.1)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none disabled:hover:translate-y-0"
+                  className="min-h-16 rounded-[12px] border-2 border-[var(--pep-line-strong)] bg-white px-3 py-2 text-sm font-black text-[var(--pep-ink)] shadow-[0_7px_0_rgba(20,38,51,0.1)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                 >
                   <span className="block">
                     {cardMeaningLabel ?? getCardDisplayLabel(cardValue)}
@@ -2157,7 +2185,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             <button
               type="button"
               onClick={() => setDevVoteParticipantId(null)}
-              className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-2.5 text-sm font-black uppercase text-[var(--pep-ink)] transition hover:-translate-y-0.5"
+              className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-2.5 text-sm font-black uppercase text-[var(--pep-ink)]"
             >
               Cancel
             </button>
@@ -2216,13 +2244,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   type="button"
                   disabled={isDeliveryInProgress}
                   onClick={() => void handleDeliveryDrop()}
-                  className="mt-4 flex w-full items-center justify-between gap-3 rounded-[14px] border border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#caf6e9,_#fff5b2)] px-4 py-3 text-left text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink)] shadow-[0_12px_24px_rgba(31,160,137,0.16)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none disabled:hover:translate-y-0"
+                  className="mt-4 flex w-full items-center justify-between gap-3 rounded-[14px] border border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#caf6e9,_#fff5b2)] px-4 py-3 text-left text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink)] shadow-[0_12px_24px_rgba(31,160,137,0.16)] disabled:cursor-default disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
                 >
-                  <span>
-                    {isDeliveryInProgress
-                      ? 'Delivery in progress'
-                      : 'Request Planet Express delivery'}
-                  </span>
+                  <span>Request Planet Express delivery</span>
                   <img
                     src="/planet-express-ship.png"
                     alt=""
@@ -2246,11 +2270,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                       type="button"
                       onClick={() => void handleSpawnDevParticipant()}
                       disabled={!room || isDevParticipantJoining}
-                      className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 disabled:cursor-default disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                      className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
                     >
-                      {isDevParticipantJoining
-                        ? 'Spawning...'
-                        : 'Spawn fake user'}
+                      Spawn fake user
                     </button>
                   </div>
                 </div>
@@ -2260,7 +2282,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 <button
                   type="button"
                   onClick={copyInviteLink}
-                  className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-sm font-semibold text-[var(--pep-ink)] transition hover:-translate-y-0.5"
+                  className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-sm font-semibold text-[var(--pep-ink)]"
                 >
                   Copy invite link
                 </button>
@@ -2271,17 +2293,15 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     !isJoinedToRoom || !roomSettings || isFunLevelSaving
                   }
                   className={[
-                    'rounded-[10px] px-3 py-2 text-xs font-black uppercase transition',
+                    'rounded-[10px] px-3 py-2 text-xs font-black uppercase',
                     roomSettings?.funLevel === 'chaotic'
                       ? 'bg-[var(--pep-accent)] text-white shadow-[0_10px_22px_rgba(212,47,38,0.24)]'
                       : 'border border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)]',
                   ].join(' ')}
                 >
-                  {isFunLevelSaving
-                    ? 'Saving...'
-                    : roomSettings?.funLevel === 'chaotic'
-                      ? 'Effects: on'
-                      : 'Effects: off'}
+                  {roomSettings?.funLevel === 'chaotic'
+                    ? 'Effects: on'
+                    : 'Effects: off'}
                 </button>
                 {isSelfRoomOwner ? (
                   <button
@@ -2289,13 +2309,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     onClick={() => setIsShutdownConfirmOpen(true)}
                     disabled={!canShutdownRoom}
                     className={[
-                      'rounded-[10px] border px-3 py-2 text-xs font-black uppercase transition',
+                      'rounded-[10px] border px-3 py-2 text-xs font-black uppercase',
                       canShutdownRoom
-                        ? 'cursor-pointer border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_8px_18px_rgba(212,47,38,0.12)] hover:-translate-y-0.5'
+                        ? 'cursor-pointer border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_8px_18px_rgba(212,47,38,0.12)]'
                         : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
                     ].join(' ')}
                   >
-                    {isShutdownSubmitting ? 'Closing...' : 'Close room'}
+                    Close room
                   </button>
                 ) : null}
               </div>
@@ -2421,7 +2441,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                             disabled={isJoining || isRoomLoading}
                             title={avatarOption.label}
                             className={[
-                              'grid h-11 w-11 place-items-center rounded-[10px] border p-1 transition',
+                              'grid h-11 w-11 place-items-center rounded-[10px] border p-1',
                               isSelected
                                 ? 'border-[var(--pep-accent)] bg-white shadow-[0_10px_24px_rgba(212,47,38,0.12)] ring-2 ring-[var(--pep-accent)]/12'
                                 : 'border-[var(--pep-line)] bg-white/72 hover:border-[var(--pep-line-strong)]',
@@ -2450,13 +2470,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     disabled={
                       isJoining || isRoomLoading || !displayName.trim() || !room
                     }
-                    className="rounded-[10px] bg-[var(--pep-accent)] px-4 py-2.5 text-sm font-black uppercase text-white shadow-[0_10px_24px_rgba(212,47,38,0.28)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded-[10px] bg-[var(--pep-accent)] px-4 py-2.5 text-sm font-black uppercase text-white shadow-[0_10px_24px_rgba(212,47,38,0.28)] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {isJoining
-                      ? 'Joining...'
-                      : isJoinedToRoom
-                        ? 'Update profile'
-                        : 'Join room'}
+                    {isJoinedToRoom ? 'Update profile' : 'Join room'}
                   </button>
                 </div>
               </motion.div>
@@ -2490,10 +2506,15 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 <p className="mt-2 text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink-soft)]">
                   Status:{' '}
                   <span className="text-[var(--pep-ink)]">
-                    {activeRound?.status === 'countdown' &&
+                    {isActiveRoundCountdownForDisplay &&
                     countdownSecondsRemaining !== null
                       ? `reveal in ${countdownSecondsRemaining}`
-                      : (activeRound?.status ?? 'loading')}
+                      : isActiveRoundRevealedForDisplay
+                        ? 'revealed'
+                        : isActiveRoundCountdownForDisplay ||
+                            isActiveRoundFinalizingForDisplay
+                          ? 'revealing'
+                          : (activeRound?.status ?? 'loading')}
                   </span>
                 </p>
               </div>
@@ -2503,39 +2524,39 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   onClick={() => void handleInstantReveal()}
                   disabled={!canReveal}
                   className={[
-                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase transition sm:text-sm',
+                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
                     canReveal
-                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-accent)] text-white shadow-[0_8px_0_rgba(20,38,51,0.24)] hover:-translate-y-0.5 hover:shadow-[0_10px_0_rgba(20,38,51,0.22)]'
+                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-accent)] text-white shadow-[0_8px_0_rgba(20,38,51,0.24)]'
                       : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
                   ].join(' ')}
                 >
-                  {isRevealSubmitting ? 'Revealing...' : 'Reveal'}
+                  Reveal
                 </button>
                 <button
                   type="button"
                   onClick={() => void handleRevealCountdown()}
                   disabled={!canStartCountdown}
                   className={[
-                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase transition sm:text-sm',
+                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
                     canStartCountdown
-                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_8px_0_rgba(20,38,51,0.18)] hover:-translate-y-0.5 hover:shadow-[0_10px_0_rgba(20,38,51,0.16)]'
+                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_8px_0_rgba(20,38,51,0.18)]'
                       : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
                   ].join(' ')}
                 >
-                  {isCountdownSubmitting ? 'Starting...' : 'Countdown'}
+                  Countdown
                 </button>
                 <button
                   type="button"
                   onClick={() => void handleResetRound()}
                   disabled={!canResetRound}
                   className={[
-                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase transition sm:text-sm',
+                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
                     canResetRound
-                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_0_rgba(20,38,51,0.24)] ring-4 ring-[var(--pep-yellow)]/35 hover:-translate-y-0.5 hover:shadow-[0_10px_0_rgba(20,38,51,0.2)]'
+                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_0_rgba(20,38,51,0.24)] ring-4 ring-[var(--pep-yellow)]/35'
                       : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
                   ].join(' ')}
                 >
-                  {isResetSubmitting ? 'Resetting...' : 'Next round'}
+                  Next round
                 </button>
               </div>
             </div>
@@ -2864,31 +2885,4 @@ function hasExactFibonacciSpread(cardValues: string[]) {
 
     return cardIndex === sortedCardIndexes[index - 1] + 1
   })
-}
-
-function SpinnerIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-4 w-4 animate-spin"
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="9"
-        stroke="currentColor"
-        strokeWidth="3"
-      />
-      <path
-        className="opacity-85"
-        d="M21 12a9 9 0 0 0-9-9"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
 }

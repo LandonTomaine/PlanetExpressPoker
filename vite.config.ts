@@ -2,6 +2,13 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
 
+const repositoryUrl = 'https://github.com/LandonTomaine/PlanetExpressPoker'
+const commitSha =
+  process.env.CF_PAGES_COMMIT_SHA ?? process.env.GITHUB_SHA ?? ''
+const commitShortSha = commitSha.slice(0, 7)
+const branchName =
+  process.env.CF_PAGES_BRANCH ?? process.env.GITHUB_REF_NAME ?? ''
+
 export default defineConfig({
   build: {
     rollupOptions: {
@@ -31,6 +38,15 @@ export default defineConfig({
         },
       },
     },
+  },
+  define: {
+    __PEP_DEPLOYMENT__: JSON.stringify({
+      branchName,
+      commitShortSha,
+      commitUrl: commitSha ? `${repositoryUrl}/commit/${commitSha}` : '',
+      deployedAt: new Date().toISOString(),
+      repositoryUrl,
+    }),
   },
   plugins: [react(), tailwindcss()],
   test: {
