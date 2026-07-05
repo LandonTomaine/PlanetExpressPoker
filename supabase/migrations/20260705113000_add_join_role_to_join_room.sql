@@ -26,7 +26,6 @@ declare
   normalized_role text := nullif(btrim(participant_role), '');
   target_room_id uuid;
   conflicting_participant_id uuid;
-  existing_participant_id uuid;
   existing_participant_kicked boolean;
   target_round_id uuid;
 begin
@@ -67,8 +66,8 @@ begin
     raise exception 'Display name is already in use for this room';
   end if;
 
-  select participants.id, participants.is_kicked
-  into existing_participant_id, existing_participant_kicked
+  select participants.is_kicked
+  into existing_participant_kicked
   from public.participants
   where participants.room_id = target_room_id
     and participants.client_id = normalized_client_id
@@ -78,63 +77,43 @@ begin
     raise exception 'You were kicked from this room';
   end if;
 
-  if existing_participant_id is null then
-    insert into public.participants (
-      room_id,
-      client_id,
-      display_name,
-      avatar_key,
-      role,
-      is_kicked
-    )
-    values (
-      target_room_id,
-      normalized_client_id,
-      normalized_display_name,
-      normalized_avatar_key,
-      coalesce(normalized_role, 'voter'),
-      false
-    )
-    returning
-      participants.id,
-      participants.room_id,
-      (select rooms.name from public.rooms where rooms.id = participants.room_id),
-      participants.display_name,
-      participants.avatar_key,
-      participants.role,
-      participants.is_kicked
-    into
-      result_participant_id,
-      result_room_id,
-      result_room_name,
-      result_display_name,
-      result_avatar_key,
-      result_role,
-      result_is_kicked;
-  else
-    update public.participants
-    set display_name = normalized_display_name,
-        avatar_key = normalized_avatar_key,
+  insert into public.participants (
+    room_id,
+    client_id,
+    display_name,
+    avatar_key,
+    role,
+    is_kicked
+  )
+  values (
+    target_room_id,
+    normalized_client_id,
+    normalized_display_name,
+    normalized_avatar_key,
+    coalesce(normalized_role, 'voter'),
+    false
+  )
+  on conflict (room_id, client_id) where is_kicked = false do update
+    set display_name = excluded.display_name,
+        avatar_key = excluded.avatar_key,
         role = coalesce(normalized_role, participants.role),
         is_kicked = false
-    where participants.id = existing_participant_id
-    returning
-      participants.id,
-      participants.room_id,
-      (select rooms.name from public.rooms where rooms.id = participants.room_id),
-      participants.display_name,
-      participants.avatar_key,
-      participants.role,
-      participants.is_kicked
-    into
-      result_participant_id,
-      result_room_id,
-      result_room_name,
-      result_display_name,
-      result_avatar_key,
-      result_role,
-      result_is_kicked;
-  end if;
+  returning
+    participants.id,
+    participants.room_id,
+    (select rooms.name from public.rooms where rooms.id = participants.room_id),
+    participants.display_name,
+    participants.avatar_key,
+    participants.role,
+    participants.is_kicked
+  into
+    result_participant_id,
+    result_room_id,
+    result_room_name,
+    result_display_name,
+    result_avatar_key,
+    result_role,
+    result_is_kicked;
 
   if result_role = 'spectator' then
     select rounds.id

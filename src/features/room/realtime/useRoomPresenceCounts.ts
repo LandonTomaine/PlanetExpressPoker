@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../../lib/supabase/client'
 import type { PresenceParticipant } from '../types'
 
@@ -6,9 +6,17 @@ export function useRoomPresenceCounts(roomNames: string[]) {
   const [onlineCountByRoomName, setOnlineCountByRoomName] = useState<
     Record<string, number>
   >({})
-  const activeRoomNames = Array.from(
-    new Set(roomNames.map((roomName) => roomName.trim()).filter(Boolean))
-  ).sort()
+  const normalizedRoomNamesKey = useMemo(() => {
+    return Array.from(
+      new Set(roomNames.map((roomName) => roomName.trim()).filter(Boolean))
+    )
+      .sort()
+      .join('\n')
+  }, [roomNames])
+
+  const activeRoomNames = useMemo(() => {
+    return normalizedRoomNamesKey ? normalizedRoomNamesKey.split('\n') : []
+  }, [normalizedRoomNamesKey])
 
   useEffect(() => {
     if (activeRoomNames.length === 0) {
