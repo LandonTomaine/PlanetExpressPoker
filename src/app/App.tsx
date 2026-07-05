@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
 type DeploymentInfo = {
@@ -13,9 +14,27 @@ declare const __PEP_DEPLOYMENT__: DeploymentInfo
 export function App() {
   const location = useLocation()
   const shouldShowNav = location.pathname !== '/'
+  const lastTouchLogoActivationAtRef = useRef<number | null>(null)
+
+  function dispatchHypnotoadLogoClick() {
+    window.dispatchEvent(new CustomEvent('pep:hypnotoad-logo-click'))
+  }
 
   function handleLogoClick() {
-    window.dispatchEvent(new CustomEvent('pep:hypnotoad-logo-click'))
+    if (
+      lastTouchLogoActivationAtRef.current !== null &&
+      Date.now() - lastTouchLogoActivationAtRef.current < 1000
+    ) {
+      lastTouchLogoActivationAtRef.current = null
+      return
+    }
+
+    dispatchHypnotoadLogoClick()
+  }
+
+  function handleLogoTouchEnd() {
+    lastTouchLogoActivationAtRef.current = Date.now()
+    dispatchHypnotoadLogoClick()
   }
 
   return (
@@ -26,8 +45,9 @@ export function App() {
             <button
               type="button"
               onClick={handleLogoClick}
+              onTouchEnd={handleLogoTouchEnd}
               aria-label="Planet Express logo"
-              style={{ cursor: 'default' }}
+              style={{ cursor: 'default', touchAction: 'manipulation' }}
               className="grid h-14 w-14 shrink-0 cursor-default place-items-center overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-white shadow-[0_12px_26px_rgba(12,32,42,0.1)]"
             >
               <img
