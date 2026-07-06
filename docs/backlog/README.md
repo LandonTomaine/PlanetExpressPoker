@@ -2,9 +2,9 @@
 
 This folder holds delivery tracking and implementation planning material.
 
-Use it for durable planning artifacts after product requirements are stable.
+Use it for durable planning artifacts after product requirements are stable. It is not the source of truth for product scope.
 
-## Suggested Structure
+## Structure
 
 - `index.md`: top-level backlog index and current priorities
 - one folder per capability when implementation planning begins
@@ -14,7 +14,7 @@ Use it for durable planning artifacts after product requirements are stable.
   - `workflows/`
   - `artifacts/`
 
-## Current State
+## Current Backlog
 
 Current capability backlogs:
 

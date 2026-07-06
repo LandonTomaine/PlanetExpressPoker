@@ -16,14 +16,14 @@ Lightweight planning poker with realtime rooms, persistent room state, animated 
 
 - Node.js 24.x
 - Git 2.32+
-- Docker Desktop, only if you want to run a local Supabase stack
+- Docker Desktop, only if you want a local Supabase stack
 - A Supabase account for hosted shared rooms
-- A Cloudflare account for hosted static frontend deployment
-- GitHub CLI is optional; the normal setup can be done through the GitHub website
+- A Cloudflare account for hosted frontend deployment
+- GitHub CLI is optional
 
 PowerShell note: if `npm` or `npx` are blocked by execution policy, use `npm.cmd` and `npx.cmd`.
 
-## Clone And Install
+## Quick Start
 
 ```powershell
 git clone https://github.com/LandonTomaine/PlanetExpressPoker.git
@@ -31,228 +31,28 @@ cd PlanetExpressPoker
 npm.cmd install
 ```
 
-If you are forking the repo for your own instance, use [docs/deployment/fork-setup.md](docs/deployment/fork-setup.md) as the authoritative checklist.
+Choose the smallest path that fits:
 
-## Local Frontend With Hosted Supabase
+- local Supabase or hosted Supabase for local development: [docs/development/getting-started.md](docs/development/getting-started.md)
+- Cloudflare Pages + hosted Supabase deployment: [docs/deployment/cloudflare-pages.md](docs/deployment/cloudflare-pages.md)
+- full fork setup with your own resources: [docs/deployment/fork-setup.md](docs/deployment/fork-setup.md)
 
-Use this when you want to run the app on another computer but still point at a hosted Supabase project.
+Default local app URL: `http://127.0.0.1:5173`
 
-1. Create `.env` in the repo root:
-
-```text
-VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
-```
-
-2. Start Vite:
-
-```powershell
-npm.cmd run dev
-```
-
-3. Open:
-
-```text
-http://127.0.0.1:5173
-```
-
-GitHub secrets are only used by GitHub Actions. They do not automatically exist on a new local machine, so local development still needs `.env`.
-
-## Local Frontend With Local Supabase
-
-Use this when you want everything local.
-
-1. Copy the sample env:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-2. Start Docker Desktop.
-
-3. Start Supabase:
-
-```powershell
-npm.cmd run supabase:start
-```
-
-4. Confirm local service info:
-
-```powershell
-npm.cmd run supabase:status
-```
-
-5. Copy the displayed local publishable or anon public key into `.env` as `VITE_SUPABASE_ANON_KEY`.
-
-6. Start Vite:
-
-```powershell
-npm.cmd run dev
-```
-
-7. Open:
-
-```text
-http://127.0.0.1:5173
-```
-
-Stop local Supabase when finished:
-
-```powershell
-npm.cmd run supabase:stop
-```
-
-## Create A Hosted Supabase Project
-
-1. Create a new Supabase project.
-
-2. Save these values:
-
-- Project ref
-- Database password
-- Project URL
-- Anon or publishable public key
-
-3. Create a Supabase personal access token from the Supabase dashboard.
-
-4. Link the repo to the hosted project:
-
-```powershell
-$env:SUPABASE_ACCESS_TOKEN="<supabase-access-token>"
-$env:SUPABASE_DB_PASSWORD="<database-password>"
-npx.cmd supabase link --project-ref <project-ref>
-```
-
-5. Apply database migrations:
-
-```powershell
-npx.cmd supabase db push
-```
-
-6. Put the hosted values in `.env` for local development:
+## Local Env
 
 ```text
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
 ```
+
+GitHub secrets do not populate your local shell or `.env`. Local development always needs local values.
 
 Use only the Supabase anon/publishable public key in frontend or GitHub configuration. Never use the secret or service-role key in this app.
 
-## Public Repo Notes
+## Validation
 
-This repository intentionally ignores local `.env` files. Do not commit hosted Supabase keys, Cloudflare API tokens, database passwords, or Supabase access tokens.
-
-The app includes Futurama/Planet Express-inspired media assets for private, personal, non-commercial use. The source code is MIT-licensed, but bundled media/theme assets are not. Do not sell or monetize the app as shipped. Replace the themed assets before commercial use or reusable public-product use.
-
-- License: [LICENSE.md](LICENSE.md)
-- Asset notices: [ASSET_NOTICES.md](ASSET_NOTICES.md)
-- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Security: [SECURITY.md](SECURITY.md)
-
-## Codex Pull Request Reviews
-
-This repository uses the ChatGPT/Codex GitHub connector for pull request review.
-
-Codex review is configured outside the repository through the ChatGPT/Codex GitHub app. It can automatically review new pull requests and can also be requested in a pull request with `@codex review`.
-
-Forks do not inherit this repository's Codex GitHub connector configuration, GitHub secrets, Cloudflare account, or Supabase project.
-
-## GitHub Secrets For Deployment
-
-Add these repository secrets in GitHub:
-
-```text
-CLOUDFLARE_ACCOUNT_ID
-CLOUDFLARE_API_TOKEN
-SUPABASE_ACCESS_TOKEN
-SUPABASE_DB_PASSWORD
-SUPABASE_PROJECT_REF
-VITE_SUPABASE_URL
-VITE_SUPABASE_ANON_KEY
-```
-
-The `VITE_SUPABASE_*` secrets should point at the hosted Supabase project, not local Supabase. The `SUPABASE_*` secrets are used by the deploy workflow to run `supabase db push` before the frontend is published.
-
-## Cloudflare Pages Deployment
-
-This repo deploys through GitHub Actions after changes are merged to `main`.
-
-1. Create a Cloudflare API token with permission to deploy Cloudflare Pages.
-
-2. Add all required deployment secrets:
-
-```text
-CLOUDFLARE_ACCOUNT_ID
-CLOUDFLARE_API_TOKEN
-SUPABASE_ACCESS_TOKEN
-SUPABASE_DB_PASSWORD
-SUPABASE_PROJECT_REF
-VITE_SUPABASE_URL
-VITE_SUPABASE_ANON_KEY
-```
-
-3. Confirm the Cloudflare Pages project name matches `wrangler.jsonc` and the deploy workflow:
-
-```text
-planet-express-poker
-```
-
-If you want a different Cloudflare Pages project name, update all three places:
-
-- `wrangler.jsonc`
-- `package.json` script `deploy:cloudflare`
-- `.github/workflows/deploy-cloudflare.yml`
-
-The deploy workflow is intentionally guarded to run only in `LandonTomaine/PlanetExpressPoker`. If you fork the repo and want your fork to deploy to your own resources, update that guard in `.github/workflows/deploy-cloudflare.yml`.
-
-4. Optional but recommended: protect the GitHub `production` environment before allowing automatic deploys.
-
-5. Open and merge a pull request into `main`.
-
-```powershell
-git switch -c <branch-name>
-git add .
-git commit -m "<short summary>"
-git push -u origin <branch-name>
-```
-
-Open a pull request in GitHub. After required checks pass and the PR is approved, merge it. GitHub Actions will:
-
-- run CI in `.github/workflows/ci.yml`
-- apply hosted Supabase migrations in `.github/workflows/deploy-cloudflare.yml`
-- build with the hosted `VITE_SUPABASE_*` secrets
-- deploy `dist` to Cloudflare Pages from `main`
-
-The footer build metadata and GitHub link resolve from the current repository automatically in GitHub Actions. For local/manual builds outside a git clone, set `PEP_REPOSITORY_URL=https://github.com/<your-user>/<your-repo>` before building if you want the footer to point at your fork.
-
-## Manual Cloudflare Deploy
-
-Use this only when you want to deploy from your local machine instead of GitHub Actions.
-
-1. Create `.env.production`:
-
-```text
-VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
-```
-
-2. Log in to Cloudflare:
-
-```powershell
-npx.cmd wrangler login
-```
-
-3. Deploy:
-
-```powershell
-npm.cmd run deploy:cloudflare
-```
-
-Manual Cloudflare deploy uploads only the already-built frontend. If your hosted Supabase schema changed, run `npx.cmd supabase db push` against the hosted project first.
-
-## Validation Commands
-
-Run these before opening or updating a pull request:
+Run before opening or updating a pull request:
 
 ```powershell
 npm.cmd run format:check
@@ -276,6 +76,25 @@ Dependency audit:
 npm.cmd audit --audit-level=moderate
 ```
 
+## Public Repo Notes
+
+This repository intentionally ignores local `.env` files. Do not commit hosted Supabase keys, Cloudflare API tokens, database passwords, or Supabase access tokens.
+
+The app includes Futurama/Planet Express-inspired media assets for private, personal, non-commercial use. The source code is MIT-licensed, but bundled media/theme assets are not. Do not sell or monetize the app as shipped. Replace the themed assets before commercial use or reusable public-product use.
+
+- License: [LICENSE.md](LICENSE.md)
+- Asset notices: [ASSET_NOTICES.md](ASSET_NOTICES.md)
+- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
+- Security: [SECURITY.md](SECURITY.md)
+
+## Codex Pull Request Reviews
+
+This repository uses the ChatGPT/Codex GitHub connector for pull request review.
+
+Codex review is configured outside the repository through the ChatGPT/Codex GitHub app. It can automatically review new pull requests and can also be requested in a pull request with `@codex review`.
+
+Forks do not inherit this repository's Codex GitHub connector configuration, GitHub secrets, Cloudflare account, or Supabase project.
+
 ## Common Commands
 
 ```powershell
@@ -294,11 +113,11 @@ npm.cmd run supabase:stop
 npm.cmd run supabase:status
 ```
 
-## More Docs
+## Docs Map
 
-- Local setup: `docs/development/getting-started.md`
-- Project safeguards: `docs/development/safeguards.md`
-- Tooling: `docs/development/tooling.md`
-- Deployment: `docs/deployment/cloudflare-pages.md`
-- Fork setup: `docs/deployment/fork-setup.md`
-- Architecture: `docs/architecture/overview.md`
+- Shared docs index: [docs/README.md](docs/README.md)
+- Local setup: [docs/development/getting-started.md](docs/development/getting-started.md)
+- Tooling and safeguards: [docs/development/README.md](docs/development/README.md)
+- Deployment: [docs/deployment/cloudflare-pages.md](docs/deployment/cloudflare-pages.md)
+- Fork setup: [docs/deployment/fork-setup.md](docs/deployment/fork-setup.md)
+- Architecture: [docs/architecture/overview.md](docs/architecture/overview.md)

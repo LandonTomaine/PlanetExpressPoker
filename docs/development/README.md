@@ -2,9 +2,9 @@
 
 This folder holds shared engineering documentation for humans and agents.
 
-Load only the docs needed for the current task.
+Use [getting-started.md](getting-started.md) first for local setup. Use the rest as targeted references.
 
-## Current Docs
+## Docs
 
 - [getting-started.md](getting-started.md): local setup and run flow
 - [backend.md](backend.md): backend standards and patterns

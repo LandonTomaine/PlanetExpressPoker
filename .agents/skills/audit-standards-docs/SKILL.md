@@ -7,11 +7,7 @@ description: Audit repository standards and guidance documents for missing, stal
 
 Primary lens: `Review`.
 
-## Overview
-
-Audit the repository's standards documents as a documentation system, not isolated files. Bias hard toward brevity. Clear intent beats polished prose. Full sentences are optional when short bullets or fragments are clearer.
-
-Determine whether the current guidance is sufficient, missing important context, placed in the wrong layer, or forcing too much context into one place.
+Audit the standards docs as a system, not as isolated files. Bias hard toward brevity and correct placement.
 
 ## Workflow
 
@@ -19,7 +15,7 @@ Determine whether the current guidance is sufficient, missing important context,
    Inspect `AGENTS.md`, `agent-rules/README.md`, and the always-loaded agent rules as the audit target. Do not bulk-read the repo before the routing docs tell you what matters.
 
 2. Map the audit scope before reading deeply.
-   Identify which parts of `docs/` and `agent-rules/` matter for the request. Prefer indexes and targeted reads over broad directory tours. Treat the repo's just-enough-context model as a first-class audit constraint.
+   Identify which parts of `docs/` and `agent-rules/` matter for the request. Prefer indexes and targeted reads over broad directory tours.
    Do not read `docs/drafts/` unless the task explicitly asks for draft material.
 
 3. Load the audit checklist only after the scope is clear.
@@ -34,11 +30,10 @@ Determine whether the current guidance is sufficient, missing important context,
 - split into focused files instead of one catch-all standards document
 - brief, focused, and free of obvious duplication, contradiction, or stale instructions
 
-5. Audit for brevity first, not polish.
+5. Audit for brevity first.
 
-- Cut filler, repetition, throat-clearing, and obvious statements.
-- Prefer bullets or fragments over explanatory paragraphs.
-- Do not preserve full sentences just because they read better.
+- Cut filler, repetition, and obvious statements.
+- Prefer bullets or fragments when they stay clear.
 - Keep only wording that changes behavior, routing, or risk.
 
 6. Verify reality before calling something missing.

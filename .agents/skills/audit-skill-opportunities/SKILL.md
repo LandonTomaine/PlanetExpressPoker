@@ -47,7 +47,6 @@ If nothing clears that bar, return `no change needed`.
      - likely bundled resources such as `references/` or `scripts/`
 
 5. Do not create skills from this audit.
-   - This skill is audit-only by default.
    - Do not create, initialize, or edit a candidate skill unless the user explicitly asks for creation after seeing the audit results.
    - If the user wants a candidate implemented, treat that as a separate follow-up step and use `skill-creator` or direct repo edits only after explicit approval.
 
