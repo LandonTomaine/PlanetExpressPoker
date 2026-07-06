@@ -141,7 +141,7 @@ The target user is a small private group that wants a simple planning poker room
 
 ### 7.10 Theme and Reactions
 
-- The app should use Futurama / Planet Express-inspired characters, references, props, and reactions because the product is for private personal use.
+- The app should use Futurama-inspired characters, references, props, and reactions because the product is for private personal use.
 - The base UI should remain clean and readable.
 - Theme should primarily appear in avatars, card art, reveal celebrations, throwables, props, and transient character appearances.
 

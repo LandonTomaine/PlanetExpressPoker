@@ -1,6 +1,6 @@
 # Planet Express Poker
 
-Lightweight planning poker with realtime rooms, persistent room state, animated reveal flow, and a chaotic Planet Express-inspired presentation layer.
+Lightweight planning poker with realtime rooms, persistent room state, animated reveal flow, and a chaotic Futurama-inspired presentation layer.
 
 ## Stack
 
@@ -80,7 +80,7 @@ npm.cmd audit --audit-level=moderate
 
 This repository intentionally ignores local `.env` files. Do not commit hosted Supabase keys, Cloudflare API tokens, database passwords, or Supabase access tokens.
 
-The app includes Futurama/Planet Express-inspired media assets for private, personal, non-commercial use. The source code is MIT-licensed, but bundled media/theme assets are not. Do not sell or monetize the app as shipped. Replace the themed assets before commercial use or reusable public-product use.
+The app includes Futurama-inspired media assets for private, personal, non-commercial use. The source code is MIT-licensed, but bundled media/theme assets are not. Do not sell or monetize the app as shipped. Replace the themed assets before commercial use or reusable public-product use.
 
 - License: [LICENSE.md](LICENSE.md)
 - Asset notices: [ASSET_NOTICES.md](ASSET_NOTICES.md)
