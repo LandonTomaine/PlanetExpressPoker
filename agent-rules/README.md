@@ -54,6 +54,8 @@ Use these routes only when the task actually needs them:
   - [../docs/development/documentation.md](../docs/development/documentation.md)
 - Deployment or hosting questions:
   - [../docs/deployment/cloudflare-pages.md](../docs/deployment/cloudflare-pages.md)
+- Forking, self-hosting, or configuring a personal instance:
+  - [../docs/deployment/fork-setup.md](../docs/deployment/fork-setup.md)
 - Maintaining this guidance system:
   - [maintaining.md](maintaining.md)
 

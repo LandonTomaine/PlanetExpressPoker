@@ -31,6 +31,8 @@ cd PlanetExpressPoker
 npm.cmd install
 ```
 
+If you are forking the repo for your own instance, use [docs/deployment/fork-setup.md](docs/deployment/fork-setup.md) as the authoritative checklist.
+
 ## Local Frontend With Hosted Supabase
 
 Use this when you want to run the app on another computer but still point at a hosted Supabase project.
@@ -162,11 +164,14 @@ Add these repository secrets in GitHub:
 ```text
 CLOUDFLARE_ACCOUNT_ID
 CLOUDFLARE_API_TOKEN
+SUPABASE_ACCESS_TOKEN
+SUPABASE_DB_PASSWORD
+SUPABASE_PROJECT_REF
 VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
 ```
 
-The `VITE_SUPABASE_*` secrets should point at the hosted Supabase project, not local Supabase.
+The `VITE_SUPABASE_*` secrets should point at the hosted Supabase project, not local Supabase. The `SUPABASE_*` secrets are used by the deploy workflow to run `supabase db push` before the frontend is published.
 
 ## Cloudflare Pages Deployment
 
@@ -174,7 +179,17 @@ This repo deploys through GitHub Actions after changes are merged to `main`.
 
 1. Create a Cloudflare API token with permission to deploy Cloudflare Pages.
 
-2. Add `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` as GitHub repository secrets.
+2. Add all required deployment secrets:
+
+```text
+CLOUDFLARE_ACCOUNT_ID
+CLOUDFLARE_API_TOKEN
+SUPABASE_ACCESS_TOKEN
+SUPABASE_DB_PASSWORD
+SUPABASE_PROJECT_REF
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+```
 
 3. Confirm the Cloudflare Pages project name matches `wrangler.jsonc` and the deploy workflow:
 
@@ -190,7 +205,9 @@ If you want a different Cloudflare Pages project name, update all three places:
 
 The deploy workflow is intentionally guarded to run only in `LandonTomaine/PlanetExpressPoker`. If you fork the repo and want your fork to deploy to your own resources, update that guard in `.github/workflows/deploy-cloudflare.yml`.
 
-4. Open and merge a pull request into `main`.
+4. Optional but recommended: protect the GitHub `production` environment before allowing automatic deploys.
+
+5. Open and merge a pull request into `main`.
 
 ```powershell
 git switch -c <branch-name>
@@ -199,7 +216,14 @@ git commit -m "<short summary>"
 git push -u origin <branch-name>
 ```
 
-Open a pull request in GitHub. After required checks pass and the PR is approved, merge it. GitHub Actions will build with the hosted Supabase secrets and deploy `dist` to Cloudflare Pages from `main`.
+Open a pull request in GitHub. After required checks pass and the PR is approved, merge it. GitHub Actions will:
+
+- run CI in `.github/workflows/ci.yml`
+- apply hosted Supabase migrations in `.github/workflows/deploy-cloudflare.yml`
+- build with the hosted `VITE_SUPABASE_*` secrets
+- deploy `dist` to Cloudflare Pages from `main`
+
+The footer build metadata and GitHub link resolve from the current repository automatically in GitHub Actions. For local/manual builds outside a git clone, set `PEP_REPOSITORY_URL=https://github.com/<your-user>/<your-repo>` before building if you want the footer to point at your fork.
 
 ## Manual Cloudflare Deploy
 
@@ -223,6 +247,8 @@ npx.cmd wrangler login
 ```powershell
 npm.cmd run deploy:cloudflare
 ```
+
+Manual Cloudflare deploy uploads only the already-built frontend. If your hosted Supabase schema changed, run `npx.cmd supabase db push` against the hosted project first.
 
 ## Validation Commands
 

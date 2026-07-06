@@ -5,6 +5,17 @@ import { describe, expect, it, vi } from 'vitest'
 import { App } from '../../src/app/App'
 
 describe('App logo Hypnotoad trigger', () => {
+  it('renders the shared footer with the repository link and build metadata', () => {
+    renderAppShell()
+
+    expect(
+      screen.getByRole('link', {
+        name: 'GitHub repo',
+      })
+    ).toHaveAttribute('href', expect.stringContaining('github.com'))
+    expect(screen.getByText('Build')).toBeInTheDocument()
+  })
+
   it('dispatches the Hypnotoad event for touch activation without double-counting the synthetic click', async () => {
     const user = userEvent.setup()
     const hypnotoadListener = vi.fn()

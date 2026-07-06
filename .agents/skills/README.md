@@ -23,4 +23,5 @@ Use a skill only when the task clearly matches it. Otherwise use the shared docs
 | `complete-pr`                | Push, open/update, review, and complete a PR.            |
 | `audit-skill-opportunities`  | Decide if a repeated workflow needs a skill.             |
 | `audit-standards-docs`       | Audit docs and agent guidance for JEC and drift.         |
+| `setup-forked-instance`      | Configure a fork for local use and hosted deployment.    |
 | `retheme-app`                | Replace the current theme while preserving app behavior. |

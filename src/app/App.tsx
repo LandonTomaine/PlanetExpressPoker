@@ -72,13 +72,17 @@ export function App() {
                 <AppNavLink to="/">Home</AppNavLink>
               </nav>
             ) : null}
-            <DeploymentStamp deploymentInfo={__PEP_DEPLOYMENT__} />
           </div>
         </header>
 
         <main className="flex-1">
           <Outlet />
         </main>
+
+        <footer className="mt-5 flex flex-col gap-3 rounded-[16px] border border-[var(--pep-line)] bg-white/84 px-4 py-3 shadow-[0_16px_42px_rgba(12,32,42,0.08)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+          <RepositoryLink repositoryUrl={__PEP_DEPLOYMENT__.repositoryUrl} />
+          <DeploymentStamp deploymentInfo={__PEP_DEPLOYMENT__} />
+        </footer>
       </div>
     </div>
   )
@@ -141,6 +145,23 @@ function DeploymentStamp({
         )}
       </span>
     </p>
+  )
+}
+
+function RepositoryLink({ repositoryUrl }: { repositoryUrl: string }) {
+  if (!repositoryUrl) {
+    return null
+  }
+
+  return (
+    <a
+      href={repositoryUrl}
+      className="inline-flex items-center gap-2 self-start rounded-full border border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#f9fbfc,_#dfe8ec)] px-3.5 py-2 text-xs font-black uppercase tracking-[0.06em] text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--pep-ink)] hover:bg-[linear-gradient(180deg,_#ffffff,_#e9f0f2)]"
+      rel="noreferrer"
+      target="_blank"
+    >
+      GitHub repo
+    </a>
   )
 }
 

@@ -15,6 +15,7 @@ Use this for the normal hosted path.
 
 The repo deploys to Cloudflare Pages from GitHub Actions after pull requests are merged to `main`.
 Before the Cloudflare deploy step, the workflow links to the hosted Supabase project and runs `supabase db push` so production migrations land before the frontend is published.
+CI validation remains separate in `.github/workflows/ci.yml`.
 
 Required GitHub repository secrets:
 
@@ -33,6 +34,7 @@ Cloudflare project settings:
 - Project name: `planet-express-poker`
 - Production URL: `https://planet-express-poker.pages.dev`
 - Build output directory: `dist`
+- Production branch: `main`
 
 If deploying your own fork under another project name, update:
 
@@ -43,6 +45,8 @@ If deploying your own fork under another project name, update:
 The deploy workflow is guarded to run only in `LandonTomaine/PlanetExpressPoker`. Forks must update that guard before deploying to their own resources.
 
 Before making the repo public, protect the GitHub `production` environment and require manual deployment approval if the repository plan supports environment reviewers.
+
+Repository metadata in the app footer resolves from the active repository automatically in GitHub Actions. For unusual local/manual builds that are not running inside a git clone, set `PEP_REPOSITORY_URL=https://github.com/<your-user>/<your-repo>` before building.
 
 ## Optional Cloudflare Git Integration
 
@@ -99,3 +103,4 @@ npm.cmd run deploy:cloudflare
 ```
 
 For direct uploads, Vite reads `.env.production` during the local build. Cloudflare runtime variables do not rewrite already-built static assets.
+Direct uploads also do not apply Supabase migrations automatically, so run `npx.cmd supabase db push` against the hosted project first when schema changes are pending.

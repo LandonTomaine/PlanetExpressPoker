@@ -1,6 +1,6 @@
 # Fork Setup
 
-Use this checklist to run your own copy of Planet Express Poker with your own Supabase and Cloudflare resources.
+Use this checklist to run your own copy of Planet Express Poker with your own Supabase, Cloudflare, and GitHub Actions resources.
 
 ## 1. Fork And Clone
 
@@ -25,6 +25,11 @@ npm.cmd run test:integration
 npm.cmd run test:architecture
 npm.cmd run build
 ```
+
+For purely local development, you can stop here and use either:
+
+- local Supabase via [../development/getting-started.md](../development/getting-started.md)
+- hosted Supabase from your own project, also documented there
 
 ## 2. Create Supabase Resources
 
@@ -60,6 +65,8 @@ If your project name is not `planet-express-poker`, update:
 - `wrangler.jsonc`
 - `package.json` script `deploy:cloudflare`
 - `.github/workflows/deploy-cloudflare.yml`
+
+If the footer repo link ever points at the upstream repository during a manual/local build, set `PEP_REPOSITORY_URL=https://github.com/<your-user>/<your-repo>` before building. GitHub Actions and normal git clones resolve the fork URL automatically.
 
 ## 4. Update The Deploy Guard
 
@@ -116,6 +123,8 @@ git push -u origin configure-hosting
 ```
 
 Open a pull request into `main`. After required checks pass and the PR is merged, GitHub Actions will deploy to Cloudflare Pages if the deploy guard, secrets, and Cloudflare project are configured correctly.
+
+The deploy workflow will also run `supabase db push` against your hosted project before the frontend upload.
 
 ## 8. Smoke Test
 
