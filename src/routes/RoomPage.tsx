@@ -257,6 +257,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     return searchParams.get('joinAs') === 'spectator' ? 'spectator' : 'voter'
   })
+  const requestedAutoJoinRole: ParticipantRole | null =
+    new URLSearchParams(location.search).get('joinAs') === 'spectator'
+      ? 'spectator'
+      : null
   const { participants, presenceByParticipantId, errorMessage } =
     useRoomLiveState({ room, selfParticipant })
   const { roomSettings, errorMessage: roomSettingsErrorMessage } =
@@ -307,6 +311,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     await handleJoin({
       displayName: identity.displayName,
       avatarKey: identity.avatarKey,
+      role: requestedAutoJoinRole ?? undefined,
       silent: true,
     })
   })
