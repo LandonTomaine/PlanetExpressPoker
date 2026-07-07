@@ -11,7 +11,6 @@ import {
 } from '../features/identity/displayName'
 import {
   clearActiveRoomName,
-  clearRoomNamePrefill,
   readActiveRoomName,
   readRoomNamePrefill,
   readStoredIdentity,
@@ -19,11 +18,7 @@ import {
   saveRoomNamePrefill,
   saveStoredIdentity,
 } from '../features/identity/storage'
-import {
-  leaveRoom,
-  listClientRooms,
-  shutdownRoom,
-} from '../features/room/data/roomApi'
+import { leaveRoom, listClientRooms } from '../features/room/data/roomApi'
 import { useRoomPresenceCounts } from '../features/room/realtime/useRoomPresenceCounts'
 import {
   getRoomNameError,
@@ -152,35 +147,6 @@ export function HomePage() {
     } catch (error) {
       setMyRoomsError(
         error instanceof Error ? error.message : 'Failed to leave room.'
-      )
-    } finally {
-      setPendingRoomActionId(null)
-    }
-  }
-
-  async function handleShutdownSavedRoom(summary: RoomSummary) {
-    if (!window.confirm(`Close room "${summary.roomName}" for everyone?`)) {
-      return
-    }
-
-    setPendingRoomActionId(summary.roomId)
-    setMyRoomsError(null)
-
-    try {
-      await shutdownRoom({
-        roomId: summary.roomId,
-        actorClientId: identity.clientId,
-      })
-
-      if (readActiveRoomName() === summary.roomName) {
-        clearActiveRoomName()
-        clearRoomNamePrefill()
-      }
-
-      await refreshMyRooms()
-    } catch (error) {
-      setMyRoomsError(
-        error instanceof Error ? error.message : 'Failed to close room.'
       )
     } finally {
       setPendingRoomActionId(null)
@@ -429,18 +395,7 @@ export function HomePage() {
                         >
                           Open room
                         </button>
-                        {roomSummary.isCurrentClientOwner ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              void handleShutdownSavedRoom(roomSummary)
-                            }
-                            disabled={isPending}
-                            className="rounded-[10px] border border-[var(--pep-accent)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-accent)] shadow-[0_6px_14px_rgba(212,47,38,0.12)] disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400"
-                          >
-                            Close room
-                          </button>
-                        ) : (
+                        {roomSummary.isCurrentClientOwner ? null : (
                           <button
                             type="button"
                             onClick={() =>
