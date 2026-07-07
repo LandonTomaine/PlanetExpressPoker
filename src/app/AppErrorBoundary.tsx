@@ -1,7 +1,10 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
+import { readStoredThemeId } from '../features/identity/storage'
+import { getThemeConfig, getThemeCssVars } from '../features/theme/registry'
 
 export function AppErrorBoundary() {
   const error = useRouteError()
+  const theme = getThemeConfig(readStoredThemeId())
   const title = isRouteErrorResponse(error)
     ? error.status === 404
       ? 'Page not found'
@@ -14,18 +17,22 @@ export function AppErrorBoundary() {
     : 'Refresh the page or head home and try again.'
 
   return (
-    <div className="min-h-screen bg-[var(--pep-bg)] px-4 py-6 text-[var(--pep-ink)] sm:px-6 lg:px-8">
+    <div
+      data-pep-theme={theme.id}
+      style={getThemeCssVars(theme.id)}
+      className="min-h-screen bg-[var(--pep-bg)] px-4 py-6 text-[var(--pep-ink)] sm:px-6 lg:px-8"
+    >
       <main className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-3xl items-center justify-center">
         <section className="w-full rounded-[20px] border border-[var(--pep-line)] bg-white/88 p-6 text-center shadow-[0_18px_48px_rgba(12,32,42,0.12)]">
           <div className="mx-auto grid h-20 w-20 place-items-center overflow-hidden rounded-[18px] border border-[var(--pep-line)] bg-white shadow-[0_12px_26px_rgba(12,32,42,0.1)]">
             <img
-              src="/planet-express-logo.png"
-              alt="Planet Express logo"
+              src={theme.logoPath}
+              alt={theme.logoAlt}
               className="h-16 w-16 object-contain"
             />
           </div>
           <p className="mt-5 text-xs font-black uppercase tracking-[0.14em] text-[var(--pep-accent)]">
-            Planet Express Poker
+            {theme.appTitle}
           </p>
           <h1 className="mt-2 font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)] sm:text-5xl">
             {title}

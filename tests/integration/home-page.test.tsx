@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
 import {
   MemoryRouter,
   Route,
@@ -13,6 +14,7 @@ import {
   listClientRooms,
   leaveRoom,
 } from '../../src/features/room/data/roomApi'
+import { ThemeProvider } from '../../src/features/theme/context'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
   leaveRoom: vi.fn(),
@@ -35,7 +37,7 @@ describe('HomePage', () => {
   it('creates or joins a room after name, room, and avatar selection', async () => {
     const user = userEvent.setup()
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -49,7 +51,7 @@ describe('HomePage', () => {
     await user.click(screen.getByRole('button', { name: 'Use Bender avatar' }))
     await user.click(screen.getByRole('button', { name: 'Join as voter' }))
 
-    expect(screen.getByText('Opened demo-room')).toBeInTheDocument()
+    expect(screen.getByText(/Opened/)).toBeInTheDocument()
     expect(window.sessionStorage.getItem('pep.active-room.v1')).toBe(
       'demo-room'
     )
@@ -62,13 +64,13 @@ describe('HomePage', () => {
     expect(window.localStorage.getItem('pep.identity.v1')).toContain(
       '"avatarKey":"bender"'
     )
-    expect(screen.getByText(/^Search\s*$/)).toBeInTheDocument()
+    expect(screen.getByText('Search ?createTheme=futurama')).toBeInTheDocument()
   })
 
   it('opens the room as spectator when selected on the home page', async () => {
     const user = userEvent.setup()
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -82,14 +84,16 @@ describe('HomePage', () => {
     await user.click(screen.getByRole('button', { name: 'Spectator' }))
     await user.click(screen.getByRole('button', { name: 'Join as spectator' }))
 
-    expect(screen.getByText('Opened demo-room')).toBeInTheDocument()
-    expect(screen.getByText('Search ?joinAs=spectator')).toBeInTheDocument()
+    expect(screen.getByText(/Opened/)).toBeInTheDocument()
+    expect(
+      screen.getByText('Search ?joinAs=spectator&createTheme=futurama')
+    ).toBeInTheDocument()
   })
 
   it('prefills the room name from the saved redirect value', () => {
     window.sessionStorage.setItem('pep.room-name-prefill.v1', 'redirect-room')
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -105,6 +109,7 @@ describe('HomePage', () => {
       {
         roomId: 'room-1',
         roomName: 'delivery-deck',
+        themeId: 'futurama',
         participantCount: 3,
         currentClientRole: 'spectator',
         isCurrentClientOwner: false,
@@ -112,7 +117,7 @@ describe('HomePage', () => {
       },
     ])
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/']}>
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -138,4 +143,8 @@ function OpenedRoom() {
       <div>Search {location.search}</div>
     </>
   )
+}
+
+function renderWithTheme(children: ReactNode) {
+  return render(<ThemeProvider>{children}</ThemeProvider>)
 }

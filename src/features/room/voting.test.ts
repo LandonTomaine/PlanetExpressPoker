@@ -39,8 +39,11 @@ describe('voting deck', () => {
   })
 
   it('keeps artwork labels separate from score labels', () => {
-    expect(getCardArtworkLabel('ship')).toBe('Planet Express ship')
-    expect(getCardArtworkLabel('BIG')).toBe('Lrrr')
+    expect(getCardArtworkLabel('ship', 'futurama')).toBe('Planet Express ship')
+    expect(getCardArtworkLabel('ship', 'zootopia')).toBe('ZPD cruiser')
+    expect(getCardArtworkLabel('BIG', 'futurama')).toBe('Lrrr')
+    expect(getCardArtworkLabel('BIG', 'zootopia')).toBe('Mr. Big')
+    expect(getCardArtworkLabel('coffee', 'zootopia')).toBe('Coffee')
     expect(getCardMeaningLabel('13')).toBeNull()
   })
 })

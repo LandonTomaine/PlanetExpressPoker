@@ -7,9 +7,11 @@ import {
   createOrGetRoom,
   joinRoom,
   setRoomFunLevel,
+  setRoomTheme,
 } from '../../src/features/room/data/roomApi'
 import { useRoomLiveState } from '../../src/features/room/realtime/useRoomLiveState'
 import { useRoomSettingsLiveState } from '../../src/features/room/realtime/useRoomSettingsLiveState'
+import { ThemeProvider } from '../../src/features/theme/context'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
   createOrGetRoom: vi.fn(),
@@ -19,6 +21,7 @@ vi.mock('../../src/features/room/data/roomApi', () => ({
   resetRound: vi.fn(),
   revealRound: vi.fn(),
   setRoomFunLevel: vi.fn(),
+  setRoomTheme: vi.fn(),
   setParticipantRole: vi.fn(),
   shutdownRoom: vi.fn(),
   startRevealCountdown: vi.fn(),
@@ -86,6 +89,7 @@ describe('RoomPage controls', () => {
         revealCountdownEnabled: true,
         revealCountdownSeconds: 3,
         funLevel: 'chaotic',
+        themeId: 'futurama',
         updatedAt: new Date().toISOString(),
       },
       errorMessage: null,
@@ -191,14 +195,56 @@ describe('RoomPage controls', () => {
       })
     )
   })
+
+  it('does not apply createTheme to an existing single-owner room', async () => {
+    vi.mocked(createOrGetRoom).mockResolvedValue({
+      id: 'room-1',
+      name: 'demo-room',
+      createdAt: new Date(Date.now() - 5 * 60_000).toISOString(),
+      updatedAt: new Date().toISOString(),
+    })
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+
+    renderRoomPage('/rooms/demo-room?createTheme=zootopia')
+
+    await screen.findByLabelText('Room theme')
+    await new Promise((resolve) => window.setTimeout(resolve, 0))
+
+    expect(vi.mocked(setRoomTheme)).not.toHaveBeenCalled()
+  })
 })
 
-function renderRoomPage() {
+function renderRoomPage(initialEntry = '/rooms/demo-room') {
   render(
-    <MemoryRouter initialEntries={['/rooms/demo-room']}>
-      <Routes>
-        <Route path="/rooms/:roomName" element={<RoomPage />} />
-      </Routes>
-    </MemoryRouter>
+    <ThemeProvider>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route path="/rooms/:roomName" element={<RoomPage />} />
+        </Routes>
+      </MemoryRouter>
+    </ThemeProvider>
   )
 }

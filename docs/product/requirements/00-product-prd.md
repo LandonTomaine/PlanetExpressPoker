@@ -141,7 +141,8 @@ The target user is a small private group that wants a simple planning poker room
 
 ### 7.10 Theme and Reactions
 
-- The app should use Futurama-inspired characters, references, props, and reactions because the product is for private personal use.
+- The app supports built-in themes for private personal use. Current built-in themes are Futurama and Zootopia.
+- Users can choose a personal theme for non-room pages, and room owners can choose the persisted room theme.
 - The base UI should remain clean and readable.
 - Theme should primarily appear in avatars, card art, reveal celebrations, throwables, props, and transient character appearances.
 
@@ -151,17 +152,17 @@ The target user is a small private group that wants a simple planning poker room
 
 - Users choose from a set of themed avatars.
 - Avatars should be visually distinct and recognizable at small size.
-- Avatars may include character-inspired options and Planet Express-style variants.
+- Avatars may include character-inspired options and theme-specific variants.
 
 ### 8.2 Throwables and Room Events
 
 - Participants can trigger fun actions at each other.
-- Possible examples include a Planet Express ship fly-by, a ship collision or explosion near a participant, thrown props or junk, and small environmental effects such as flashes, shakes, or smoke.
+- Possible examples include a theme vehicle fly-by, a vehicle stunt near a participant, thrown props or junk, and small environmental effects such as flashes, shakes, or smoke.
 - These actions should be fast, readable, and not bury the core estimation flow.
 
 ### 8.3 Character Reactions
 
-- Bender should appear in some form and perform short reactions.
+- Theme characters may appear in short reactions.
 - Consensus on the same score should trigger a special celebration.
 - Quotes or short themed voice-line-style text may be used sparingly.
 - The app should avoid flooding the screen with repeated reactions.

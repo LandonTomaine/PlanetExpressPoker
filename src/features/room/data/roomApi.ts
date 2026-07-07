@@ -13,6 +13,7 @@ import type {
   SubmittedVote,
   Vote,
 } from '../types'
+import type { ThemeId } from '../../theme/types'
 
 const roomSchema = z.object({
   result_room_id: z.string().uuid(),
@@ -38,12 +39,14 @@ const roomSettingsSchema = z.object({
   reveal_countdown_enabled: z.boolean(),
   reveal_countdown_seconds: z.number().int().min(1),
   fun_level: z.enum(['disabled', 'chaotic']),
+  theme: z.enum(['futurama', 'zootopia']),
   updated_at: z.string(),
 })
 
 const roomSummarySchema = z.object({
   room_id: z.string().uuid(),
   room_name: z.string().min(1),
+  theme: z.enum(['futurama', 'zootopia']),
   participant_count: z.number().int().min(0),
   current_client_role: z.enum(['voter', 'spectator']).nullable(),
   current_client_is_owner: z.boolean(),
@@ -147,6 +150,12 @@ const roomFunLevelSchema = z.object({
   result_updated_at: z.string(),
 })
 
+const roomThemeSchema = z.object({
+  result_room_id: z.string().uuid(),
+  result_theme: z.enum(['futurama', 'zootopia']),
+  result_updated_at: z.string(),
+})
+
 const hypnotoadEasterEggSchema = z.object({
   result_room_id: z.string().uuid(),
   result_triggered: z.boolean(),
@@ -187,6 +196,7 @@ function mapRoomSettings(
     revealCountdownEnabled: roomSettings.reveal_countdown_enabled,
     revealCountdownSeconds: roomSettings.reveal_countdown_seconds,
     funLevel: roomSettings.fun_level,
+    themeId: roomSettings.theme,
     updatedAt: roomSettings.updated_at,
   }
 }
@@ -197,6 +207,7 @@ function mapRoomSummary(
   return {
     roomId: summary.room_id,
     roomName: summary.room_name,
+    themeId: summary.theme,
     participantCount: summary.participant_count,
     currentClientRole: summary.current_client_role,
     isCurrentClientOwner: summary.current_client_is_owner,
@@ -353,7 +364,7 @@ export async function getRoomSettings(roomId: string) {
   const { data, error } = await supabase
     .from('room_settings')
     .select(
-      'room_id, deck_type, auto_reveal_enabled, reveal_countdown_enabled, reveal_countdown_seconds, fun_level, updated_at'
+      'room_id, deck_type, auto_reveal_enabled, reveal_countdown_enabled, reveal_countdown_seconds, fun_level, theme, updated_at'
     )
     .eq('room_id', roomId)
     .single()
@@ -553,6 +564,24 @@ export async function setRoomFunLevel(input: {
   }
 
   return z.array(roomFunLevelSchema).length(1).parse(data)[0]
+}
+
+export async function setRoomTheme(input: {
+  roomId: string
+  actorClientId: string
+  nextThemeId: ThemeId
+}) {
+  const { data, error } = await supabase.rpc('set_room_theme', {
+    target_room_id: input.roomId,
+    actor_client_id: input.actorClientId,
+    next_theme: input.nextThemeId,
+  })
+
+  if (error) {
+    throw new Error(getMessage(error))
+  }
+
+  return z.array(roomThemeSchema).length(1).parse(data)[0]
 }
 
 export async function triggerHypnotoadEasterEgg(input: {

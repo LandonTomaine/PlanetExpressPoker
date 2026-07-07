@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { RoomPage } from '../../src/routes/RoomPage'
 import { createOrGetRoom, joinRoom } from '../../src/features/room/data/roomApi'
+import { ThemeProvider } from '../../src/features/theme/context'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
   createOrGetRoom: vi.fn(),
@@ -12,6 +13,7 @@ vi.mock('../../src/features/room/data/roomApi', () => ({
   resetRound: vi.fn(),
   revealRound: vi.fn(),
   setRoomFunLevel: vi.fn(),
+  setRoomTheme: vi.fn(),
   setParticipantRole: vi.fn(),
   shutdownRoom: vi.fn(),
   startRevealCountdown: vi.fn(),
@@ -115,10 +117,12 @@ describe('RoomPage auto-join', () => {
 
 function renderRoomPage(initialEntry: string) {
   render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route path="/rooms/:roomName" element={<RoomPage />} />
-      </Routes>
-    </MemoryRouter>
+    <ThemeProvider>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <Routes>
+          <Route path="/rooms/:roomName" element={<RoomPage />} />
+        </Routes>
+      </MemoryRouter>
+    </ThemeProvider>
   )
 }
