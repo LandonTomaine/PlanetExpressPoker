@@ -474,10 +474,12 @@ export async function leaveRoom(input: {
 export async function shutdownRoom(input: {
   roomId: string
   actorClientId: string
+  shutdownPin?: string | null
 }) {
   const { data, error } = await supabase.rpc('shutdown_room', {
     target_room_id: input.roomId,
     actor_client_id: input.actorClientId,
+    shutdown_pin: input.shutdownPin ?? null,
   })
 
   if (error) {

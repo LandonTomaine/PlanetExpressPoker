@@ -1,9 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title">
-  <title id="title">Coffee cup</title>
-  <path d="M41 63h72l-7 57a18 18 0 0 1-18 16H66a18 18 0 0 1-18-16z" fill="#fff6d5" stroke="#142633" stroke-width="8" stroke-linejoin="round"/>
-  <path d="M112 75h14c13 0 22 9 22 21s-9 21-22 21h-17" fill="none" stroke="#142633" stroke-width="8" stroke-linecap="round"/>
-  <path d="M54 77h47l-5 39a9 9 0 0 1-9 8H68a9 9 0 0 1-9-8z" fill="#8fe3b0"/>
-  <path d="M49 54h67" stroke="#d42f26" stroke-width="8" stroke-linecap="round"/>
-  <path d="M61 43c-7-11 7-16 0-27M82 43c-7-11 7-16 0-27M103 43c-7-11 7-16 0-27" fill="none" stroke="#1fa089" stroke-width="7" stroke-linecap="round"/>
-  <path d="M59 94h39" stroke="#142633" stroke-width="5" stroke-linecap="round" opacity=".2"/>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="160"
+  height="160"
+  viewBox="0 0 160 160"
+  preserveAspectRatio="xMidYMid meet"
+>
+  <path
+    d="M41 63h72l-7 57a18 18 0 0 1-18 16H66a18 18 0 0 1-18-16Z"
+    fill="#fff6d5"
+    stroke="#142633"
+    stroke-width="8"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M112 75h14c13 0 22 9 22 21s-9 21-22 21h-17"
+    fill="none"
+    stroke="#142633"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+  <path d="M54 77h47l-5 39a9 9 0 0 1-9 8H68a9 9 0 0 1-9-8Z" fill="#8fe3b0" />
+  <path d="M49 54h67" fill="none" stroke="#d42f26" stroke-width="8" stroke-linecap="round" />
+  <path
+    d="M61 43c-7-11 7-16 0-27M82 43c-7-11 7-16 0-27M103 43c-7-11 7-16 0-27"
+    fill="none"
+    stroke="#1fa089"
+    stroke-width="7"
+    stroke-linecap="round"
+  />
+  <path d="M59 94h39" fill="none" stroke="#142633" stroke-width="5" stroke-linecap="round" opacity=".2" />
 </svg>

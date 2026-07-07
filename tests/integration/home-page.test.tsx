@@ -12,13 +12,11 @@ import { HomePage } from '../../src/routes/HomePage'
 import {
   listClientRooms,
   leaveRoom,
-  shutdownRoom,
 } from '../../src/features/room/data/roomApi'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
   leaveRoom: vi.fn(),
   listClientRooms: vi.fn(),
-  shutdownRoom: vi.fn(),
 }))
 
 vi.mock('../../src/features/room/realtime/useRoomPresenceCounts', () => ({
@@ -31,7 +29,6 @@ beforeEach(() => {
   vi.clearAllMocks()
   vi.mocked(listClientRooms).mockResolvedValue([])
   vi.mocked(leaveRoom).mockResolvedValue({ result_participant_id: 'left-room' })
-  vi.mocked(shutdownRoom).mockResolvedValue({ result_room_id: 'closed-room' })
 })
 
 describe('HomePage', () => {

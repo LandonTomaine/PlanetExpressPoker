@@ -12,7 +12,6 @@ import {
 } from '../features/identity/displayName'
 import {
   clearActiveRoomName,
-  clearRoomNamePrefill,
   createClientId,
   readActiveRoomName,
   readStoredIdentity,
@@ -29,7 +28,6 @@ import {
   revealRound,
   setRoomFunLevel,
   setParticipantRole,
-  shutdownRoom,
   startRevealCountdown,
   submitVote,
   triggerHypnotoadEasterEgg,
@@ -207,8 +205,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const [isResetSubmitting, setIsResetSubmitting] = useState(false)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [isFunLevelSaving, setIsFunLevelSaving] = useState(false)
-  const [isShutdownSubmitting, setIsShutdownSubmitting] = useState(false)
-  const [isShutdownConfirmOpen, setIsShutdownConfirmOpen] = useState(false)
   const [countdownNow, setCountdownNow] = useState(() => Date.now())
   const [localCountdownStartedAt, setLocalCountdownStartedAt] = useState<
     number | null
@@ -734,8 +730,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     !isResetSubmitting &&
     Boolean(activeRound) &&
     isActiveRoundRevealedForDisplay
-  const canShutdownRoom =
-    isJoinedToRoom && isSelfRoomOwner && !isShutdownSubmitting
   const activeVoters = participants.filter(
     (participant) => participant.role === 'voter'
   )
@@ -1403,7 +1397,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   }
 
   async function handleFunLevelToggle() {
-    if (!room || !selfParticipant || !roomSettings) {
+    if (!room || !selfParticipant || !roomSettings || !isSelfRoomOwner) {
       return
     }
 
@@ -1499,7 +1493,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     if (isSelfRoomOwner) {
       setParticipantActionError(
-        'Room owner cannot leave. Close the room instead.'
+        'Room owner cannot leave. Close the room from the rooms page instead.'
       )
       return
     }
@@ -1521,35 +1515,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       )
     } finally {
       setPendingParticipantActionId(null)
-    }
-  }
-
-  async function handleShutdownRoom() {
-    if (!room || !selfParticipant || !isSelfRoomOwner) {
-      return
-    }
-
-    setIsShutdownSubmitting(true)
-    setSettingsError(null)
-    setParticipantActionError(null)
-
-    try {
-      await shutdownRoom({
-        roomId: room.id,
-        actorClientId: identity.clientId,
-      })
-
-      clearActiveRoomName()
-      clearRoomNamePrefill()
-      setSelfParticipant(null)
-      setIsShutdownConfirmOpen(false)
-      navigate('/')
-    } catch (error) {
-      setSettingsError(
-        error instanceof Error ? error.message : 'Failed to close room.'
-      )
-    } finally {
-      setIsShutdownSubmitting(false)
     }
   }
 
@@ -2128,80 +2093,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     </div>
   )
 
-  const shutdownConfirmDialog = isShutdownConfirmOpen ? (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-[radial-gradient(circle_at_top,_rgba(245,212,79,0.28),_rgba(12,32,42,0.74)_48%,_rgba(12,32,42,0.86))] px-4 py-8 backdrop-blur-sm">
-      <motion.section
-        initial={{ opacity: 0, scale: 0.96, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.18 }}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="shutdown-room-title"
-        className="relative w-full max-w-md overflow-hidden rounded-[24px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#fff7ce,_#ffffff_55%,_#c8efe5)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
-      >
-        <div className="pointer-events-none absolute -right-8 -top-5 opacity-20">
-          <img
-            src="/planet-express-ship.png"
-            alt=""
-            className="h-24 w-52 object-contain"
-          />
-        </div>
-        <div className="relative flex items-start gap-3">
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-[16px] border-2 border-[var(--pep-ink)] bg-white shadow-[0_8px_0_rgba(20,38,51,0.12)]">
-            <img
-              src="/planet-express-logo.png"
-              alt=""
-              className="h-11 w-11 object-contain"
-            />
-          </div>
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.1em] text-[var(--pep-accent)]">
-              Permanent action
-            </p>
-            <h2
-              id="shutdown-room-title"
-              className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]"
-            >
-              Close this room?
-            </h2>
-          </div>
-        </div>
-        <div className="relative mt-4 rounded-[16px] border border-[var(--pep-accent)]/25 bg-white/82 p-4">
-          <p className="text-sm font-semibold leading-6 text-[var(--pep-ink)]">
-            This permanently deletes this room and all saved participants,
-            votes, rounds, and settings.
-          </p>
-          <p className="mt-2 text-sm leading-6 text-[var(--pep-ink-soft)]">
-            This cannot be undone.
-          </p>
-        </div>
-        <div className="mt-5 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setIsShutdownConfirmOpen(false)}
-            disabled={isShutdownSubmitting}
-            className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-2.5 text-sm font-black uppercase text-[var(--pep-ink)] disabled:cursor-default disabled:opacity-60"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={() => void handleShutdownRoom()}
-            disabled={!canShutdownRoom}
-            className={[
-              'rounded-[10px] border-2 px-4 py-2.5 text-sm font-black uppercase',
-              canShutdownRoom
-                ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-accent)] text-white shadow-[0_8px_0_rgba(20,38,51,0.22)]'
-                : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
-            ].join(' ')}
-          >
-            Close room
-          </button>
-        </div>
-      </motion.section>
-    </div>
-  ) : null
-
   const devVoteDialog =
     isSimulatorMode && devVoteParticipant ? (
       <div className="fixed inset-0 z-[70] grid place-items-center bg-[rgba(20,38,51,0.62)] px-4 py-8 backdrop-blur-sm">
@@ -2365,7 +2256,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   type="button"
                   onClick={() => void handleFunLevelToggle()}
                   disabled={
-                    !isJoinedToRoom || !roomSettings || isFunLevelSaving
+                    !isJoinedToRoom ||
+                    !roomSettings ||
+                    isFunLevelSaving ||
+                    !isSelfRoomOwner
                   }
                   className={[
                     'rounded-[10px] px-3 py-2 text-xs font-black uppercase',
@@ -2396,21 +2290,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     Leave room
                   </button>
                 ) : null}
-                {isSelfRoomOwner ? (
-                  <button
-                    type="button"
-                    onClick={() => setIsShutdownConfirmOpen(true)}
-                    disabled={!canShutdownRoom}
-                    className={[
-                      'rounded-[10px] border px-3 py-2 text-xs font-black uppercase',
-                      canShutdownRoom
-                        ? 'cursor-pointer border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_8px_18px_rgba(212,47,38,0.12)]'
-                        : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
-                    ].join(' ')}
-                  >
-                    Close room
-                  </button>
-                ) : null}
               </div>
 
               {inviteState === 'copied' ? (
@@ -2437,7 +2316,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                       ? 'enabled'
                       : 'disabled'}
                   </span>
-                  .
+                  {isSelfRoomOwner
+                    ? '.'
+                    : '. Only the room owner can change this.'}
                 </p>
               ) : null}
             </div>
@@ -2679,7 +2560,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         </div>
       </div>
       {joinModal}
-      {shutdownConfirmDialog}
       {devVoteDialog}
     </div>
   )
