@@ -390,7 +390,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       }
 
       try {
-        const nextRoom = await createOrGetRoom(backingRoomName)
+        const nextRoom = await createOrGetRoom(
+          backingRoomName,
+          requestedCreateThemeId
+        )
 
         if (!isCancelled) {
           setRoom(nextRoom)
@@ -414,7 +417,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     return () => {
       isCancelled = true
     }
-  }, [backingRoomName, roomNameError])
+  }, [backingRoomName, requestedCreateThemeId, roomNameError])
 
   useEffect(() => {
     if (!room || selfParticipant || autoJoinAttemptedRef.current) {

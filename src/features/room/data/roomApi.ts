@@ -280,9 +280,10 @@ function getMessage(error: unknown) {
   return 'Something went wrong.'
 }
 
-export async function createOrGetRoom(roomName: string) {
+export async function createOrGetRoom(roomName: string, themeId: ThemeId) {
   const { data, error } = await supabase.rpc('create_or_get_room', {
     requested_room_name: roomName,
+    requested_theme: themeId,
   })
 
   if (error) {

@@ -98,6 +98,17 @@ describe('RoomPage auto-join', () => {
     )
   })
 
+  it('passes the requested create theme when opening the room', async () => {
+    renderRoomPage('/rooms/demo-room?createTheme=zootopia')
+
+    await waitFor(() =>
+      expect(vi.mocked(createOrGetRoom)).toHaveBeenCalledWith(
+        'demo-room',
+        'zootopia'
+      )
+    )
+  })
+
   it('leaves silent auto-join role unset when no spectator request is present', async () => {
     renderRoomPage('/rooms/demo-room')
 
