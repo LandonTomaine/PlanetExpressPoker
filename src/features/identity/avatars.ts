@@ -1,81 +1,23 @@
-export type AvatarOption = {
-  key: string
-  label: string
-  accentClassName: string
-  portraitPath: string
-  portraitClassName?: string
+import { getThemeConfig } from '../theme/registry'
+import type { ThemeAvatar, ThemeId } from '../theme/types'
+
+export type AvatarOption = ThemeAvatar
+
+export function getAvatarOptions(themeId: ThemeId) {
+  return getThemeConfig(themeId).avatars
 }
 
-export const avatarOptions: AvatarOption[] = [
-  {
-    key: 'captain-leela',
-    label: 'Leela',
-    accentClassName: 'from-cyan-200 via-sky-100 to-white',
-    portraitPath: '/avatars/icons8-captain-leela.png',
-  },
-  {
-    key: 'bender',
-    label: 'Bender',
-    accentClassName: 'from-slate-300 via-slate-100 to-white',
-    portraitPath: '/avatars/icons8-bender.png',
-  },
-  {
-    key: 'fry',
-    label: 'Fry',
-    accentClassName: 'from-amber-200 via-orange-100 to-white',
-    portraitPath: '/avatars/icons8-fry.png',
-  },
-  {
-    key: 'nibbler',
-    label: 'Nibbler',
-    accentClassName: 'from-sky-100 via-white to-yellow-100',
-    portraitPath: '/avatars/icons8-nibbler.png',
-  },
-  {
-    key: 'amy',
-    label: 'Amy Wong',
-    accentClassName: 'from-rose-200 via-pink-100 to-white',
-    portraitPath: '/avatars/icons8-amy.png',
-  },
-  {
-    key: 'professor',
-    label: 'Professor Farnsworth',
-    accentClassName: 'from-lime-200 via-emerald-100 to-white',
-    portraitPath: '/avatars/icons8-professor.png',
-  },
-  {
-    key: 'zapp',
-    label: 'Zapp Brannigan',
-    accentClassName: 'from-yellow-200 via-amber-100 to-white',
-    portraitPath: '/avatars/icons8-zapp.png',
-  },
-  {
-    key: 'hermes',
-    label: 'Hermes Conrad',
-    accentClassName: 'from-emerald-200 via-lime-100 to-white',
-    portraitPath: '/avatars/icons8-hermes.png',
-  },
-  {
-    key: 'zoidberg',
-    label: 'Dr. Zoidberg',
-    accentClassName: 'from-red-200 via-orange-100 to-white',
-    portraitPath: '/avatars/icons8-zoidberg.png',
-  },
-  {
-    key: 'lrrr',
-    label: 'Lrrr',
-    accentClassName: 'from-lime-300 via-yellow-100 to-white',
-    portraitPath: '/cards/icons8-lrrr.png',
-    portraitClassName: 'scale-[1.22]',
-  },
-]
+export const defaultAvatar = getAvatarOptions('futurama')[0]
 
-export const defaultAvatar = avatarOptions[0]
+export function getDefaultAvatar(themeId: ThemeId) {
+  return getAvatarOptions(themeId)[0] ?? defaultAvatar
+}
 
-export function getAvatarOption(avatarKey: string) {
+export function getAvatarOption(avatarKey: string, themeId: ThemeId) {
   return (
-    avatarOptions.find((avatarOption) => avatarOption.key === avatarKey) ??
-    defaultAvatar
+    getAvatarOptions(themeId).find(
+      (avatarOption) => avatarOption.key === avatarKey
+    ) ?? getDefaultAvatar(themeId)
   )
 }
 

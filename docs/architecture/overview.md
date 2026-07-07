@@ -56,6 +56,7 @@ The frontend owns:
 - countdown presentation
 - animations and themed effects
 - local device persistence for remembered name and avatar
+- local device persistence for personal theme preference
 
 The frontend should not own durable room truth. It may hold transient UI state, but persisted room and round state must come from Supabase-backed reads and writes.
 
@@ -106,6 +107,7 @@ Use persisted database writes for durable game state:
 
 - room creation
 - room settings changes
+- room theme changes
 - voter/spectator changes
 - kicks
 - current round state
@@ -155,10 +157,12 @@ Use three levels of state:
 - Local persisted browser state:
   - remembered display name
   - remembered avatar
+  - personal theme preference
   - possibly last joined room shortcut
 
 - Shared realtime state from Supabase:
   - room settings
+  - room theme
   - participant list
   - role changes
   - vote state
@@ -182,7 +186,7 @@ Suggested top-level app areas:
 - fun/reaction layer
 - shared UI primitives
 
-Themed effects should be layered on top of the core product flow, not intertwined with the persistence logic.
+Themed effects should be layered on top of the core product flow, not intertwined with the persistence logic. Built-in theme content belongs in the theme registry; see [../development/themes.md](../development/themes.md).
 
 ## Animation Architecture
 

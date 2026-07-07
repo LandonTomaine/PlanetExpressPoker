@@ -1,9 +1,11 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { RoomsPage } from '../../src/routes/RoomsPage'
 import { listRooms, shutdownRoom } from '../../src/features/room/data/roomApi'
+import { ThemeProvider } from '../../src/features/theme/context'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
   listRooms: vi.fn(),
@@ -30,6 +32,7 @@ describe('RoomsPage', () => {
       {
         roomId: 'room-1',
         roomName: 'owner-room',
+        themeId: 'futurama',
         participantCount: 4,
         currentClientRole: 'voter',
         isCurrentClientOwner: true,
@@ -38,6 +41,7 @@ describe('RoomsPage', () => {
       {
         roomId: 'room-2',
         roomName: 'guest-room',
+        themeId: 'zootopia',
         participantCount: 2,
         currentClientRole: 'spectator',
         isCurrentClientOwner: false,
@@ -45,7 +49,7 @@ describe('RoomsPage', () => {
       },
     ])
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/rooms']}>
         <Routes>
           <Route path="/rooms" element={<RoomsPage />} />
@@ -66,6 +70,7 @@ describe('RoomsPage', () => {
       {
         roomId: 'room-1',
         roomName: 'owner-room',
+        themeId: 'futurama',
         participantCount: 4,
         currentClientRole: 'voter',
         isCurrentClientOwner: true,
@@ -75,7 +80,7 @@ describe('RoomsPage', () => {
 
     const user = userEvent.setup()
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/rooms']}>
         <Routes>
           <Route path="/rooms" element={<RoomsPage />} />
@@ -103,6 +108,7 @@ describe('RoomsPage', () => {
       {
         roomId: 'room-2',
         roomName: 'guest-room',
+        themeId: 'zootopia',
         participantCount: 2,
         currentClientRole: 'spectator',
         isCurrentClientOwner: false,
@@ -112,7 +118,7 @@ describe('RoomsPage', () => {
 
     const user = userEvent.setup()
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/rooms']}>
         <Routes>
           <Route path="/rooms" element={<RoomsPage />} />
@@ -147,6 +153,7 @@ describe('RoomsPage', () => {
     const firstPage = Array.from({ length: 25 }, (_, index) => ({
       roomId: `room-${index}`,
       roomName: `room-${index}`,
+      themeId: index % 2 === 0 ? 'futurama' : 'zootopia',
       participantCount: 1,
       currentClientRole: null,
       isCurrentClientOwner: false,
@@ -159,6 +166,7 @@ describe('RoomsPage', () => {
         {
           roomId: 'room-26',
           roomName: 'room-26',
+          themeId: 'futurama',
           participantCount: 1,
           currentClientRole: null,
           isCurrentClientOwner: false,
@@ -168,7 +176,7 @@ describe('RoomsPage', () => {
 
     const user = userEvent.setup()
 
-    render(
+    renderWithTheme(
       <MemoryRouter initialEntries={['/rooms']}>
         <Routes>
           <Route path="/rooms" element={<RoomsPage />} />
@@ -189,3 +197,7 @@ describe('RoomsPage', () => {
     )
   })
 })
+
+function renderWithTheme(children: ReactNode) {
+  return render(<ThemeProvider>{children}</ThemeProvider>)
+}

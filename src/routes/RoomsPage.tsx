@@ -12,11 +12,15 @@ import {
 import { listRooms, shutdownRoom } from '../features/room/data/roomApi'
 import { useRoomPresenceCounts } from '../features/room/realtime/useRoomPresenceCounts'
 import type { RoomSummary } from '../features/room/types'
+import { ThemeSelect } from '../features/theme/ThemeSelect'
+import { useTheme } from '../features/theme/useTheme'
+import { getThemeConfig } from '../features/theme/registry'
 
 const roomsPageSize = 25
 
 export function RoomsPage() {
   const navigate = useNavigate()
+  const { activeTheme, personalThemeId, setPersonalThemeId } = useTheme()
   const [identity] = useState(() => readStoredIdentity())
   const [pageIndex, setPageIndex] = useState(0)
   const [rooms, setRooms] = useState<RoomSummary[]>([])
@@ -151,24 +155,30 @@ export function RoomsPage() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm font-black uppercase text-[var(--pep-accent)]">
-            Room directory
+            {activeTheme.roomDirectoryEyebrow}
           </p>
           <h2 className="mt-2 font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)] sm:text-5xl">
-            Open rooms
+            {activeTheme.roomDirectoryTitle}
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-7 text-[var(--pep-ink-soft)]">
-            Browse active rooms, jump in quickly, and close owned rooms or use
-            the admin PIN when needed.
+            {activeTheme.roomDirectoryDescription}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void refreshRooms()}
-          disabled={isLoading}
-          className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
-        >
-          Refresh
-        </button>
+        <div className="grid gap-2">
+          <ThemeSelect
+            label="Page theme"
+            value={personalThemeId}
+            onChange={(nextThemeId) => setPersonalThemeId(nextThemeId)}
+          />
+          <button
+            type="button"
+            onClick={() => void refreshRooms()}
+            disabled={isLoading}
+            className="rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-ink)] disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       {errorMessage ? (
@@ -215,6 +225,9 @@ export function RoomsPage() {
                             : `you are ${roomSummary.currentClientRole}`}
                         </span>
                       ) : null}
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-800">
+                        {getThemeConfig(roomSummary.themeId).label}
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">

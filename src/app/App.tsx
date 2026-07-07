@@ -1,5 +1,7 @@
 import { useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
+import { ThemeProvider } from '../features/theme/context'
+import { useTheme } from '../features/theme/useTheme'
 
 type DeploymentInfo = {
   branchName: string
@@ -12,9 +14,18 @@ type DeploymentInfo = {
 declare const __PEP_DEPLOYMENT__: DeploymentInfo
 
 export function App() {
+  return (
+    <ThemeProvider>
+      <AppFrame />
+    </ThemeProvider>
+  )
+}
+
+function AppFrame() {
   const location = useLocation()
   const shouldShowNav = location.pathname !== '/'
   const pendingTouchLogoClickCountRef = useRef(0)
+  const { activeTheme, cssVars } = useTheme()
 
   function dispatchHypnotoadLogoClick() {
     window.dispatchEvent(new CustomEvent('pep:hypnotoad-logo-click'))
@@ -35,7 +46,11 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--pep-bg)] text-[var(--pep-ink)]">
+    <div
+      data-pep-theme={activeTheme.id}
+      style={cssVars}
+      className="min-h-screen bg-[var(--pep-bg)] text-[var(--pep-ink)]"
+    >
       <div className="mx-auto flex min-h-screen max-w-[100rem] flex-col px-4 py-5 sm:px-6 lg:px-8">
         <header className="mb-5 flex flex-col gap-4 rounded-[16px] border border-[var(--pep-line)] bg-white/84 p-4 shadow-[0_16px_42px_rgba(12,32,42,0.1)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
@@ -43,22 +58,22 @@ export function App() {
               type="button"
               onClick={handleLogoClick}
               onTouchEnd={handleLogoTouchEnd}
-              aria-label="Planet Express logo"
+              aria-label={activeTheme.logoAlt}
               style={{ cursor: 'default', touchAction: 'manipulation' }}
               className="grid h-14 w-14 shrink-0 cursor-default place-items-center overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-white shadow-[0_12px_26px_rgba(12,32,42,0.1)]"
             >
               <img
-                src="/planet-express-logo.png"
-                alt="Planet Express logo"
+                src={activeTheme.logoPath}
+                alt={activeTheme.logoAlt}
                 className="h-12 w-12 object-contain"
               />
             </button>
             <div>
               <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
-                Planet Express Poker
+                {activeTheme.appTitle}
               </p>
               <h1 className="font-[var(--pep-font-display)] text-3xl leading-none sm:text-4xl">
-                Realtime planning poker
+                {activeTheme.tagline}
               </h1>
               <p className="mt-1 text-sm text-[var(--pep-ink-soft)]">
                 Simple realtime estimation for teams.

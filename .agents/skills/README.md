@@ -22,4 +22,4 @@ Use a skill only when the task clearly matches it. Otherwise use the shared docs
 | `audit-skill-opportunities`  | Decide if a repeated workflow needs a skill.              |
 | `audit-standards-docs`       | Audit docs and agent guidance for drift and over-context. |
 | `setup-forked-instance`      | Configure a fork for local use and hosted deployment.     |
-| `retheme-app`                | Replace the current theme while preserving app behavior.  |
+| `add-theme-pack`             | Add built-in theme packs while preserving app behavior.   |

@@ -1,8 +1,11 @@
 import { AnimatePresence, motion } from 'motion/react'
 import type { RoomFunEvent } from './fun'
+import { getThemeConfig } from '../theme/registry'
+import type { ThemeId } from '../theme/types'
 
 type FunLayerProps = {
   event: null | RoomFunEvent
+  themeId: ThemeId
   reaction?: null | {
     mediaClassName: string
     mediaType: 'image' | 'video'
@@ -10,7 +13,8 @@ type FunLayerProps = {
   }
 }
 
-export function FunLayer({ event, reaction = null }: FunLayerProps) {
+export function FunLayer({ event, themeId, reaction = null }: FunLayerProps) {
+  const theme = getThemeConfig(themeId)
   const quoteDisplayDuration = event?.mode === 'celebration' ? 6.4 : 5.8
   const isDeliveryEvent = event?.mode === 'delivery'
   const isDeliveryStormEvent = event?.mode === 'deliveryStorm'
@@ -202,8 +206,8 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
                 ].join(' ')}
               >
                 <img
-                  src="/planet-express-ship.png"
-                  alt="Planet Express ship"
+                  src={theme.vehiclePath}
+                  alt={theme.vehicleLabel}
                   className="w-full"
                 />
               </motion.div>
@@ -213,7 +217,7 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
               ? packageDrops.map((packageDrop, index) => (
                   <motion.img
                     key={`${event.caption}:${index}`}
-                    src="/effects/icons8-package.png"
+                    src={theme.packagePath}
                     alt=""
                     initial={{
                       opacity: 0,
@@ -272,7 +276,7 @@ export function FunLayer({ event, reaction = null }: FunLayerProps) {
                 className="absolute inset-0 grid place-items-center bg-[radial-gradient(circle,_rgba(201,240,232,0.36),_rgba(12,32,42,0.24)_50%,_rgba(12,32,42,0.44))]"
               >
                 <img
-                  src="/effects/hypnotoad.gif"
+                  src={theme.roundReactions.consensus1.src}
                   alt=""
                   className="w-[min(34rem,82vw)] rounded-[24px] border-4 border-[var(--pep-ink)] bg-black shadow-[0_30px_90px_rgba(12,32,42,0.44)]"
                 />

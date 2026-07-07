@@ -50,17 +50,20 @@ Suggested fields:
 - `reveal_countdown_enabled` boolean not null default true
 - `reveal_countdown_seconds` integer not null default 3
 - `fun_level` text not null default `'chaotic'`
+- `theme` text not null default `'futurama'`
 - `updated_at` timestamptz not null default now()
 
 Suggested allowed values:
 
 - `deck_type`: `fibonacci`
 - `fun_level`: `disabled`, `chaotic`
+- `theme`: built-in theme IDs, currently `futurama`, `zootopia`
 
 Notes:
 
 - Keep this record one-to-one with `rooms`
 - `special_cards` allows the v1 optional set without inventing a larger deck system yet
+- `theme` is the room-owned presentation choice and syncs through the room settings subscription
 
 ### `participants`
 

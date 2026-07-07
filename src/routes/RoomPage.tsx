@@ -3,7 +3,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import {
   getAvatarOption,
-  avatarOptions,
+  getAvatarOptions,
   getAvatarPortraitClassName,
 } from '../features/identity/avatars'
 import {
@@ -14,6 +14,7 @@ import {
   clearActiveRoomName,
   createClientId,
   readActiveRoomName,
+  readRoomThemePrefill,
   readStoredIdentity,
   saveRoomNamePrefill,
   saveActiveRoomName,
@@ -27,6 +28,7 @@ import {
   resetRound,
   revealRound,
   setRoomFunLevel,
+  setRoomTheme,
   setParticipantRole,
   startRevealCountdown,
   submitVote,
@@ -34,14 +36,14 @@ import {
 } from '../features/room/data/roomApi'
 import { FunLayer } from '../features/room/FunLayer'
 import {
-  consensusCaption,
-  deliveryCaption,
-  deliveryStormCaption,
-  hypnotoadCaption,
-  milestoneCaption,
-  revealCaption,
-  consensusQuotes,
-  revealQuotes,
+  getConsensusCaption,
+  getConsensusQuotes,
+  getDeliveryCaption,
+  getDeliveryStormCaption,
+  getHypnotoadCaption,
+  getMilestoneCaption,
+  getRevealCaption,
+  getRevealQuotes,
   type RoomFunEvent,
 } from '../features/room/fun'
 import { useRoomFunEvents } from '../features/room/realtime/useRoomFunEvents'
@@ -61,6 +63,14 @@ import {
   getCardMeaningLabel,
   numericCardValues,
 } from '../features/room/voting'
+import { ThemeSelect } from '../features/theme/ThemeSelect'
+import { useTheme } from '../features/theme/useTheme'
+import {
+  getThemeCardArtworkPath,
+  getThemeConfig,
+  getThemeRoundReaction,
+} from '../features/theme/registry'
+import type { ThemeId } from '../features/theme/types'
 import type {
   JoinedParticipant,
   Participant,
@@ -80,83 +90,9 @@ type RoundReactionCategory =
   | 'skepticalFry'
   | 'wideSpread'
 
-type RoundReactionDisplay = {
-  mediaType: 'image' | 'video'
-  mediaClassName: string
-  src: string
-}
-
 const numericCardIndexByValue = new Map(
   numericCardValues.map((cardValue, index) => [cardValue, index])
 )
-
-const roundReactionConfig: Record<RoundReactionKind, RoundReactionDisplay> = {
-  coffee1: {
-    mediaType: 'image',
-    src: '/effects/coffee-1.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  coffee2: {
-    mediaType: 'image',
-    src: '/effects/coffee-2.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  coffee3: {
-    mediaType: 'image',
-    src: '/effects/coffee-3.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  coffee4: {
-    mediaType: 'image',
-    src: '/effects/coffee-4.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  consensus1: {
-    mediaType: 'image',
-    src: '/effects/hypnotoad.gif',
-    mediaClassName: 'h-44 w-44 object-contain sm:h-56 sm:w-56',
-  },
-  consensus2: {
-    mediaType: 'image',
-    src: '/effects/consensus-2.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  consensus3: {
-    mediaType: 'image',
-    src: '/effects/consensus-3.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  consensus4: {
-    mediaType: 'image',
-    src: '/effects/consensus-4.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  consensus5: {
-    mediaType: 'image',
-    src: '/effects/consensus-5.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  nibblerQuestion: {
-    mediaType: 'image',
-    src: '/effects/nibbler-question.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  skepticalFry: {
-    mediaType: 'video',
-    src: '/effects/skeptical-fry.webm',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  wideSpread1: {
-    mediaType: 'image',
-    src: '/effects/wide-spread-1.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-  wideSpread2: {
-    mediaType: 'image',
-    src: '/effects/wide-spread-2.gif',
-    mediaClassName: 'h-36 w-52 rounded-[14px] object-cover sm:h-44 sm:w-64',
-  },
-}
 
 const deliveryStormSequence = [
   'ArrowUp',
@@ -179,6 +115,8 @@ type RoomPageProps = {
 export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const location = useLocation()
   const navigate = useNavigate()
+  const { personalThemeId, setPersonalThemeId, setRoomThemeOverride } =
+    useTheme()
   const { roomName: roomNameParam = '' } = useParams()
   const displayRoomName = normalizeRoomName(roomNameParam)
   const backingRoomName =
@@ -205,6 +143,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const [isResetSubmitting, setIsResetSubmitting] = useState(false)
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [isFunLevelSaving, setIsFunLevelSaving] = useState(false)
+  const [isRoomThemeSaving, setIsRoomThemeSaving] = useState(false)
   const [countdownNow, setCountdownNow] = useState(() => Date.now())
   const [localCountdownStartedAt, setLocalCountdownStartedAt] = useState<
     number | null
@@ -253,6 +192,11 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     return searchParams.get('joinAs') === 'spectator' ? 'spectator' : 'voter'
   })
+  const requestedCreateThemeId = getThemeConfig(
+    new URLSearchParams(location.search).get('createTheme') ??
+      readRoomThemePrefill() ??
+      personalThemeId
+  ).id as ThemeId
   const requestedAutoJoinRole: ParticipantRole | null =
     new URLSearchParams(location.search).get('joinAs') === 'spectator'
       ? 'spectator'
@@ -279,6 +223,11 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     selfParticipant?.participantId === roomOwnerParticipantId
   const effectiveSelfRole = selfRosterParticipant?.role ?? selfParticipant?.role
   const isJoinedToRoom = Boolean(selfParticipant && selfRosterParticipant)
+  const roomThemeId = roomSettings?.themeId ?? 'futurama'
+  const effectiveThemeId =
+    isJoinedToRoom && roomSettings ? roomThemeId : personalThemeId
+  const theme = getThemeConfig(effectiveThemeId)
+  const avatarOptions = getAvatarOptions(effectiveThemeId)
   const displayedPresenceByParticipantId = isSimulatorMode
     ? addDevPresenceParticipants({
         devClientIdByParticipantId,
@@ -293,6 +242,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const countdownAttemptRef = useRef<string | null>(null)
   const lastSeenRoundNumberRef = useRef<number | null>(null)
   const locallyObservedRoundIdsRef = useRef<Set<string>>(new Set())
+  const initialRoomThemeAppliedRef = useRef(false)
   const revealedFunRoundKeyRef = useRef<string | null>(null)
   const milestoneRoundKeyRef = useRef<string | null>(null)
   const roundReactionRoundKeyRef = useRef<string | null>(null)
@@ -394,7 +344,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
 
     void broadcastFunEvent({
-      caption: deliveryStormCaption,
+      caption: getDeliveryStormCaption(effectiveThemeId),
       mode: 'deliveryStorm',
     })
   })
@@ -546,6 +496,54 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     room?.name,
     selfParticipant,
   ])
+
+  useEffect(() => {
+    if (isJoinedToRoom && roomSettings) {
+      setRoomThemeOverride(roomSettings.themeId)
+      return
+    }
+
+    setRoomThemeOverride(null)
+  }, [isJoinedToRoom, roomSettings, setRoomThemeOverride])
+
+  useEffect(() => {
+    if (
+      initialRoomThemeAppliedRef.current ||
+      !room ||
+      !roomSettings ||
+      !selfParticipant ||
+      !isSelfRoomOwner ||
+      participants.length !== 1 ||
+      !isRecentlyCreatedRoom(room.createdAt) ||
+      roomSettings.themeId === requestedCreateThemeId
+    ) {
+      return
+    }
+
+    initialRoomThemeAppliedRef.current = true
+
+    void setRoomTheme({
+      roomId: room.id,
+      actorClientId: identity.clientId,
+      nextThemeId: requestedCreateThemeId,
+    }).catch((error: unknown) => {
+      setSettingsError(
+        error instanceof Error ? error.message : 'Failed to set room theme.'
+      )
+    })
+  }, [
+    identity.clientId,
+    isSelfRoomOwner,
+    participants.length,
+    requestedCreateThemeId,
+    room,
+    roomSettings,
+    selfParticipant,
+  ])
+
+  useEffect(() => {
+    initialRoomThemeAppliedRef.current = false
+  }, [room?.id])
 
   useEffect(() => {
     selfParticipantSyncGraceUntilRef.current = 0
@@ -968,17 +966,22 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     revealedFunRoundKeyRef.current = revealKey
 
+    const consensusQuotes = getConsensusQuotes(effectiveThemeId)
+    const revealQuotes = getRevealQuotes(effectiveThemeId)
     const quote = isConsensusCelebration
       ? consensusQuotes[activeRound.roundNumber % consensusQuotes.length]
       : revealQuotes[activeRound.roundNumber % revealQuotes.length]
 
     void broadcastFunEvent({
-      caption: isConsensusCelebration ? consensusCaption : revealCaption,
+      caption: isConsensusCelebration
+        ? getConsensusCaption(effectiveThemeId)
+        : getRevealCaption(effectiveThemeId),
       mode: isConsensusCelebration ? 'celebration' : 'chaos',
       quote,
     })
   }, [
     activeRound,
+    effectiveThemeId,
     isConsensusCelebration,
     isMilestoneRound,
     roomSettings?.funLevel,
@@ -1011,10 +1014,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     setActiveRoundReaction(null)
 
     void broadcastFunEvent({
-      caption: milestoneCaption,
+      caption: getMilestoneCaption(effectiveThemeId),
       mode: 'milestone',
     })
-  }, [activeRound, isMilestoneRound, roomSettings?.funLevel])
+  }, [activeRound, effectiveThemeId, isMilestoneRound, roomSettings?.funLevel])
 
   useEffect(() => {
     if (
@@ -1051,7 +1054,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         setActiveRoundReaction(null)
 
         void broadcastFunEvent({
-          caption: deliveryCaption,
+          caption: getDeliveryCaption(effectiveThemeId),
           mode: 'flyby',
         })
       })
@@ -1064,7 +1067,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         setActiveRoundReaction(null)
 
         void broadcastFunEvent({
-          caption: deliveryStormCaption,
+          caption: getDeliveryStormCaption(effectiveThemeId),
           mode: 'deliveryStorm',
         })
       })
@@ -1087,6 +1090,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }, 5000)
   }, [
     activeRound,
+    effectiveThemeId,
     isMilestoneRound,
     roomSettings?.funLevel,
     roundReactionCategory,
@@ -1173,7 +1177,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
-    const avatar = pickRandomAvatar()
+    const avatar = pickRandomAvatar(effectiveThemeId)
     const displayName = createDevDisplayName(
       participants.map((participant) => participant.displayName)
     )
@@ -1315,7 +1319,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
 
     const deliveryEvent = {
-      caption: deliveryCaption,
+      caption: getDeliveryCaption(effectiveThemeId),
       mode: 'delivery',
     } satisfies RoomFunEvent
 
@@ -1352,12 +1356,12 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       })
 
       if (!result.result_triggered) {
-        setSettingsError('Hypnotoad is resting for now.')
+        setSettingsError(theme.easterEggRestingMessage)
         return
       }
 
       const hypnotoadEvent = {
-        caption: hypnotoadCaption,
+        caption: getHypnotoadCaption(effectiveThemeId),
         mode: 'hypnotoad',
       } satisfies RoomFunEvent
 
@@ -1366,7 +1370,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       await sendFunEvent(hypnotoadEvent)
     } catch (error) {
       setSettingsError(
-        error instanceof Error ? error.message : 'Failed to summon Hypnotoad.'
+        error instanceof Error ? error.message : theme.easterEggFailureMessage
       )
     }
   }
@@ -1452,6 +1456,29 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       )
     } finally {
       setPendingParticipantActionId(null)
+    }
+  }
+
+  async function handleRoomThemeChange(nextThemeId: ThemeId) {
+    if (!room || !selfParticipant || !roomSettings) {
+      return
+    }
+
+    setIsRoomThemeSaving(true)
+    setSettingsError(null)
+
+    try {
+      await setRoomTheme({
+        roomId: room.id,
+        actorClientId: identity.clientId,
+        nextThemeId,
+      })
+    } catch (error) {
+      setSettingsError(
+        error instanceof Error ? error.message : 'Failed to update room theme.'
+      )
+    } finally {
+      setIsRoomThemeSaving(false)
     }
   }
 
@@ -1604,19 +1631,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 xl:grid-cols-6">
         {fibonacciDeck.map((card, index) => {
           const isSelected = displayedOwnCardValue === card
-          const imageCardPath =
-            card === 'nibbler'
-              ? '/cards/icons8-nibbler.png'
-              : card === 'ship'
-                ? '/planet-express-ship.png'
-                : card === 'BIG'
-                  ? '/cards/icons8-lrrr.png'
-                  : card === 'coffee'
-                    ? '/cards/coffee-cup.svg'
-                    : null
+          const imageCardPath = getThemeCardArtworkPath(effectiveThemeId, card)
           const cardLabel = getCardDisplayLabel(card)
           const cardMeaningLabel = getCardMeaningLabel(card)
-          const cardArtworkLabel = getCardArtworkLabel(card)
+          const cardArtworkLabel = getCardArtworkLabel(card, effectiveThemeId)
 
           return (
             <motion.div
@@ -1694,7 +1712,11 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
   const activeRoundReactionDisplay =
     activeRoundReaction !== null
-      ? roundReactionConfig[activeRoundReaction]
+      ? getThemeRoundReaction(
+          effectiveThemeId,
+          activeRoundReaction,
+          activeRound?.roundNumber ?? 0
+        )
       : null
   const activeRoomName = readActiveRoomName()
   const hasStoredAutoJoinTarget = Boolean(
@@ -1722,8 +1744,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         <div className="flex items-start gap-4">
           <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[14px] border border-[var(--pep-line)] bg-white shadow-[0_12px_26px_rgba(12,32,42,0.12)]">
             <img
-              src="/planet-express-logo.png"
-              alt="Planet Express logo"
+              src={theme.logoPath}
+              alt={theme.logoAlt}
               className="h-12 w-12 object-contain"
             />
           </div>
@@ -1771,7 +1793,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
               }
               disabled={isJoining || isRoomLoading}
               maxLength={maxDisplayNameLength}
-              placeholder="Hermes"
+              placeholder={theme.displayNamePlaceholder}
               className="mt-1.5 w-full rounded-[12px] border border-[var(--pep-line-strong)] bg-white px-4 py-3 text-base outline-none transition focus:border-[var(--pep-accent-2)] disabled:cursor-not-allowed disabled:opacity-60"
             />
           </label>
@@ -1899,7 +1921,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
       <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(13rem,13rem))] gap-2.5">
         {participants.map((participant, index) => {
-          const avatar = getAvatarOption(participant.avatarKey)
+          const avatar = getAvatarOption(
+            participant.avatarKey,
+            effectiveThemeId
+          )
           const isOnline = Boolean(
             displayedPresenceByParticipantId[participant.id]
           )
@@ -2121,7 +2146,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           <div className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
             {fibonacciDeck.map((cardValue) => {
               const cardMeaningLabel = getCardMeaningLabel(cardValue)
-              const cardArtworkLabel = getCardArtworkLabel(cardValue)
+              const cardArtworkLabel = getCardArtworkLabel(
+                cardValue,
+                effectiveThemeId
+              )
 
               return (
                 <button
@@ -2162,7 +2190,11 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
   return (
     <div className="space-y-4">
-      <FunLayer event={activeFunEvent} reaction={activeRoundReactionDisplay} />
+      <FunLayer
+        event={activeFunEvent}
+        themeId={effectiveThemeId}
+        reaction={activeRoundReactionDisplay}
+      />
       <div
         aria-hidden={shouldShowJoinModal}
         className={[
@@ -2212,9 +2244,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   onClick={() => void handleDeliveryDrop()}
                   className="mt-4 flex w-full items-center justify-between gap-3 rounded-[14px] border border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#caf6e9,_#fff5b2)] px-4 py-3 text-left text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink)] shadow-[0_12px_24px_rgba(31,160,137,0.16)] disabled:cursor-default disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
                 >
-                  <span>Request Planet Express delivery</span>
+                  <span>{theme.manualDeliveryLabel}</span>
                   <img
-                    src="/planet-express-ship.png"
+                    src={theme.vehiclePath}
                     alt=""
                     className="h-8 w-20 shrink-0 object-contain"
                   />
@@ -2272,6 +2304,18 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     ? 'Effects: on'
                     : 'Effects: off'}
                 </button>
+                {roomSettings ? (
+                  <div className="min-w-[13rem]">
+                    <ThemeSelect
+                      label="Room theme"
+                      value={roomSettings.themeId}
+                      disabled={!isSelfRoomOwner || isRoomThemeSaving}
+                      onChange={(nextThemeId) =>
+                        void handleRoomThemeChange(nextThemeId)
+                      }
+                    />
+                  </div>
+                ) : null}
                 {!isSelfRoomOwner && isJoinedToRoom ? (
                   <button
                     type="button"
@@ -2315,6 +2359,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     {roomSettings.funLevel === 'chaotic'
                       ? 'enabled'
                       : 'disabled'}
+                  </span>
+                  {' · '}Theme:{' '}
+                  <span className="font-black text-[var(--pep-ink)]">
+                    {getThemeConfig(roomSettings.themeId).label}
                   </span>
                   {isSelfRoomOwner
                     ? '.'
@@ -2380,6 +2428,15 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 ) : null}
 
                 <div className="mt-3 space-y-2.5">
+                  {!isJoinedToRoom ? (
+                    <ThemeSelect
+                      label="Page theme"
+                      value={personalThemeId}
+                      onChange={(nextThemeId) =>
+                        setPersonalThemeId(nextThemeId)
+                      }
+                    />
+                  ) : null}
                   <label className="block">
                     <span className="text-xs font-black uppercase text-[var(--pep-ink-soft)]">
                       Display name
@@ -2393,7 +2450,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                       }
                       disabled={isJoining || isRoomLoading}
                       maxLength={maxDisplayNameLength}
-                      placeholder="Hermes"
+                      placeholder={theme.displayNamePlaceholder}
                       className="mt-1.5 w-full rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-3 py-2.5 outline-none transition focus:border-[var(--pep-accent-2)] disabled:cursor-not-allowed disabled:opacity-60"
                     />
                   </label>
@@ -2634,7 +2691,19 @@ function saveDevClientIdMap(
   )
 }
 
-function pickRandomAvatar() {
+function isRecentlyCreatedRoom(createdAt: string) {
+  const createdAtMs = Date.parse(createdAt)
+
+  if (Number.isNaN(createdAtMs)) {
+    return false
+  }
+
+  return Math.abs(Date.now() - createdAtMs) <= 60_000
+}
+
+function pickRandomAvatar(themeId: ThemeId) {
+  const avatarOptions = getAvatarOptions(themeId)
+
   return avatarOptions[Math.floor(Math.random() * avatarOptions.length)]
 }
 

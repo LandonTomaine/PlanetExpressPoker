@@ -9,6 +9,7 @@ Use [getting-started.md](getting-started.md) first for local setup. Use the rest
 - [getting-started.md](getting-started.md): local setup and run flow
 - [backend.md](backend.md): backend standards and patterns
 - [frontend.md](frontend.md): frontend standards and patterns
+- [themes.md](themes.md): theme registry, state rules, asset inventory, and add-theme workflow
 - [testing/README.md](testing/README.md): testing docs index
 - [safeguards.md](safeguards.md): quality, test, CI, and security safeguards
 - [tooling.md](tooling.md): command reference and developer tooling

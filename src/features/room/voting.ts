@@ -1,3 +1,6 @@
+import { getThemeConfig } from '../theme/registry'
+import type { ThemeId } from '../theme/types'
+
 export const numericCardValues = ['0', '1', '2', '3', '5', '8', '13'] as const
 
 export const fibonacciDeck = [
@@ -36,21 +39,23 @@ export function getCardDisplayLabel(cardValue: string) {
   return cardValue
 }
 
-export function getCardArtworkLabel(cardValue: string) {
+export function getCardArtworkLabel(cardValue: string, themeId: ThemeId) {
+  const labels = getThemeConfig(themeId).cardArtworkLabels
+
   if (cardValue === 'nibbler') {
-    return 'Nibbler'
+    return labels.nibbler
   }
 
   if (cardValue === 'ship') {
-    return 'Planet Express ship'
+    return labels.ship
   }
 
   if (cardValue === 'BIG') {
-    return 'Lrrr'
+    return labels.BIG
   }
 
   if (cardValue === 'coffee') {
-    return 'Coffee'
+    return labels.coffee
   }
 
   return getCardDisplayLabel(cardValue)

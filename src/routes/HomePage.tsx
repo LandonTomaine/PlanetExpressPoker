@@ -2,7 +2,7 @@ import { motion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import {
-  avatarOptions,
+  getAvatarOptions,
   getAvatarPortraitClassName,
 } from '../features/identity/avatars'
 import {
@@ -12,9 +12,11 @@ import {
 import {
   clearActiveRoomName,
   readActiveRoomName,
+  readRoomThemePrefill,
   readRoomNamePrefill,
   readStoredIdentity,
   saveActiveRoomName,
+  saveRoomThemePrefill,
   saveRoomNamePrefill,
   saveStoredIdentity,
 } from '../features/identity/storage'
@@ -27,13 +29,21 @@ import {
   roomNameInputPattern,
 } from '../features/room/roomName'
 import type { ParticipantRole, RoomSummary } from '../features/room/types'
+import { ThemeSelect } from '../features/theme/ThemeSelect'
+import { useTheme } from '../features/theme/useTheme'
+import { getThemeConfig } from '../features/theme/registry'
+import type { ThemeId } from '../features/theme/types'
 
 export function HomePage() {
   const navigate = useNavigate()
+  const { activeTheme, personalThemeId, setPersonalThemeId } = useTheme()
   const [roomName, setRoomName] = useState(
     () => readRoomNamePrefill() ?? readActiveRoomName() ?? ''
   )
   const [identity, setIdentity] = useState(() => readStoredIdentity())
+  const [roomThemeId, setRoomThemeId] = useState<ThemeId>(
+    () => readRoomThemePrefill() ?? personalThemeId
+  )
   const [joinRole, setJoinRole] = useState<ParticipantRole>('voter')
   const [myRooms, setMyRooms] = useState<RoomSummary[]>([])
   const [isMyRoomsLoading, setIsMyRoomsLoading] = useState(true)
@@ -44,6 +54,7 @@ export function HomePage() {
   const roomNameError = getRoomNameError(roomName)
   const hasDisplayName = Boolean(normalizeDisplayName(identity.displayName))
   const canOpenRoom = !roomNameError && hasDisplayName
+  const avatarOptions = getAvatarOptions(activeTheme.id)
   const onlineCountByRoomName = useRoomPresenceCounts(
     myRooms.map((roomSummary) => roomSummary.roomName)
   )
@@ -62,9 +73,13 @@ export function HomePage() {
     })
     saveActiveRoomName(normalizedRoomName)
     saveRoomNamePrefill(normalizedRoomName)
+    saveRoomThemePrefill(roomThemeId)
     navigate({
       pathname: `/rooms/${encodeURIComponent(normalizedRoomName)}`,
-      search: joinRole === 'spectator' ? '?joinAs=spectator' : '',
+      search: new URLSearchParams({
+        ...(joinRole === 'spectator' ? { joinAs: 'spectator' } : {}),
+        createTheme: roomThemeId,
+      }).toString(),
     })
   }
 
@@ -162,13 +177,13 @@ export function HomePage() {
     >
       <div className="max-w-2xl">
         <p className="text-sm font-black uppercase text-[var(--pep-accent)]">
-          Realtime estimation
+          {activeTheme.homeEyebrow}
         </p>
         <h2 className="mt-2 font-[var(--pep-font-display)] text-4xl leading-none text-[var(--pep-ink)] sm:text-5xl">
-          Planet Express Poker
+          {activeTheme.appTitle}
         </h2>
         <p className="mt-3 max-w-xl text-base leading-7 text-[var(--pep-ink-soft)]">
-          Open a room, vote privately, reveal together.
+          {activeTheme.homeDescription}
         </p>
 
         <div className="mt-5 max-w-2xl rounded-[14px] border border-[var(--pep-line)] bg-white/88 p-4 shadow-[0_14px_34px_rgba(12,32,42,0.08)]">
@@ -224,10 +239,23 @@ export function HomePage() {
                     openRoom()
                   }
                 }}
-                placeholder="Hermes"
+                placeholder={activeTheme.displayNamePlaceholder}
                 className="mt-2 w-full rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-3 text-base outline-none transition focus:border-[var(--pep-accent-2)]"
               />
             </label>
+            <ThemeSelect
+              label="Landing theme"
+              value={personalThemeId}
+              onChange={(nextThemeId) => setPersonalThemeId(nextThemeId)}
+            />
+            <ThemeSelect
+              label="New room theme"
+              value={roomThemeId}
+              onChange={(nextThemeId) => {
+                setRoomThemeId(nextThemeId)
+                saveRoomThemePrefill(nextThemeId)
+              }}
+            />
             <div>
               <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
                 Join as
@@ -263,7 +291,9 @@ export function HomePage() {
               <p className="mt-2 text-xs font-semibold text-[var(--pep-ink-soft)]">
                 {joinRole === 'spectator'
                   ? 'Spectators can watch the room from the start without voting.'
-                  : "Voters can estimate immediately. The room is created if it doesn't exist yet."}
+                  : `Voters can estimate immediately. New rooms start with the ${
+                      getThemeConfig(roomThemeId).label
+                    } theme.`}
               </p>
             </div>
             <div>
@@ -385,6 +415,9 @@ export function HomePage() {
                               : (roomSummary.currentClientRole ??
                                 'participant')}
                           </span>
+                          <span className="rounded-full bg-amber-100 px-2 py-1 text-amber-800">
+                            {getThemeConfig(roomSummary.themeId).label}
+                          </span>
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
@@ -432,11 +465,11 @@ export function HomePage() {
       <aside className="rounded-[14px] border border-[var(--pep-line)] bg-[var(--pep-panel-strong)] p-3">
         <div className="flex items-center justify-between gap-4">
           <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
-            Delivery crew
+            {activeTheme.crewLabel}
           </p>
           <img
-            src="/planet-express-ship.png"
-            alt="Planet Express ship"
+            src={activeTheme.vehiclePath}
+            alt={activeTheme.vehicleLabel}
             className="w-36"
           />
         </div>

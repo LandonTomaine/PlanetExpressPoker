@@ -1,3 +1,5 @@
+import type { ThemeId } from '../theme/types'
+
 export type Room = {
   id: string
   name: string
@@ -8,6 +10,7 @@ export type Room = {
 export type RoomSummary = {
   roomId: string
   roomName: string
+  themeId: ThemeId
   participantCount: number
   currentClientRole: ParticipantRole | null
   isCurrentClientOwner: boolean
@@ -23,6 +26,7 @@ export type RoomSettings = {
   revealCountdownEnabled: boolean
   revealCountdownSeconds: number
   funLevel: RoomFunLevel
+  themeId: ThemeId
   updatedAt: string
 }
 

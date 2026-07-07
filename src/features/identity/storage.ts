@@ -1,8 +1,12 @@
 import { defaultAvatar } from './avatars'
+import { defaultThemeId, getThemeConfig } from '../theme/registry'
+import type { ThemeId } from '../theme/types'
 
 const identityStorageKey = 'pep.identity.v1'
 const activeRoomStorageKey = 'pep.active-room.v1'
 const roomNamePrefillStorageKey = 'pep.room-name-prefill.v1'
+const themeStorageKey = 'pep.theme.v1'
+const roomThemePrefillStorageKey = 'pep.room-theme-prefill.v1'
 
 export type StoredIdentity = {
   clientId: string
@@ -118,4 +122,48 @@ export function clearRoomNamePrefill() {
   }
 
   window.sessionStorage.removeItem(roomNamePrefillStorageKey)
+}
+
+export function readStoredThemeId(): ThemeId | null {
+  if (!isBrowser()) {
+    return defaultThemeId
+  }
+
+  const rawValue = window.localStorage.getItem(themeStorageKey)
+
+  if (!rawValue) {
+    return null
+  }
+
+  return getThemeConfig(rawValue).id
+}
+
+export function saveStoredThemeId(themeId: ThemeId) {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.localStorage.setItem(themeStorageKey, themeId)
+}
+
+export function readRoomThemePrefill(): ThemeId | null {
+  if (!isBrowser()) {
+    return null
+  }
+
+  const rawValue = window.sessionStorage.getItem(roomThemePrefillStorageKey)
+
+  if (!rawValue) {
+    return null
+  }
+
+  return getThemeConfig(rawValue).id
+}
+
+export function saveRoomThemePrefill(themeId: ThemeId) {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.sessionStorage.setItem(roomThemePrefillStorageKey, themeId)
 }

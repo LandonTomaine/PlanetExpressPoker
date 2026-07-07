@@ -52,7 +52,8 @@ Avoid duplicating durable backend state into multiple frontend caches without a 
 - Use `Tailwind` for layout, spacing, and common styling.
 - Use CSS variables for theme tokens such as colors, shadows, and animation accents.
 - Keep the base layout readable and clean.
-- Put Futurama/Planet Express flavor mostly in art, reactions, avatars, props, and animation layers.
+- Put theme flavor mostly in registry-managed copy, art, reactions, avatars, props, and animation layers.
+- Use [themes.md](themes.md) when adding or changing built-in themes.
 
 ## Animation
 

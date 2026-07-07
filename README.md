@@ -1,6 +1,6 @@
 # Planet Express Poker
 
-Lightweight planning poker with realtime rooms, persistent room state, animated reveal flow, and a chaotic Futurama-inspired presentation layer.
+Lightweight planning poker with realtime rooms, persistent room state, animated reveal flow, and a switchable themed presentation layer. The current built-in themes are Futurama and Zootopia.
 
 ## Stack
 
@@ -80,7 +80,7 @@ npm.cmd audit --audit-level=moderate
 
 This repository intentionally ignores local `.env` files. Do not commit hosted Supabase keys, Cloudflare API tokens, database passwords, or Supabase access tokens.
 
-The app includes Futurama-inspired media assets for private, personal, non-commercial use. The source code is MIT-licensed, but bundled media/theme assets are not. Do not sell or monetize the app as shipped. Replace the themed assets before commercial use or reusable public-product use.
+The app includes theme-specific media and references for private, personal, non-commercial use. The source code is MIT-licensed, but bundled media/theme assets are not. Do not sell or monetize the app as shipped. Replace the themed assets before commercial use or reusable public-product use.
 
 - License: [LICENSE.md](LICENSE.md)
 - Asset notices: [ASSET_NOTICES.md](ASSET_NOTICES.md)
@@ -118,6 +118,7 @@ npm.cmd run supabase:status
 - Shared docs index: [docs/README.md](docs/README.md)
 - Local setup: [docs/development/getting-started.md](docs/development/getting-started.md)
 - Tooling and safeguards: [docs/development/README.md](docs/development/README.md)
+- Themes and asset inventory: [docs/development/themes.md](docs/development/themes.md)
 - Deployment: [docs/deployment/cloudflare-pages.md](docs/deployment/cloudflare-pages.md)
 - Fork setup: [docs/deployment/fork-setup.md](docs/deployment/fork-setup.md)
 - Architecture: [docs/architecture/overview.md](docs/architecture/overview.md)
