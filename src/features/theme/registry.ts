@@ -467,28 +467,32 @@ export const themeConfigs: Record<ThemeId, ThemeConfig> = {
       buildQuote(
         zootopiaByKey.bender.portraitPath,
         'Nick Wilde',
-        "It's called a hustle, Sweetheart."
+        'Flash, Flash, 100-yard dash!'
+      ),
+      buildQuote(
+        zootopiaByKey['captain-leela'].portraitPath,
+        'Judy Hopps',
+        "I'm not leaving."
+      ),
+      buildQuote(
+        zootopiaByKey['captain-leela'].portraitPath,
+        'Judy Hopps',
+        'This is a crime scene.'
       ),
       buildQuote(
         zootopiaByKey.bender.portraitPath,
         'Nick Wilde',
-        'Flash, Flash, 100-yard dash!'
+        'We gotta go.'
       ),
-      buildQuote(
-        zootopiaByKey.professor.portraitPath,
-        'Chief Bogo',
-        'Not now!'
-      ),
-      buildQuote(
-        zootopiaByKey.zapp.portraitPath,
-        'Clawhauser',
-        'O.M. Goodness.'
-      ),
-      buildQuote(zootopiaByKey.lrrr.portraitPath, 'Mr. Big', 'Ice him.'),
       buildQuote(
         zootopiaByKey.zoidberg.portraitPath,
         'Yax',
-        'Om... Om... Om...'
+        'Mind like a steel trap.'
+      ),
+      buildQuote(
+        zootopiaByKey['captain-leela'].portraitPath,
+        'Judy Hopps',
+        'Sweet cheese and crackers.'
       ),
       buildQuote(
         zootopiaByKey.amy.portraitPath,
@@ -496,9 +500,9 @@ export const themeConfigs: Record<ThemeId, ThemeConfig> = {
         "I'm Gazelle. Welcome to Zootopia."
       ),
       buildQuote(
-        zootopiaByKey.hermes.portraitPath,
-        'Mayor Lionheart',
-        'I was trying to protect the city!'
+        zootopiaByKey['captain-leela'].portraitPath,
+        'Judy Hopps',
+        'Wow, this is a lot of great info.'
       ),
     ],
     consensusQuotes: [
@@ -507,11 +511,10 @@ export const themeConfigs: Record<ThemeId, ThemeConfig> = {
         'Judy Hopps',
         'Anyone can be anything.'
       ),
-      buildQuote(zootopiaByKey.bender.portraitPath, 'Nick Wilde', 'Bingo!'),
       buildQuote(
-        zootopiaByKey.zapp.portraitPath,
-        'Clawhauser',
-        'O.M. Goodness.'
+        zootopiaByKey['captain-leela'].portraitPath,
+        'Judy Hopps',
+        'Make the world a better place.'
       ),
       buildQuote(
         zootopiaByKey.amy.portraitPath,
@@ -519,9 +522,14 @@ export const themeConfigs: Record<ThemeId, ThemeConfig> = {
         "I'm Gazelle. Welcome to Zootopia."
       ),
       buildQuote(
-        zootopiaByKey.nibbler.portraitPath,
-        'Flash',
+        zootopiaByKey.bender.portraitPath,
+        'Nick Wilde',
         'Flash, Flash, 100-yard dash!'
+      ),
+      buildQuote(
+        zootopiaByKey.amy.portraitPath,
+        'Gazelle',
+        'We celebrate our differences.'
       ),
     ],
     roundReactions: {

@@ -224,8 +224,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const effectiveSelfRole = selfRosterParticipant?.role ?? selfParticipant?.role
   const isJoinedToRoom = Boolean(selfParticipant && selfRosterParticipant)
   const roomThemeId = roomSettings?.themeId ?? 'futurama'
-  const effectiveThemeId =
-    isJoinedToRoom && roomSettings ? roomThemeId : personalThemeId
+  const effectiveThemeId = roomSettings ? roomThemeId : personalThemeId
   const theme = getThemeConfig(effectiveThemeId)
   const avatarOptions = getAvatarOptions(effectiveThemeId)
   const displayedPresenceByParticipantId = isSimulatorMode
@@ -500,13 +499,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   ])
 
   useEffect(() => {
-    if (isJoinedToRoom && roomSettings) {
+    if (roomSettings) {
       setRoomThemeOverride(roomSettings.themeId)
       return
     }
 
     setRoomThemeOverride(null)
-  }, [isJoinedToRoom, roomSettings, setRoomThemeOverride])
+  }, [roomSettings, setRoomThemeOverride])
 
   useEffect(() => {
     selfParticipantSyncGraceUntilRef.current = 0

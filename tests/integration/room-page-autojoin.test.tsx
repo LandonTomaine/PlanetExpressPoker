@@ -1,8 +1,9 @@
-import { render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { RoomPage } from '../../src/routes/RoomPage'
 import { createOrGetRoom, joinRoom } from '../../src/features/room/data/roomApi'
+import { useRoomSettingsLiveState } from '../../src/features/room/realtime/useRoomSettingsLiveState'
 import { ThemeProvider } from '../../src/features/theme/context'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
@@ -37,10 +38,7 @@ vi.mock('../../src/features/room/realtime/useRoomLiveState', () => ({
 }))
 
 vi.mock('../../src/features/room/realtime/useRoomSettingsLiveState', () => ({
-  useRoomSettingsLiveState: vi.fn(() => ({
-    roomSettings: null,
-    errorMessage: null,
-  })),
+  useRoomSettingsLiveState: vi.fn(),
 }))
 
 vi.mock('../../src/features/room/realtime/useVotingLiveState', () => ({
@@ -80,6 +78,10 @@ describe('RoomPage auto-join', () => {
       role: 'spectator',
       isKicked: false,
     })
+    vi.mocked(useRoomSettingsLiveState).mockReturnValue({
+      roomSettings: null,
+      errorMessage: null,
+    })
   })
 
   it('preserves an explicit spectator request during silent auto-join', async () => {
@@ -107,6 +109,31 @@ describe('RoomPage auto-join', () => {
         'zootopia'
       )
     )
+  })
+
+  it('uses the persisted room theme on the pre-join modal', async () => {
+    window.sessionStorage.removeItem('pep.active-room.v1')
+    vi.mocked(useRoomSettingsLiveState).mockReturnValue({
+      roomSettings: {
+        roomId: 'room-1',
+        deckType: 'fibonacci',
+        autoRevealEnabled: true,
+        revealCountdownEnabled: true,
+        revealCountdownSeconds: 3,
+        funLevel: 'chaotic',
+        themeId: 'zootopia',
+        updatedAt: new Date().toISOString(),
+      },
+      errorMessage: null,
+    })
+
+    renderRoomPage('/rooms/demo-room')
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Judy')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Use Judy Hopps avatar' })
+    ).toBeInTheDocument()
   })
 
   it('leaves silent auto-join role unset when no spectator request is present', async () => {

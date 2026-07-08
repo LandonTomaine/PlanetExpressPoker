@@ -21,7 +21,7 @@ Acceptance:
 - User-selected personal theme persists across reloads and across non-room pages
 - Owner-selected room theme persists in DB and updates live for everyone in the room
 - Non-owners cannot change room theme
-- Pre-join room experience stays on the viewer's personal theme; joined room switches to room theme
+- Pre-join and joined room pages use the persisted room theme once room settings load
 - Saved room listings expose each room's active theme
 - Futurama remains intact as one theme pack; Zootopia ships as a second complete pack
 - Existing room flow, voting, reveal, fun effects, and owner rules keep working

@@ -16,7 +16,7 @@ Planet Express Poker supports multiple built-in presentation themes. Themes chan
 
 - Personal theme is local to the browser and stored under `pep.theme.v1`.
 - Non-room pages use the viewer's personal theme.
-- Pre-join room pages use the viewer's personal theme.
+- Pre-join room pages use the room theme from `room_settings.theme` once settings load.
 - Joined room pages use the room theme from `room_settings.theme`.
 - Room owners can change `room_settings.theme` with `set_room_theme`; other participants see a disabled selector.
 - Theme changes sync through the existing `room_settings` realtime subscription.
