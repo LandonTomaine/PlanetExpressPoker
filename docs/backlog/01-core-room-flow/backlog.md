@@ -169,6 +169,7 @@ Slices:
 - Existing-room theme clarity - `todo`: Explain near room entry that the “New room theme” selector only applies when creating a new room; existing rooms keep their owner-selected theme.
 - Database theme regression coverage - `todo`: Add a Supabase migration smoke test or SQL-level regression that proves `create_or_get_room(name, theme)` creates new rooms with the requested theme and does not retheme existing rooms.
 - Theme ID extensibility - `todo`: Replace hardcoded database checks for `('futurama', 'zootopia')` with a more scalable compatibility plan before adding more built-in themes.
+- Judy meter maid cart asset - `todo`: Replace the Zootopia police-car stand-in with a sourced SVG of Judy's actual meter maid cart if a usable license/source is found.
 
 ## Recommended Agent Work Order
 

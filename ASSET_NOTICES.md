@@ -40,6 +40,7 @@ The Zootopia theme pack added in this repository revision uses locally saved thi
 - Parking ticket icon: https://www.svgrepo.com/svg/31999/parking-ticket
 - Coffee cup card art: copied from this repository's existing `public/cards/coffee-cup.svg` into the Zootopia theme pack.
 - ZPD cruiser stand-in: https://www.svgrepo.com/svg/19662/police-car
+- Judy's meter maid cart reference: https://zootopia.fandom.com/wiki/Judy%27s_meter_maid_cart
 
 The Zootopia reaction GIFs were downloaded from Giphy media URLs associated with these public Giphy pages:
 
