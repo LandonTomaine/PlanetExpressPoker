@@ -242,7 +242,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const countdownAttemptRef = useRef<string | null>(null)
   const lastSeenRoundNumberRef = useRef<number | null>(null)
   const locallyObservedRoundIdsRef = useRef<Set<string>>(new Set())
-  const initialRoomThemeAppliedRef = useRef(false)
   const revealedFunRoundKeyRef = useRef<string | null>(null)
   const milestoneRoundKeyRef = useRef<string | null>(null)
   const roundReactionRoundKeyRef = useRef<string | null>(null)
@@ -508,45 +507,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     setRoomThemeOverride(null)
   }, [isJoinedToRoom, roomSettings, setRoomThemeOverride])
-
-  useEffect(() => {
-    if (
-      initialRoomThemeAppliedRef.current ||
-      !room ||
-      !roomSettings ||
-      !selfParticipant ||
-      !isSelfRoomOwner ||
-      participants.length !== 1 ||
-      !isRecentlyCreatedRoom(room.createdAt) ||
-      roomSettings.themeId === requestedCreateThemeId
-    ) {
-      return
-    }
-
-    initialRoomThemeAppliedRef.current = true
-
-    void setRoomTheme({
-      roomId: room.id,
-      actorClientId: identity.clientId,
-      nextThemeId: requestedCreateThemeId,
-    }).catch((error: unknown) => {
-      setSettingsError(
-        error instanceof Error ? error.message : 'Failed to set room theme.'
-      )
-    })
-  }, [
-    identity.clientId,
-    isSelfRoomOwner,
-    participants.length,
-    requestedCreateThemeId,
-    room,
-    roomSettings,
-    selfParticipant,
-  ])
-
-  useEffect(() => {
-    initialRoomThemeAppliedRef.current = false
-  }, [room?.id])
 
   useEffect(() => {
     selfParticipantSyncGraceUntilRef.current = 0
@@ -2692,16 +2652,6 @@ function saveDevClientIdMap(
     getDevClientIdStorageKey(roomId),
     JSON.stringify(clientIdByParticipantId)
   )
-}
-
-function isRecentlyCreatedRoom(createdAt: string) {
-  const createdAtMs = Date.parse(createdAt)
-
-  if (Number.isNaN(createdAtMs)) {
-    return false
-  }
-
-  return Math.abs(Date.now() - createdAtMs) <= 60_000
 }
 
 function pickRandomAvatar(themeId: ThemeId) {

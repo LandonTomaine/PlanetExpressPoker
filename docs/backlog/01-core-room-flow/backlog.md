@@ -164,6 +164,12 @@ Slices:
   - Validation:
     - local manual validation proves enabled and disabled fun modes
 
+### Theme Follow-Ups
+
+- Existing-room theme clarity - `todo`: Explain near room entry that the “New room theme” selector only applies when creating a new room; existing rooms keep their owner-selected theme.
+- Database theme regression coverage - `todo`: Add a Supabase migration smoke test or SQL-level regression that proves `create_or_get_room(name, theme)` creates new rooms with the requested theme and does not retheme existing rooms.
+- Theme ID extensibility - `todo`: Replace hardcoded database checks for `('futurama', 'zootopia')` with a more scalable compatibility plan before adding more built-in themes.
+
 ## Recommended Agent Work Order
 
 1. `S1 Room entry and live presence`
