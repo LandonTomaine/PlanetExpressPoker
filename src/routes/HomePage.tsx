@@ -34,6 +34,14 @@ import { useTheme } from '../features/theme/useTheme'
 import { getThemeConfig } from '../features/theme/registry'
 import type { ThemeId } from '../features/theme/types'
 
+function getRoomsLoadErrorMessage(error: unknown) {
+  if (error instanceof TypeError && error.message === 'Failed to fetch') {
+    return 'Failed to reach the room service. Check your connection and refresh.'
+  }
+
+  return error instanceof Error ? error.message : 'Failed to load your rooms.'
+}
+
 export function HomePage() {
   const navigate = useNavigate()
   const { activeTheme, personalThemeId, setPersonalThemeId } = useTheme()
@@ -99,11 +107,7 @@ export function HomePage() {
         }
       } catch (error) {
         if (!isCancelled) {
-          setMyRoomsError(
-            error instanceof Error
-              ? error.message
-              : 'Failed to load your rooms.'
-          )
+          setMyRoomsError(getRoomsLoadErrorMessage(error))
         }
       } finally {
         if (!isCancelled) {
@@ -127,9 +131,7 @@ export function HomePage() {
       setMyRooms(nextRooms)
       setMyRoomsError(null)
     } catch (error) {
-      setMyRoomsError(
-        error instanceof Error ? error.message : 'Failed to load your rooms.'
-      )
+      setMyRoomsError(getRoomsLoadErrorMessage(error))
     } finally {
       setIsMyRoomsLoading(false)
     }
@@ -388,16 +390,23 @@ export function HomePage() {
             </button>
           </div>
 
-          {myRoomsError ? (
-            <p className="mt-4 rounded-2xl border border-[var(--pep-accent)]/20 bg-[var(--pep-accent)]/10 px-4 py-3 text-sm font-medium text-[var(--pep-accent)]">
-              {myRoomsError}
-            </p>
-          ) : null}
-
           {isMyRoomsLoading ? (
             <p className="mt-4 rounded-[12px] border border-[var(--pep-line)] bg-white/70 px-4 py-3 text-sm text-[var(--pep-ink-soft)]">
               Loading your rooms...
             </p>
+          ) : myRoomsError ? (
+            <div className="mt-4 rounded-2xl border border-[var(--pep-accent)]/20 bg-[var(--pep-accent)]/10 px-4 py-3">
+              <p className="text-sm font-medium text-[var(--pep-accent)]">
+                {myRoomsError}
+              </p>
+              <button
+                type="button"
+                onClick={() => void refreshMyRooms()}
+                className="mt-3 rounded-[10px] border border-[var(--pep-accent)] bg-white px-3 py-2 text-xs font-black uppercase text-[var(--pep-accent)] shadow-[0_6px_14px_rgba(212,47,38,0.08)]"
+              >
+                Retry
+              </button>
+            </div>
           ) : myRooms.length === 0 ? (
             <p className="mt-4 rounded-[12px] border border-dashed border-[var(--pep-line-strong)] bg-white/70 px-4 py-3 text-sm text-[var(--pep-ink-soft)]">
               You are not currently part of any rooms on this browser.
