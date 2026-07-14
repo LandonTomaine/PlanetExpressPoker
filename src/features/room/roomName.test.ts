@@ -14,8 +14,14 @@ describe('room names', () => {
     expect(getRoomNameError('   ')).toBe('Room name is required.')
   })
 
-  it('allows only letters, numbers, hyphen, and underscore', () => {
+  it('explains that room names cannot include spaces', () => {
     expect(getRoomNameError('planet express')).toBe(
+      'Room names cannot include spaces. Use hyphens or underscores instead.'
+    )
+  })
+
+  it('allows only letters, numbers, hyphen, and underscore', () => {
+    expect(getRoomNameError('planet+express')).toBe(
       'Use letters, numbers, hyphen, or underscore only.'
     )
     expect(getRoomNameError('planet_express-1')).toBeNull()

@@ -19,6 +19,10 @@ export function getRoomNameError(roomName: string) {
     return `Room names can be up to ${maxRoomNameLength} characters.`
   }
 
+  if (/\s/.test(normalizedRoomName)) {
+    return 'Room names cannot include spaces. Use hyphens or underscores instead.'
+  }
+
   if (!roomNamePattern.test(normalizedRoomName)) {
     return 'Use letters, numbers, hyphen, or underscore only.'
   }
