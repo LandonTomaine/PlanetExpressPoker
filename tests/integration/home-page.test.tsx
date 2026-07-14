@@ -90,6 +90,31 @@ describe('HomePage', () => {
     ).toBeInTheDocument()
   })
 
+  it('shows a clear error when the room name contains spaces', async () => {
+    const user = userEvent.setup()
+
+    renderWithTheme(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const roomNameInput = screen.getByLabelText('Room name')
+
+    await user.type(roomNameInput, 'planet express')
+    await user.type(screen.getByLabelText('Your name'), 'Amy')
+
+    expect(roomNameInput).toHaveAttribute('aria-invalid', 'true')
+    expect(
+      screen.getByText(
+        'Room names cannot include spaces. Use hyphens or underscores instead.'
+      )
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Join as voter' })).toBeDisabled()
+  })
+
   it('prefills the room name from the saved redirect value', () => {
     window.sessionStorage.setItem('pep.room-name-prefill.v1', 'redirect-room')
 

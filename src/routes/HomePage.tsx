@@ -52,6 +52,7 @@ export function HomePage() {
     null
   )
   const roomNameError = getRoomNameError(roomName)
+  const shouldShowRoomNameError = Boolean(roomName && roomNameError)
   const hasDisplayName = Boolean(normalizeDisplayName(identity.displayName))
   const canOpenRoom = !roomNameError && hasDisplayName
   const avatarOptions = getAvatarOptions(activeTheme.id)
@@ -203,6 +204,8 @@ export function HomePage() {
               onChange={(event) => setRoomName(event.target.value)}
               maxLength={maxRoomNameLength}
               pattern={roomNameInputPattern}
+              aria-describedby="room-name-help"
+              aria-invalid={shouldShowRoomNameError}
               spellCheck={false}
               autoCapitalize="none"
               onKeyDown={(event) => {
@@ -211,10 +214,23 @@ export function HomePage() {
                 }
               }}
               placeholder="farnsworth-friday"
-              className="min-w-0 flex-1 rounded-[10px] border border-[var(--pep-line-strong)] bg-white px-4 py-3 text-base outline-none transition focus:border-[var(--pep-accent-2)]"
+              className={[
+                'min-w-0 flex-1 rounded-[10px] border bg-white px-4 py-3 text-base outline-none transition focus:border-[var(--pep-accent-2)]',
+                shouldShowRoomNameError
+                  ? 'border-[var(--pep-accent)] ring-2 ring-[var(--pep-accent)]/15'
+                  : 'border-[var(--pep-line-strong)]',
+              ].join(' ')}
             />
-            <p className="text-xs font-semibold text-[var(--pep-ink-soft)]">
-              {roomNameError
+            <p
+              id="room-name-help"
+              className={[
+                'rounded-[10px] px-3 py-2 text-xs font-semibold',
+                shouldShowRoomNameError
+                  ? 'border border-[var(--pep-accent)]/20 bg-[var(--pep-accent)]/10 text-[var(--pep-accent)]'
+                  : 'text-[var(--pep-ink-soft)]',
+              ].join(' ')}
+            >
+              {shouldShowRoomNameError
                 ? roomNameError
                 : `Use letters, numbers, hyphen, or underscore. Max ${maxRoomNameLength} characters.`}
             </p>
