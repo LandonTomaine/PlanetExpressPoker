@@ -90,6 +90,31 @@ describe('HomePage', () => {
     ).toBeInTheDocument()
   })
 
+  it('keeps the page theme separate from the new room theme', async () => {
+    const user = userEvent.setup()
+
+    renderWithTheme(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/rooms/:roomName" element={<OpenedRoom />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    await user.selectOptions(screen.getByLabelText('Page theme'), 'toy-story')
+    await user.selectOptions(
+      screen.getByLabelText('New room theme'),
+      'zootopia'
+    )
+    await user.type(screen.getByLabelText('Room name'), 'separate-themes')
+    await user.type(screen.getByLabelText('Your name'), 'Andy')
+    await user.click(screen.getByRole('button', { name: 'Join as voter' }))
+
+    expect(screen.getByText('Search ?createTheme=zootopia')).toBeInTheDocument()
+    expect(window.localStorage.getItem('pep.theme.v1')).toBe('toy-story')
+  })
+
   it('shows a clear error when the room name contains spaces', async () => {
     const user = userEvent.setup()
 

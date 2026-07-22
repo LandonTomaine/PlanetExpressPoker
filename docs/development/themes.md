@@ -91,6 +91,17 @@ Do not rename these keys unless a data migration and compatibility plan are incl
 
 Detailed source URLs and licensing notes belong in `ASSET_NOTICES.md`.
 
+### Toy Story
+
+| Use                     | Registry paths                                                      |
+| ----------------------- | ------------------------------------------------------------------- |
+| Logo / favicon          | `/themes/toy-story/logo.svg`, `/themes/toy-story/favicon.svg`       |
+| Vehicle / infinity card | `/themes/toy-story/avatars/buzz-lightyear.svg`                      |
+| Package drop            | `/themes/toy-story/avatars/alien.svg`                               |
+| Avatar roster           | Ten individual character SVGs under `/themes/toy-story/avatars/`    |
+| Special cards           | Buzz Lightyear, Rex, Alien, and Forky                               |
+| Reactions               | Trigger-appropriate local GIFs under `/themes/toy-story/reactions/` |
+
 ## Adding A Theme
 
 1. Choose a lowercase `ThemeId` and add it to `src/features/theme/types.ts`.

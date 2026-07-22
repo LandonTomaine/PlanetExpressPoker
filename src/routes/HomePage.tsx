@@ -262,11 +262,6 @@ export function HomePage() {
               />
             </label>
             <ThemeSelect
-              label="Landing theme"
-              value={personalThemeId}
-              onChange={(nextThemeId) => setPersonalThemeId(nextThemeId)}
-            />
-            <ThemeSelect
               label="New room theme"
               value={roomThemeId}
               onChange={(nextThemeId) => {
@@ -487,34 +482,50 @@ export function HomePage() {
         </div>
       </div>
 
-      <aside className="rounded-[14px] border border-[var(--pep-line)] bg-[var(--pep-panel-strong)] p-3">
-        <div className="flex items-center justify-between gap-4">
+      <aside className="space-y-3">
+        <section className="rounded-[14px] border border-[var(--pep-line)] bg-white/82 p-3 shadow-[0_10px_24px_rgba(12,32,42,0.06)]">
           <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
-            {activeTheme.crewLabel}
+            Page appearance
           </p>
-          <img
-            src={activeTheme.vehiclePath}
-            alt={activeTheme.vehicleLabel}
-            className="w-36"
+          <p className="mt-1 text-sm text-[var(--pep-ink-soft)]">
+            Changes this landing page only. Room themes are chosen separately
+            when creating a room.
+          </p>
+          <ThemeSelect
+            label="Page theme"
+            value={personalThemeId}
+            onChange={(nextThemeId) => setPersonalThemeId(nextThemeId)}
           />
-        </div>
-        <div className="mt-3 grid grid-cols-4 gap-2 lg:grid-cols-2">
-          {avatarOptions.map((avatar) => (
-            <div
-              key={avatar.key}
-              className="overflow-hidden rounded-[10px] border border-[var(--pep-line)] bg-white/88 p-2"
-            >
-              <img
-                src={avatar.portraitPath}
-                alt={avatar.label}
-                className={getAvatarPortraitClassName(
-                  avatar,
-                  'aspect-square w-full rounded-[8px] object-cover'
-                )}
-              />
-            </div>
-          ))}
-        </div>
+        </section>
+        <section className="rounded-[14px] border border-[var(--pep-line)] bg-[var(--pep-panel-strong)] p-3">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
+              {activeTheme.crewLabel}
+            </p>
+            <img
+              src={activeTheme.vehiclePath}
+              alt={activeTheme.vehicleLabel}
+              className="w-36"
+            />
+          </div>
+          <div className="mt-3 grid grid-cols-4 gap-2 lg:grid-cols-2">
+            {avatarOptions.map((avatar) => (
+              <div
+                key={avatar.key}
+                className="overflow-hidden rounded-[10px] border border-[var(--pep-line)] bg-white/88 p-2"
+              >
+                <img
+                  src={avatar.portraitPath}
+                  alt={avatar.label}
+                  className={getAvatarPortraitClassName(
+                    avatar,
+                    'aspect-square w-full rounded-[8px] object-cover'
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
       </aside>
     </motion.section>
   )

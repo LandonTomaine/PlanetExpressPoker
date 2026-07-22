@@ -1,4 +1,4 @@
-export type ThemeId = 'futurama' | 'zootopia'
+export type ThemeId = 'futurama' | 'zootopia' | 'toy-story'
 
 export type ThemePalette = {
   bg: string

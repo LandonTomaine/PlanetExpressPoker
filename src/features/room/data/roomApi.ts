@@ -39,14 +39,14 @@ const roomSettingsSchema = z.object({
   reveal_countdown_enabled: z.boolean(),
   reveal_countdown_seconds: z.number().int().min(1),
   fun_level: z.enum(['disabled', 'chaotic']),
-  theme: z.enum(['futurama', 'zootopia']),
+  theme: z.enum(['futurama', 'zootopia', 'toy-story']),
   updated_at: z.string(),
 })
 
 const roomSummarySchema = z.object({
   room_id: z.string().uuid(),
   room_name: z.string().min(1),
-  theme: z.enum(['futurama', 'zootopia']),
+  theme: z.enum(['futurama', 'zootopia', 'toy-story']),
   participant_count: z.number().int().min(0),
   current_client_role: z.enum(['voter', 'spectator']).nullable(),
   current_client_is_owner: z.boolean(),
@@ -152,7 +152,7 @@ const roomFunLevelSchema = z.object({
 
 const roomThemeSchema = z.object({
   result_room_id: z.string().uuid(),
-  result_theme: z.enum(['futurama', 'zootopia']),
+  result_theme: z.enum(['futurama', 'zootopia', 'toy-story']),
   result_updated_at: z.string(),
 })
 
