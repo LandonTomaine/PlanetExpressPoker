@@ -22,9 +22,11 @@ function getNumericVotes(cardValues: string[]) {
 }
 
 function formatAverage(averageValue: number) {
-  return Number.isInteger(averageValue)
-    ? String(averageValue)
-    : averageValue.toFixed(1)
+  return (
+    deckNumericCardValues.find(
+      (cardValue) => Number(cardValue) >= averageValue
+    ) ?? deckNumericCardValues[deckNumericCardValues.length - 1]!
+  )
 }
 
 function hasWideSpread(numericCardValues: string[]) {
