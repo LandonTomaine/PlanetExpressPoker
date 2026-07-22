@@ -29,9 +29,16 @@ describe('buildScoreSummary', () => {
     })
   })
 
+  it('rounds the average up to the next available numeric card', () => {
+    expect(buildScoreSummary(['3', '5'])).toMatchObject({
+      averageLabel: '5',
+      recommendedLabel: '3',
+    })
+  })
+
   it('recommends discussion for wide Fibonacci spreads', () => {
     expect(buildScoreSummary(['1', '8'])).toMatchObject({
-      averageLabel: '4.5',
+      averageLabel: '5',
       recommendedLabel: 'Discuss',
     })
   })
