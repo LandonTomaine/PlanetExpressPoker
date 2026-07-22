@@ -4,7 +4,7 @@ This repository contains third-party or theme-specific media that is not covered
 
 ## Current Theme Assets
 
-The app currently ships with Futurama / Planet Express-inspired visual references and a second built-in Zootopia theme pack for private, personal, non-commercial use.
+The app currently ships with Futurama / Planet Express-inspired visual references plus built-in Zootopia and Toy Story theme packs for private, personal, non-commercial use.
 
 Treat these paths as excluded from the MIT source-code license unless they are replaced with assets you have rights to use:
 
@@ -19,6 +19,7 @@ Treat these paths as excluded from the MIT source-code license unless they are r
 - `public/favicon.svg`
 - `public/icons.svg`
 - `public/themes/zootopia/`
+- `public/themes/toy-story/`
 
 Some current assets were sourced during personal-use development from icon, GIF, or media sites such as Icons8, Giphy, and Tenor. Older source URLs are not fully captured in this repository.
 
@@ -59,6 +60,31 @@ The Zootopia Mr. Big reaction videos were downloaded from Tenor media URLs assoc
 
 - https://tenor.com/view/zootopia-ice-em-ice-them-gif-15277540
 - https://tenor.com/view/chair-turn-mr-big-zootopia-plus-%E8%BD%AC%E8%BA%AB-faire-demi-tour-gif-27181278
+
+### Toy Story
+
+The Toy Story theme pack uses the previously approved VectorSeek sources, downloaded as one small fixed request set with no crawling or retry loops. It is for private, personal, non-commercial use only. VectorSeek marks these downloads "Not For Commercial Use."
+
+- Toy Story logo: https://vectorseek.com/vector_logo/toy-story-logo-vector/
+- Buzz Lightyear: https://vectorseek.com/vector_logo/buz-lightyear-logo-vector/
+- Woody: https://vectorseek.com/vector_logo/toy-story-woody-vector-6/
+- Jessie: https://vectorseek.com/vector_logo/toy-story-cowgirl-vector-6/
+- Rex: https://vectorseek.com/vector_logo/toy-story-rex-vector/
+- Bo Peep: https://vectorseek.com/vector_logo/toy-story-bo-peep-vector/
+- Slinky Dog: https://vectorseek.com/vector_logo/toy-story-slinky-dog-vector-2/
+- Mr. Potato Head: https://vectorseek.com/vector_logo/toy-story-woody-and-bullseye-vector-2/
+- Alien: https://vectorseek.com/vector_logo/toy-story-alien-vector/
+- Forky: https://vectorseek.com/vector_logo/toy-story-forky-vector/
+- Bullseye: https://vectorseek.com/vector_logo/toy-story-bullseye-vector/
+- Forky trash reaction: https://tenor.com/view/disney-pixar-toy-story-forky-trash-gif-14352954
+- Buzz and Woody handshake reaction: https://tenor.com/view/handshake-buzz-lightyear-woody-toy-story-shaking-hands-gif-2390998300663189224
+- Buzz and Woody dance reaction: https://tenor.com/view/toy-story-buzz-vs-woody-woody-vs-buzz-fight-gif-22169532
+- Rex fear reaction: https://tenor.com/view/toy-story-rex-oh-im-going-for-fearsome-here-but-i-just-dont-feel-it-i-dont-feel-it-gif-23952640
+- Buzz and Woody fight reaction: https://tenor.com/view/disney-pixar-woody-buzz-lightyear-hitting-gif-20171333
+- Buzz and Woody tumble reaction: https://tenor.com/view/toy-story-buzz-vs-woody-woody-vs-buzz-fight-gif-22169532
+- Short quote verification: https://en.wikiquote.org/wiki/Toy_Story
+
+The favicon is a repository-created theme asset. The bundled VectorSeek logo and character vectors are Disney/Pixar references, not official Disney assets or endorsements.
 
 Zootopia quote text was checked against Wikiquote: https://en.wikiquote.org/wiki/Zootopia
 

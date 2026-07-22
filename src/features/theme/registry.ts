@@ -55,6 +55,27 @@ const zootopiaPalette: ThemePalette = {
     'linear-gradient(rgba(44, 32, 22, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(44, 32, 22, 0.03) 1px, transparent 1px)',
 }
 
+const toyStoryPalette: ThemePalette = {
+  bg: '#cfeeff',
+  panel: 'rgba(255, 255, 255, 0.8)',
+  panelStrong: '#f8e565',
+  line: 'rgba(30, 91, 184, 0.2)',
+  lineStrong: 'rgba(30, 91, 184, 0.42)',
+  ink: '#173a72',
+  inkSoft: '#4e6386',
+  accent: '#d82f2f',
+  accent2: '#1e5bb8',
+  mint: '#83d67e',
+  yellow: '#f7d938',
+  sky: '#8ed6f4',
+  fontBody: "'Trebuchet MS', 'Segoe UI', sans-serif",
+  fontDisplay: "'Arial Black', 'Arial Narrow', sans-serif",
+  rootBackground:
+    'radial-gradient(circle at 12% 14%, rgba(255,255,255,0.94) 0 2%, transparent 2.4%), radial-gradient(circle at 28% 9%, rgba(255,255,255,0.88) 0 3%, transparent 3.4%), radial-gradient(circle at 78% 16%, rgba(255,255,255,0.9) 0 2.5%, transparent 2.9%), linear-gradient(180deg, #8ed6f4 0%, #dff6ff 56%, #f7e565 100%)',
+  bodyBackground:
+    'radial-gradient(circle at 18% 30%, rgba(30,91,184,0.07) 0 1px, transparent 1.5px), radial-gradient(circle at 75% 66%, rgba(216,47,47,0.07) 0 1px, transparent 1.5px)',
+}
+
 const futuramaAvatars: ThemeAvatar[] = [
   {
     key: 'captain-leela',
@@ -182,6 +203,79 @@ const zootopiaAvatars: ThemeAvatar[] = [
   },
 ]
 
+const toyStoryAvatars: ThemeAvatar[] = [
+  {
+    key: 'captain-leela',
+    label: 'Buzz Lightyear',
+    accentClassName: 'from-sky-200 via-white to-yellow-100',
+    portraitPath: '/themes/toy-story/avatars/buzz-lightyear.svg',
+    portraitClassName: 'object-contain scale-[1.35] translate-y-[8%]',
+  },
+  {
+    key: 'bender',
+    label: 'Woody',
+    accentClassName: 'from-amber-200 via-yellow-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/woody.svg',
+    portraitClassName: 'object-contain scale-[1.15]',
+  },
+  {
+    key: 'fry',
+    label: 'Jessie',
+    accentClassName: 'from-red-200 via-yellow-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/jessie.svg',
+    portraitClassName: 'object-contain scale-[1.08]',
+  },
+  {
+    key: 'nibbler',
+    label: 'Alien',
+    accentClassName: 'from-lime-200 via-emerald-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/alien.svg',
+    portraitClassName: 'object-contain scale-[1.12]',
+  },
+  {
+    key: 'amy',
+    label: 'Bo Peep',
+    accentClassName: 'from-pink-200 via-sky-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/bo-peep.svg',
+    portraitClassName: 'object-contain scale-[1.1]',
+  },
+  {
+    key: 'professor',
+    label: 'Rex',
+    accentClassName: 'from-emerald-200 via-lime-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/rex.svg',
+    portraitClassName: 'object-contain scale-[1.1]',
+  },
+  {
+    key: 'zapp',
+    label: 'Mr. Potato Head',
+    accentClassName: 'from-orange-200 via-rose-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/mr-potato-head.svg',
+    portraitClassName: 'object-contain scale-[1.1]',
+  },
+  {
+    key: 'hermes',
+    label: 'Slinky Dog',
+    accentClassName: 'from-yellow-200 via-amber-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/slinky-dog.svg',
+    portraitClassName: 'object-contain scale-[1.08]',
+  },
+  {
+    key: 'zoidberg',
+    label: 'Forky',
+    accentClassName: 'from-red-100 via-white to-sky-100',
+    portraitPath: '/themes/toy-story/avatars/forky.svg',
+    portraitClassName: 'object-contain scale-[1.1]',
+  },
+  {
+    key: 'lrrr',
+    label: 'Bullseye',
+    accentClassName: 'from-amber-300 via-orange-100 to-white',
+    portraitPath: '/themes/toy-story/avatars/bullseye.svg',
+    portraitClassName: 'object-contain scale-[1.08]',
+  },
+]
+
 function buildQuote(
   avatarPath: string,
   speaker: string,
@@ -196,6 +290,10 @@ const futuramaByKey = Object.fromEntries(
 
 const zootopiaByKey = Object.fromEntries(
   zootopiaAvatars.map((avatar) => [avatar.key, avatar])
+) as Record<string, ThemeAvatar>
+
+const toyStoryByKey = Object.fromEntries(
+  toyStoryAvatars.map((avatar) => [avatar.key, avatar])
 ) as Record<string, ThemeAvatar>
 
 export const themeConfigs: Record<ThemeId, ThemeConfig> = {
@@ -409,6 +507,149 @@ export const themeConfigs: Record<ThemeId, ThemeConfig> = {
       },
     },
     palette: futuramaPalette,
+  },
+  'toy-story': {
+    id: 'toy-story',
+    label: 'Toy Story',
+    appTitle: 'Toy Story Poker',
+    shortBrand: 'Toy Story',
+    tagline: 'Realtime planning poker',
+    logoAlt: 'Toy Story Poker logo',
+    logoPath: '/themes/toy-story/logo.svg',
+    faviconPath: '/themes/toy-story/favicon.svg',
+    vehicleLabel: 'Buzz Lightyear flying',
+    vehiclePath: '/themes/toy-story/avatars/buzz-lightyear.svg',
+    vehicleSourcePath: '/themes/toy-story/avatars/buzz-lightyear.svg',
+    packagePath: '/themes/toy-story/avatars/alien.svg',
+    homeEyebrow: 'Playroom estimation',
+    homeDescription: 'Gather the toys, vote privately, and reveal together.',
+    roomDirectoryEyebrow: 'Playroom board',
+    roomDirectoryTitle: 'Open playrooms',
+    roomDirectoryDescription:
+      'Browse active rooms, join the toy box, and manage rooms you own.',
+    crewLabel: 'Toy box roster',
+    displayNamePlaceholder: 'Andy',
+    manualDeliveryLabel: 'Call Buzz for a fly-by',
+    revealCaption: 'Toy reveal',
+    consensusCaption: 'Playtime consensus',
+    deliveryCaption: 'Buzz fly-by',
+    deliveryStormCaption: 'To infinity',
+    easterEggName: 'The Claw',
+    easterEggRestingMessage: 'The Claw is choosing another toy right now.',
+    easterEggFailureMessage: 'The Claw could not reach the toy box.',
+    milestoneCaption: '100 rounds',
+    cardArtworkLabels: {
+      BIG: 'Rex',
+      coffee: 'Forky',
+      nibbler: 'Alien',
+      ship: 'Buzz Lightyear',
+    },
+    cardArtworkPaths: {
+      BIG: '/themes/toy-story/avatars/rex.svg',
+      coffee: '/themes/toy-story/avatars/forky.svg',
+      nibbler: '/themes/toy-story/avatars/alien.svg',
+      ship: '/themes/toy-story/avatars/buzz-lightyear.svg',
+    },
+    avatars: toyStoryAvatars,
+    revealQuotes: [
+      buildQuote(
+        toyStoryByKey['captain-leela'].portraitPath,
+        'Buzz Lightyear',
+        'To infinity and beyond!'
+      ),
+      buildQuote(
+        toyStoryByKey.bender.portraitPath,
+        'Woody',
+        "You've got a friend in me."
+      ),
+      buildQuote(toyStoryByKey.fry.portraitPath, 'Jessie', 'Yee-haw!'),
+    ],
+    consensusQuotes: [
+      buildQuote(
+        toyStoryByKey.bender.portraitPath,
+        'Woody',
+        "You've got a friend in me."
+      ),
+      buildQuote(
+        toyStoryByKey['captain-leela'].portraitPath,
+        'Buzz Lightyear',
+        'To infinity and beyond!'
+      ),
+      buildQuote(toyStoryByKey.fry.portraitPath, 'Jessie', 'Yee-haw!'),
+      buildQuote(
+        toyStoryByKey.nibbler.portraitPath,
+        'Alien',
+        'The Claw has chosen!'
+      ),
+    ],
+    roundReactions: {
+      coffee1: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/forky-trash.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      coffee2: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/forky-trash.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      coffee3: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/forky-trash.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      coffee4: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/forky-trash.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      consensus1: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/consensus-handshake.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      consensus2: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/consensus-dance.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      consensus3: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/consensus-handshake.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      consensus4: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/consensus-dance.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      consensus5: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/consensus-handshake.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      nibblerQuestion: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/rex-fear.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      skepticalFry: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/rex-fear.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      wideSpread1: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/wide-fight.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+      wideSpread2: {
+        mediaType: 'image',
+        src: '/themes/toy-story/reactions/wide-tumble.gif',
+        mediaClassName: reactionMediaClassName,
+      },
+    },
+    palette: toyStoryPalette,
   },
   zootopia: {
     id: 'zootopia',

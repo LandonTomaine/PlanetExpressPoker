@@ -141,7 +141,7 @@ The target user is a small private group that wants a simple planning poker room
 
 ### 7.10 Theme and Reactions
 
-- The app supports built-in themes for private personal use. Current built-in themes are Futurama and Zootopia.
+- The app supports built-in themes for private personal use. Current built-in themes are Futurama, Zootopia, and Toy Story.
 - Users can choose a personal theme for non-room pages, and room owners can choose the persisted room theme.
 - The base UI should remain clean and readable.
 - Theme should primarily appear in avatars, card art, reveal celebrations, throwables, props, and transient character appearances.

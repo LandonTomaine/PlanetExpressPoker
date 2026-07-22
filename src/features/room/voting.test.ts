@@ -44,6 +44,8 @@ describe('voting deck', () => {
     expect(getCardArtworkLabel('BIG', 'futurama')).toBe('Lrrr')
     expect(getCardArtworkLabel('BIG', 'zootopia')).toBe('Mr. Big')
     expect(getCardArtworkLabel('coffee', 'zootopia')).toBe('Coffee')
+    expect(getCardArtworkLabel('ship', 'toy-story')).toBe('Buzz Lightyear')
+    expect(getCardArtworkLabel('BIG', 'toy-story')).toBe('Rex')
     expect(getCardMeaningLabel('13')).toBeNull()
   })
 })
