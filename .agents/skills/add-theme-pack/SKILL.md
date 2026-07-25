@@ -1,6 +1,6 @@
 ---
 name: add-theme-pack
-description: Add built-in Planet Express Poker theme packs through the registry-based theme system. Use when Codex is asked to add a new theme with assets, copy, logos, avatars, card artwork, quotes, reactions, vehicle effects, colors, persistence validation, or theme docs while preserving planning poker behavior.
+description: Plan, source, implement, and validate built-in Planet Express Poker theme packs through the registry system. Use for new or revised themes involving approved asset websites, logos, character SVG avatars, card art, animated reactions, vehicle effects, copy, colors, persistence, API validation, or theme documentation while preserving planning-poker behavior.
 ---
 
 # Add Theme Pack
@@ -9,44 +9,52 @@ Primary lens: `Implementation`; use `UX` for visual/theme choices.
 
 ## Goal
 
-Add theme packs. Do not change planning poker behavior.
+Ship a recognizable, functional, locally hosted theme. Never fill a required slot with weak or unverified media.
 
-## Required References
-
-Load these before editing:
+## Load
 
 - `docs/development/themes.md`
 - [references/add-theme-checklist.md](references/add-theme-checklist.md)
 
-Load product docs only when user-facing behavior or wording changes:
+Load product docs only when behavior or wording changes.
 
-- `docs/product/easter-eggs-and-animation.md`
-- `docs/product/overview.md`
-- `docs/product/requirements/00-product-prd.md`
+## Gates
 
-## Workflow
+1. **Plan and source contract**
+   - Define theme identity, roster, every asset slot, animation role, and validation flow.
+   - Record the exact user-approved source domains. If a prior agreement is unavailable, ask before sourcing.
+   - Confirm the plan before downloading or implementing.
+2. **Source candidates**
+   - Keep candidates outside `public/` and the tracked workspace until approved.
+   - Use only approved sites. Make requests serially, reuse downloads, honor `Retry-After`, and stop on rate-limit responses instead of retrying in a loop.
+   - Record candidate URL, intended slot, format, rights note, dimensions/size, and GIF frame count.
+3. **Approve assets**
+   - Show visual candidates in chat before integration.
+   - Reject generic stand-ins, logos used as people, duplicate-looking avatars, unrecognizable crops, static files labeled as GIFs, and reactions that miss the trigger emotion.
+   - Leave a slot unresolved and tell the user when no accurate asset exists.
+4. **Implement**
+   - Copy only approved assets to `public/themes/<theme-id>/`.
+   - Add the complete registry config, theme ID/API/Supabase changes, focused tests, asset notices, and only affected docs.
+5. **Prove**
+   - Run `node .agents/skills/add-theme-pack/scripts/audit-theme-assets.mjs <theme-id>` and the checklist.
+   - Validate real create/join/reload behavior against Supabase; the simulator alone is insufficient.
+   - Browser-check full-size and compact avatars, special cards, every reveal category, animations, and failed media/network requests.
+   - Post screenshots of the home treatment, join/roster icons, and revealed reaction in chat. Do not push visual theme work until the user has seen them and approved the result.
 
-1. Define theme ID, app title, short brand, visual tone, and asset source preference.
-2. Source or place local assets under `public/themes/<theme-id>/`; no hotlinks.
-3. Add the full `ThemeConfig` in `src/features/theme/registry.ts`.
-4. For new theme IDs, update `ThemeId`, Supabase validation, and API schemas.
-5. Update tests, `ASSET_NOTICES.md`, and only stale docs.
-6. Validate with the checklist and browser smoke the themed flows.
+## Non-negotiables
 
-## Rules
-
-- Add themes through the registry. Avoid new scattered theme branches.
-- Keep stable card values and reaction keys unless a migration is included.
-- Never commit service-role keys, secret keys, tokens, or database passwords.
-- Preserve asset formats unless the user approves a change: SVG with SVG, GIF with GIF, PNG with PNG, video with video.
-- Record source URLs, licensing, and uncertainty in `ASSET_NOTICES.md`.
+- Preserve stable card values and reaction keys unless a migration is included.
+- Character avatars: distinct, character-accurate SVGs; recognizable and contained at every rendered icon size.
+- GIF requirements: valid animated GIF with more than one frame. A static image with a `.gif` extension fails.
+- Vehicle and package art must perform the existing animation roles; special cards must retain their semantic meanings.
+- No hotlinks, unapproved source substitutions, unsafe SVG content, rejected files under `public/`, or unreferenced theme assets.
+- Record exact source pages, rights/permission uncertainty, and usage boundaries in `ASSET_NOTICES.md`.
 
 ## Output
 
 Report:
 
-- registry/theme IDs changed
-- assets changed
-- docs/notices changed
-- validation run
-- unresolved asset or licensing issues
+- approved sites and asset manifest
+- registry, persistence, assets, notices, and docs changed
+- automated, backend, browser, and screenshot validation
+- unresolved quality, licensing, rate-limit, or cleanup issues

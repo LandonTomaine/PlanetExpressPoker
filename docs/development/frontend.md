@@ -17,16 +17,14 @@ The frontend stack is:
 
 ## Structure
 
-Prefer feature-oriented organization.
+Use the current feature boundaries:
 
-Suggested pattern:
-
-- `features/room`
-- `features/voting`
-- `features/participants`
-- `features/fun`
-- `components/ui`
-- `lib/supabase`
+- `src/app/`: shell, routing, and route loading
+- `src/routes/`: page orchestration
+- `src/features/room/`: room rules, API mapping, realtime hooks, voting, summary, and effects
+- `src/features/identity/`: display-name, avatar, and browser identity helpers
+- `src/features/theme/`: registry, theme context, and selector
+- `src/lib/supabase/`: shared client creation only
 
 Avoid giant shared utility folders with vague ownership.
 

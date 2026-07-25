@@ -20,7 +20,7 @@ Read this at the start of every task:
 
 ## Repo-Local Skills
 
-Repo-local skills live under `.agents/skills/`.
+Repo-local skills are indexed in [../.agents/skills/README.md](../.agents/skills/README.md).
 
 Use a repo-local skill only when the task clearly matches it.
 
@@ -34,12 +34,8 @@ Use these routes only when the task actually needs them:
   - [../docs/architecture/overview.md](../docs/architecture/overview.md)
 - General product context:
   - [../docs/product/overview.md](../docs/product/overview.md)
-- Product vocabulary or domain terms:
-  - [../docs/product/ubiquitous-language.md](../docs/product/ubiquitous-language.md)
 - Product modeling concepts:
   - [../docs/product/domain-concepts.md](../docs/product/domain-concepts.md)
-- Persona or user-context questions:
-  - [../docs/product/personas.md](../docs/product/personas.md)
 - Current product requirements:
   - [../docs/product/requirements/README.md](../docs/product/requirements/README.md)
 - Delivery tracking or backlog planning:
@@ -49,15 +45,13 @@ Use these routes only when the task actually needs them:
 - Engineering standards and setup:
   - [../docs/development/README.md](../docs/development/README.md)
 - Pull request standards:
-  - [../docs/development/pull-requests.md](../docs/development/pull-requests.md)
+  - [../CONTRIBUTING.md](../CONTRIBUTING.md)
 - Documentation maintenance:
   - [../docs/development/documentation.md](../docs/development/documentation.md)
 - Deployment or hosting questions:
   - [../docs/deployment/cloudflare-pages.md](../docs/deployment/cloudflare-pages.md)
 - Forking, self-hosting, or configuring a personal instance:
   - [../docs/deployment/fork-setup.md](../docs/deployment/fork-setup.md)
-- Maintaining this guidance system:
-  - [maintaining.md](maintaining.md)
 
 ## Workflow
 

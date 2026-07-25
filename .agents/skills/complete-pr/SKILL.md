@@ -9,7 +9,7 @@ Primary lens: `Implementation`.
 
 ## Load First
 
-- `docs/development/pull-requests.md`
+- `CONTRIBUTING.md`
 - `docs/development/safeguards.md`
 
 ## Workflow
@@ -22,9 +22,10 @@ Primary lens: `Implementation`.
 6. Resolve worthwhile issues: correctness, security, maintainability, repo standards.
 7. Push fixes; poll again; count each fix-review cycle.
 8. Stop if Codex GitHub review still has actionable issues after two cycles.
-9. Merge only when checks pass, review is satisfied, and Codex GitHub review has no actionable issue.
+9. Merge only when the user authorized merging, checks pass, required approval is satisfied, and Codex GitHub review has no actionable issue.
 
 Do not treat Codex review summaries, connector metadata, or non-actionable notes as blockers.
+Do not use an admin override unless the user explicitly authorizes that override.
 
 ## Handoff
 

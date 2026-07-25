@@ -51,8 +51,25 @@ export default defineConfig({
   },
   plugins: [react(), tailwindcss()],
   test: {
-    environment: 'jsdom',
-    setupFiles: './tests/integration/setup.ts',
+    projects: [
+      {
+        extends: true,
+        test: {
+          environment: 'node',
+          include: ['src/**/*.test.{ts,tsx}'],
+          name: 'unit',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          environment: 'jsdom',
+          include: ['tests/integration/**/*.test.{ts,tsx}'],
+          name: 'integration',
+          setupFiles: './tests/integration/setup.ts',
+        },
+      },
+    ],
   },
 })
 

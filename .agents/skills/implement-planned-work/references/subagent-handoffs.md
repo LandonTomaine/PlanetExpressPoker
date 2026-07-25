@@ -2,13 +2,7 @@
 
 Use this only when `implement-planned-work` needs worker or reviewer delegation.
 
-## Availability Rules
-
-- Treat discoverable multi-agent tooling as available.
-- For `implement-planned-work` changed-code review, always delegate to a reviewer subagent.
-- Exception: when `implement-planned-work` is called inside `orchestrate-work-plan`, the orchestrator owns the final review loop.
-- Do not skip reviewer delegation merely because the tool was not preloaded in the immediate tool list.
-- Require that reviewer subagent to use the repo-local `review-changed-code` skill.
+For changed-code review, delegate to a reviewer using `review-changed-code`. When called inside `orchestrate-work-plan`, leave the final review loop to the orchestrator.
 
 ## Implementation Worker Handoff
 

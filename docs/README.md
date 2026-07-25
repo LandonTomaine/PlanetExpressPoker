@@ -13,7 +13,6 @@ Start here when you need a route. Then read only the smallest doc that fits the 
 - [deployment/cloudflare-pages.md](deployment/cloudflare-pages.md): Cloudflare Pages and hosted Supabase deployment
 - [deployment/fork-setup.md](deployment/fork-setup.md): checklist for deploying a fork with your own resources
 - [backlog/README.md](backlog/README.md): delivery tracking and implementation planning
-- [drafts/README.md](drafts/README.md): non-authoritative working drafts
 
 ## Maintenance
 

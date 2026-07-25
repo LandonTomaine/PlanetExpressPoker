@@ -144,10 +144,11 @@ Detailed source URLs and licensing notes belong in `ASSET_NOTICES.md`.
 Run at minimum:
 
 ```powershell
+node .agents/skills/add-theme-pack/scripts/audit-theme-assets.mjs <theme-id>
 npm.cmd run typecheck
 npm.cmd run lint
-npx.cmd vitest run src --maxWorkers=1
-npx.cmd vitest run tests/integration --maxWorkers=1
+npx.cmd vitest run --project unit --maxWorkers=1
+npx.cmd vitest run --project integration --maxWorkers=1
 npm.cmd run test:architecture
 npm.cmd run build
 ```
