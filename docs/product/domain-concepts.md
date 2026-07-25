@@ -26,10 +26,11 @@ Room settings are durable and survive across repeat sessions in the same room.
 Settings currently include:
 
 - deck type
-- enabled special cards
 - auto-reveal enabled
 - reveal countdown enabled
+- reveal countdown seconds
 - fun level
+- room theme
 
 These are room-level defaults, not per-user preferences.
 
@@ -90,6 +91,7 @@ Rules:
 - spectators cannot submit votes
 - a participant may change their vote until reveal
 - non-numeric cards do not affect average or recommendation
+- the numeric average rounds up to the next available deck value
 
 ### Recommendation
 
@@ -98,7 +100,7 @@ Recommendation is derived state, not durable state.
 Rules:
 
 - unanimous numeric votes => exact score
-- otherwise median numeric vote
+- otherwise median numeric vote, using the lower middle value for an even count
 - if spread is more than two Fibonacci steps => `Discuss`
 - if no numeric votes => `No recommendation`
 
@@ -111,7 +113,7 @@ A fun event is a cosmetic, short-lived event such as:
 - thrown object
 - character reaction
 
-Fun events are transient and should not be persisted in v1 unless later debugging or replay needs justify it.
+Animation state is transient. The selected reveal `reaction_kind` is stored on the current round so connected clients render the same reaction.
 
 ## State Ownership Rules
 

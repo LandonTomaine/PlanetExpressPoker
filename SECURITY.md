@@ -28,7 +28,7 @@ Repository workflows are intended to be safe for public forks:
 
 If you fork this repo and want your fork to deploy, update `.github/workflows/deploy-cloudflare.yml`, `wrangler.jsonc`, and `package.json` to point at your own repository/project/resources.
 
-## Required GitHub Settings Before Going Public
+## Required GitHub Repository Settings
 
 Configure these in GitHub before making the repo public:
 

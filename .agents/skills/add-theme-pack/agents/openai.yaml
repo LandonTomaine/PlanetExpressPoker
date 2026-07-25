@@ -1,3 +1,4 @@
-display_name: Add Theme Pack
-short_description: Add registry-backed theme packs.
-default_prompt: Add a new Planet Express Poker theme pack.
+interface:
+  display_name: 'Add Theme Pack'
+  short_description: 'Plan and validate registry-backed themes'
+  default_prompt: 'Use $add-theme-pack to plan, source, implement, and visually validate a Planet Express Poker theme.'

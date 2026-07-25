@@ -1,18 +1,15 @@
-# Testing Docs
+# Testing
 
-This folder holds testing and validation guidance for the current stack.
+| Layer        | Command                         | Use for                                             |
+| ------------ | ------------------------------- | --------------------------------------------------- |
+| Unit         | `npm.cmd run test:unit`         | Pure rules under `src/**/*.test.*`                  |
+| Integration  | `npm.cmd run test:integration`  | React flows under `tests/integration/`              |
+| Architecture | `npm.cmd run test:architecture` | Repo safety, env shape, test wiring, and boundaries |
+| E2E          | `npm.cmd run test:e2e`          | Two browser smoke paths under `tests/e2e/`          |
 
-## Current Docs
+Unit tests run in Node. Integration tests run in jsdom. E2E requires local or hosted Supabase values from [getting-started.md](../getting-started.md).
 
-- [strategy.md](strategy.md): test-layer choices and default validation expectations
-- [playwright-e2e.md](playwright-e2e.md): current browser E2E scope and command
-
-## Current State
-
-- unit tests cover pure room rules
-- integration tests cover the home create/join flow
-- architecture checks guard public-repo and frontend boundary risks
-- one Playwright smoke test covers the simulator room happy path
+Use the cheapest layer that proves the behavior. Run E2E for room flow, routing, or Supabase changes; keep animation checks manual when automation would be brittle.
 
 ## Manual Multiplayer Simulator
 

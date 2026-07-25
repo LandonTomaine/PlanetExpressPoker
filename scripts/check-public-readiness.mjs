@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 function git(args) {
   return execFileSync('git', args, {
@@ -14,8 +14,13 @@ function fail(message) {
 
 const failures = []
 const trackedFiles = git(['ls-files']).split(/\r?\n/).filter(Boolean)
+const workingFiles = trackedFiles.filter((filePath) => existsSync(filePath))
 
 for (const requiredFile of [
+  '.env.example',
+  '.gitignore',
+  '.github/workflows/ci.yml',
+  '.husky/pre-push',
   'LICENSE.md',
   'ASSET_NOTICES.md',
   'CONTRIBUTING.md',
@@ -23,12 +28,64 @@ for (const requiredFile of [
   '.github/dependabot.yml',
   '.github/workflows/codeql.yml',
 ]) {
-  if (!trackedFiles.includes(requiredFile)) {
+  if (!trackedFiles.includes(requiredFile) || !existsSync(requiredFile)) {
     fail(`missing public-repo file: ${requiredFile}`)
   }
 }
 
-const workflowFiles = trackedFiles.filter((filePath) =>
+const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
+const expectedTestScripts = {
+  'test:architecture': 'node scripts/check-public-readiness.mjs',
+  'test:integration': 'vitest run --project integration',
+  'test:unit': 'vitest run --project unit',
+}
+
+for (const [name, command] of Object.entries(expectedTestScripts)) {
+  if (packageJson.scripts?.[name] !== command) {
+    fail(`package script ${name} must be: ${command}`)
+  }
+}
+
+const requiredGateScripts = [
+  'format:check',
+  'lint',
+  'typecheck',
+  'test:unit',
+  'test:integration',
+  'test:architecture',
+  'build',
+]
+
+for (const gateFile of ['.github/workflows/ci.yml', '.husky/pre-push']) {
+  const content = readFileSync(gateFile, 'utf8')
+
+  for (const scriptName of requiredGateScripts) {
+    if (!content.includes(`npm run ${scriptName}`)) {
+      fail(`${gateFile} does not run ${scriptName}`)
+    }
+  }
+}
+
+const allowedFrontendEnvKeys = ['VITE_SUPABASE_ANON_KEY', 'VITE_SUPABASE_URL']
+const envExampleKeys = readFileSync('.env.example', 'utf8')
+  .split(/\r?\n/)
+  .map((line) => line.match(/^([A-Z][A-Z0-9_]*)=/)?.[1])
+  .filter(Boolean)
+  .sort()
+
+if (envExampleKeys.join(',') !== allowedFrontendEnvKeys.join(',')) {
+  fail(`.env.example must contain only: ${allowedFrontendEnvKeys.join(', ')}`)
+}
+
+const gitignoreLines = readFileSync('.gitignore', 'utf8').split(/\r?\n/)
+
+for (const pattern of ['.env', '.env.*', '!.env.example']) {
+  if (!gitignoreLines.includes(pattern)) {
+    fail(`.gitignore missing environment rule: ${pattern}`)
+  }
+}
+
+const workflowFiles = workingFiles.filter((filePath) =>
   /^\.github\/workflows\/.+\.ya?ml$/.test(filePath)
 )
 
@@ -56,7 +113,7 @@ for (const workflowFile of workflowFiles) {
 
 const deployWorkflow = '.github/workflows/deploy-cloudflare.yml'
 
-if (trackedFiles.includes(deployWorkflow)) {
+if (workingFiles.includes(deployWorkflow)) {
   const content = readFileSync(deployWorkflow, 'utf8')
 
   if (
@@ -66,7 +123,7 @@ if (trackedFiles.includes(deployWorkflow)) {
   }
 }
 
-const forbiddenTrackedFiles = trackedFiles.filter(
+const forbiddenTrackedFiles = workingFiles.filter(
   (filePath) => /^\.env(?:\.|$)/.test(filePath) && filePath !== '.env.example'
 )
 
@@ -84,12 +141,24 @@ const secretPatterns = [
     pattern: 'ghp_[A-Za-z0-9]{20,}',
   },
   {
+    name: 'GitHub fine-grained token',
+    pattern: 'github_pat_[A-Za-z0-9_]{20,}',
+  },
+  {
     name: 'OpenAI token',
     pattern: 'sk-[A-Za-z0-9_-]{20,}',
   },
   {
     name: 'database URL',
     pattern: 'postgres(ql)?://',
+  },
+  {
+    name: 'Supabase access token',
+    pattern: 'sbp_[A-Za-z0-9]{20,}',
+  },
+  {
+    name: 'Supabase secret key',
+    pattern: 'sb_secret_[A-Za-z0-9_-]{20,}',
   },
   {
     name: 'hardcoded Supabase JWT env',
@@ -126,7 +195,7 @@ for (const { name, pattern } of secretPatterns) {
   }
 }
 
-const frontendFiles = trackedFiles.filter(
+const frontendFiles = workingFiles.filter(
   (filePath) => filePath.startsWith('src/') && /\.[cm]?[jt]sx?$/.test(filePath)
 )
 
@@ -155,6 +224,26 @@ for (const filePath of frontendFiles) {
     fail(
       `Supabase client imported outside room data/realtime boundary: ${filePath}`
     )
+  }
+
+  const frontendEnvKeys = content.match(/\bVITE_[A-Z0-9_]+/g) ?? []
+
+  for (const envKey of frontendEnvKeys) {
+    if (!allowedFrontendEnvKeys.includes(envKey)) {
+      fail(`unapproved frontend environment variable in ${filePath}: ${envKey}`)
+    }
+  }
+}
+
+const textFiles = workingFiles.filter((filePath) =>
+  /\.(?:[cm]?[jt]sx?|json|md|ya?ml|css|html)$/.test(filePath)
+)
+
+for (const filePath of textFiles) {
+  const content = readFileSync(filePath, 'utf8')
+
+  if (/[\u00c2\u00c3\u00e2]|\ufffd/.test(content)) {
+    fail(`possible mojibake in ${filePath}`)
   }
 }
 

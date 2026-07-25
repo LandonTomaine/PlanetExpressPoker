@@ -4,11 +4,11 @@
 
 ### Status
 
-Draft v1
+Current v1
 
-### Date
+### Last Updated
 
-July 1, 2026
+July 24, 2026
 
 ### Delivery Backlog
 
@@ -16,7 +16,7 @@ July 1, 2026
 
 ## 1. Product Summary
 
-Planet Express Poker is a lightweight planning poker web app for small teams and friends. Users join a room with a unique display name and themed avatar, vote privately using planning poker cards, and reveal scores together with playful animations and Futurama-inspired social chaos.
+Planet Express Poker is a lightweight planning poker web app for small teams and friends. Users join a room with a unique display name and themed avatar, vote privately using planning poker cards, and reveal scores together with playful theme-specific animations.
 
 The product is intentionally narrow. It is not a general agile platform, not a backlog tool, and not a team management product. The goal is to make estimation fast, readable, and entertaining.
 
@@ -95,8 +95,8 @@ The target user is a small private group that wants a simple planning poker room
 ### 7.4 Voting
 
 - Default deck is Fibonacci.
-- Initial default deck values should be: `0, 1, 2, 3, 5, 8, 13, 21`.
-- The room may optionally include special cards like `?`, `infinity`, and `coffee`.
+- Numeric deck values are `0, 1, 2, 3, 5, 8, 13`.
+- The deck includes stable special meanings for `?`, `infinity`, `BIG`, and `N/A`.
 - Only users currently marked as voters can submit a vote.
 - Spectators remain visible in the room but cannot vote.
 - A voter can change their vote until reveal.
@@ -123,12 +123,12 @@ The target user is a small private group that wants a simple planning poker room
 ### 7.8 Score Summary
 
 - After reveal, the app shows all revealed votes.
-- The app shows the average of the numeric votes.
+- The app shows the numeric average rounded up to the next available deck value.
 - The app shows a recommended score.
 - If all numeric votes match, the recommended score is that exact value.
-- Otherwise, the recommended score is the median numeric vote.
+- Otherwise, the recommended score is the median numeric vote, using the lower middle value for an even count.
 - If the highest numeric vote is more than two Fibonacci steps above the lowest numeric vote, the app shows `Discuss` instead of a numeric recommendation.
-- Non-numeric cards like `?`, `infinity`, and `coffee` are excluded from average and recommendation calculations.
+- Non-numeric cards like `?`, `infinity`, `BIG`, and `N/A` are excluded from average and recommendation calculations.
 - If there are no numeric votes after reveal, the app shows `No recommendation`.
 
 ### 7.9 Fun and Chaos Layer
@@ -170,7 +170,7 @@ The target user is a small private group that wants a simple planning poker room
 ## 9. Default Room Settings
 
 - Deck: Fibonacci
-- Special cards: disabled by default
+- Special cards: included
 - Reveal permission: anyone
 - Auto reveal: enabled
 - Auto reveal countdown: enabled, `3...2...1`
@@ -194,8 +194,6 @@ The target user is a small private group that wants a simple planning poker room
 
 ## 12. Open Questions
 
-- Exact scope of avatar library at launch
-- Exact list of fun actions available in v1
 - Whether kicking a participant should require a confirmation step
 - Whether reset should remain open to all participants or follow a narrower rule later if misuse appears
 
@@ -213,6 +211,7 @@ The target user is a small private group that wants a simple planning poker room
 - Hidden voting
 - Vote submitted indicator
 - Fibonacci deck
+- Special cards: `?`, `infinity`, `BIG`, `N/A`
 - Anyone can reveal
 - Auto reveal countdown
 - Card flip reveal animation
@@ -224,7 +223,6 @@ The target user is a small private group that wants a simple planning poker room
 
 ### Nice to Have
 
-- Special cards: `?`, `infinity`, `coffee`
 - Multiple avatar variants per character/theme
 - Extra celebration variants
 - More than one throwable or chaos interaction

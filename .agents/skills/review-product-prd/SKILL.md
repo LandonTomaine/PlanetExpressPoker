@@ -13,14 +13,14 @@ Find product-scope issues before a child PRD becomes backlog work.
 
 ## Workflow
 
-1. Read parent PRD Section 19 and the selected capability section.
+1. Read the parent PRD and selected capability section.
 2. Read the child PRD under review.
 3. Compare against one nearby child PRD only for shape if needed.
 4. Return findings only; do not edit.
 
 ## Checks
 
-- Matches the selected Section 19 capability and does not pull later capabilities forward.
+- Matches the selected parent-PRD capability and does not pull later capabilities forward.
 - Preserves MVP bias: manual before automated, simple states, no speculative platform work.
 - Defines actor, outcome, scope, non-goals, dependencies, edge/recovery states, and UX requirements when product-relevant.
 - User-visible scope names key flows: first-time, edit, empty, error, blocked.

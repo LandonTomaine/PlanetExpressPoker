@@ -30,7 +30,7 @@ Turn a reported symptom into a minimal, validated fix with regression coverage w
 
 4. Implement the minimal fix.
    - Keep the change scoped to the defect.
-   - Add or update regression coverage at the correct layer using `docs/development/testing/strategy.md` when tests are needed.
+   - Add regression coverage at the correct layer using `docs/development/testing/README.md`.
 
 5. Validate the fix.
    - Re-run the failing reproduction first.

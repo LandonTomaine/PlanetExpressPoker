@@ -14,17 +14,7 @@ cd <your-repo>
 npm.cmd install
 ```
 
-3. Confirm local validation works:
-
-```powershell
-npm.cmd run format:check
-npm.cmd run lint
-npm.cmd run typecheck
-npm.cmd run test:unit
-npm.cmd run test:integration
-npm.cmd run test:architecture
-npm.cmd run build
-```
+3. Run the local gates in [../development/safeguards.md](../development/safeguards.md).
 
 For purely local development, you can stop here and use either:
 
@@ -44,14 +34,7 @@ npx.cmd supabase link --project-ref <project-ref>
 npx.cmd supabase db push
 ```
 
-4. Create `.env` for local development:
-
-```text
-VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
-```
-
-Only use the Supabase anon or publishable public key in frontend config. Never use the service-role key in this app.
+4. Configure local frontend values with [../development/getting-started.md](../development/getting-started.md). Only the project URL and anon/publishable key belong in `.env`.
 
 ## 3. Create Cloudflare Resources
 

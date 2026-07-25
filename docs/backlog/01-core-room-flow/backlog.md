@@ -1,8 +1,8 @@
 # Core Room Flow Backlog
 
-Status: Draft
+Status: Delivered; follow-ups remain
 
-Date: July 2, 2026
+Last updated: July 24, 2026
 
 Requirement document: [../../product/requirements/00-product-prd.md](../../product/requirements/00-product-prd.md)
 
@@ -18,7 +18,7 @@ Deliver the smallest complete version of Planet Express Poker's main room loop:
 - submit hidden votes
 - reveal with countdown and summary
 - reset the round
-- layer in optional Futurama-themed chaos without disrupting the core flow
+- layer in optional theme-specific chaos without disrupting the core flow
 
 This backlog covers the app's main v1 capability. It excludes deployment, accounts, integrations, chat, history, and admin-style permissions.
 
@@ -28,7 +28,7 @@ This backlog covers the app's main v1 capability. It excludes deployment, accoun
 - Slice status values: `todo`, `in-progress`, `done`, `blocked`.
 - Keep slices small enough to plan and implement in one focused pass.
 - Validation should prove user behavior, not just code shape.
-- Browser E2E is optional until the repo adopts it; for now, use concrete local validation steps.
+- Use browser E2E for the two adopted smoke paths and concrete local validation for other UI behavior.
 
 ## Epic
 
@@ -47,7 +47,7 @@ User stories:
 
 Slices:
 
-- `S1 Room entry and live presence` - `todo`
+- `S1 Room entry and live presence` - `done`
   - Outcome:
     - user can open a room by name
     - room is created on first access with default settings
@@ -75,7 +75,7 @@ User stories:
 
 Slices:
 
-- `S2 Voting deck and private vote state` - `todo`
+- `S2 Voting deck and private vote state` - `done`
   - Outcome:
     - default Fibonacci deck is visible
     - only voters can submit or change a vote before reveal
@@ -87,10 +87,10 @@ Slices:
   - Validation:
     - two-session local flow proves hidden voting and submitted-state sync
 
-- `S3 Participant role changes and kicking` - `todo`
+- `S3 Participant role changes and kicking` - `done`
   - Outcome:
     - any participant can toggle any participant between voter and spectator
-    - any participant can kick any participant
+    - any participant can kick any non-owner participant
     - kicked participants cannot silently reclaim the room row
   - Acceptance:
     - role changes update the roster in realtime
@@ -109,7 +109,7 @@ User stories:
 
 Slices:
 
-- `S4 Reveal countdown and card flip` - `todo`
+- `S4 Reveal countdown and card flip` - `done`
   - Outcome:
     - any participant can trigger reveal
     - room auto-starts a visible `3...2...1` countdown when all voters have voted
@@ -121,9 +121,9 @@ Slices:
   - Validation:
     - local multi-session flow proves manual and automatic reveal behavior
 
-- `S5 Score summary and round reset` - `todo`
+- `S5 Score summary and round reset` - `done`
   - Outcome:
-    - revealed room shows average and recommended score
+    - revealed room shows the rounded-up numeric average and recommended score
     - non-numeric cards are excluded from calculations
     - any participant can reset the round
   - Acceptance:
@@ -144,7 +144,7 @@ User stories:
 
 Slices:
 
-- `S6 Avatar set and baseline themed presentation` - `todo`
+- `S6 Avatar set and baseline themed presentation` - `done`
   - Outcome:
     - room uses a clean base UI with themed avatars, copy, and card treatment
     - avatar choices are distinct and recognizable
@@ -153,7 +153,7 @@ Slices:
   - Validation:
     - local visual review covers join flow, roster, cards, and reveal state
 
-- `S7 Chaos events and consensus celebration` - `todo`
+- `S7 Chaos events and consensus celebration` - `done`
   - Outcome:
     - chaotic fun level enables short ship, prop, or character reactions
     - disabled fun level suppresses cosmetic events
@@ -166,12 +166,12 @@ Slices:
 
 ### Theme Follow-Ups
 
-- Existing-room theme clarity - `todo`: Explain near room entry that the “New room theme” selector only applies when creating a new room; existing rooms keep their owner-selected theme.
+- Existing-room theme clarity - `done`: Room entry explains that the new-room theme applies only when creating a room; existing rooms keep their owner-selected theme.
 - Database theme regression coverage - `todo`: Add a Supabase migration smoke test or SQL-level regression that proves `create_or_get_room(name, theme)` creates new rooms with the requested theme and does not retheme existing rooms.
-- Theme ID extensibility - `todo`: Replace hardcoded database checks for `('futurama', 'zootopia')` with a more scalable compatibility plan before adding more built-in themes.
+- Theme ID extensibility - `todo`: Replace repeated hardcoded built-in theme checks with one compatibility boundary before adding more themes.
 - Judy meter maid cart asset - `todo`: Replace the Zootopia police-car stand-in with a sourced SVG of Judy's actual meter maid cart if a usable license/source is found.
 
-## Recommended Agent Work Order
+## Delivered Work Order
 
 1. `S1 Room entry and live presence`
 2. `S2 Voting deck and private vote state`
@@ -193,15 +193,4 @@ Slices:
 
 ## Agent Handoff Guidance
 
-Start with `S1`. Keep it narrow.
-
-For `S1`, the first implementation plan should cover:
-
-- room lookup or creation by name
-- default room settings and active round initialization
-- join flow with unique display name and avatar
-- local remembered identity
-- realtime roster and presence rendering
-- copy invite link from the room view
-
-Do not pull voting, reveal, kicking, or chaos triggers into the first slice unless a small supporting seam is unavoidable.
+The core slices are complete. Select one explicit follow-up above, or use `draft-follow-on-prd` to define the next capability before adding new scope.

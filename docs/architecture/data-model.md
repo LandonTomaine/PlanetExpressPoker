@@ -1,6 +1,6 @@
 # Data Model
 
-This document defines the initial durable data shape for Planet Express Poker.
+This document summarizes the current logical data shape. Supabase migrations remain authoritative for exact SQL.
 
 The goal is not to overdesign the backend. The goal is to store only the room state needed to reconstruct the current session cleanly after reload or reconnect.
 
@@ -22,7 +22,7 @@ Purpose:
 - shareable room address
 - lifecycle container for settings, participants, and the active round
 
-Suggested fields:
+Current fields:
 
 - `id` uuid primary key
 - `name` text not null unique
@@ -40,7 +40,7 @@ Purpose:
 
 - persisted per-room product settings
 
-Suggested fields:
+Current fields:
 
 - `room_id` uuid primary key references `rooms(id)` on delete cascade
 - `deck_type` text not null default `'fibonacci'`
@@ -51,13 +51,14 @@ Suggested fields:
 - `reveal_countdown_seconds` integer not null default 3
 - `fun_level` text not null default `'chaotic'`
 - `theme` text not null default `'futurama'`
+- `hypnotoad_easter_egg_triggered_at` timestamptz null
 - `updated_at` timestamptz not null default now()
 
-Suggested allowed values:
+Current allowed values:
 
 - `deck_type`: `fibonacci`
 - `fun_level`: `disabled`, `chaotic`
-- `theme`: built-in theme IDs, currently `futurama`, `zootopia`
+- `theme`: built-in theme IDs, currently `futurama`, `toy-story`, `zootopia`
 
 Notes:
 
@@ -72,7 +73,7 @@ Purpose:
 - current room roster
 - durable role and identity within the active room context
 
-Suggested fields:
+Current fields:
 
 - `id` uuid primary key
 - `room_id` uuid not null references `rooms(id)` on delete cascade
@@ -84,12 +85,12 @@ Suggested fields:
 - `created_at` timestamptz not null default now()
 - `updated_at` timestamptz not null default now()
 
-Suggested constraints:
+Current constraints:
 
 - unique (`room_id`, `display_name`)
 - unique (`room_id`, `client_id`)
 
-Suggested allowed values:
+Current allowed values:
 
 - `role`: `voter`, `spectator`
 
@@ -104,7 +105,7 @@ Purpose:
 
 - current room estimation state
 
-Suggested fields:
+Current fields:
 
 - `id` uuid primary key
 - `room_id` uuid not null unique references `rooms(id)` on delete cascade
@@ -117,7 +118,7 @@ Suggested fields:
 - `last_reaction_kind` text null
 - `updated_at` timestamptz not null default now()
 
-Suggested allowed values:
+Current allowed values:
 
 - `status`: `voting`, `countdown`, `revealed`
 
@@ -134,14 +135,14 @@ Purpose:
 
 - each participant's current vote in the active round
 
-Suggested fields:
+Current fields:
 
 - `round_id` uuid not null references `rounds(id)` on delete cascade
 - `participant_id` uuid not null references `participants(id)` on delete cascade
 - `card_value` text not null
 - `submitted_at` timestamptz not null default now()
 
-Suggested key:
+Current key:
 
 - primary key (`round_id`, `participant_id`)
 
@@ -149,6 +150,14 @@ Notes:
 
 - store `card_value` as text so numeric and special cards share one column
 - numeric interpretation belongs in app logic
+
+### `app_secrets`
+
+Purpose:
+
+- server-only hashes for operational controls such as the room shutdown PIN
+
+This table must never be read by frontend code. Mutations that need it use security-definer RPCs.
 
 ## Derived State
 
@@ -167,8 +176,8 @@ Use Supabase Realtime rather than durable tables for:
 
 - online presence
 - current connected tabs
-- ship fly-by and explosion triggers
-- Bender reactions
+- theme vehicle and prop triggers
+- theme character reactions
 - cosmetic celebration events
 
 Broadcast event examples:
@@ -181,7 +190,7 @@ Broadcast event examples:
 
 Because there are no accounts, the app needs a local client identity.
 
-Suggested rule:
+Current rule:
 
 - generate a stable `client_id` locally
 - store it in browser storage
@@ -212,17 +221,11 @@ When a participant is kicked:
 - remove any active vote for that participant in the current round
 - prevent the same `client_id` from silently reclaiming the row without explicit product handling
 
-## Initial Migration Scope
+## Schema Boundaries
 
-The first schema migration should create:
+Current durable tables are `rooms`, `room_settings`, `participants`, `rounds`, `votes`, and server-only `app_secrets`.
 
-- `rooms`
-- `room_settings`
-- `participants`
-- `rounds`
-- `votes`
-
-It should not yet add:
+Do not add by default:
 
 - audit tables
 - round history tables

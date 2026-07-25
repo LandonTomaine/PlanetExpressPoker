@@ -1,10 +1,6 @@
-# Project Safeguards
+# Safeguards
 
-This repository uses layered safeguards to keep changes clean, tested, and safe to publish.
-
-## Local Gates
-
-Run these before pushing:
+## Before Push
 
 ```powershell
 npm.cmd run format:check
@@ -16,88 +12,26 @@ npm.cmd run test:architecture
 npm.cmd run build
 ```
 
-Run E2E when browser behavior, room flow, Supabase integration, or routing changes:
+Run `npm.cmd run test:e2e` for room flow, routing, or Supabase changes. Run `npm.cmd audit --audit-level=moderate` before release.
 
-```powershell
-npm.cmd run test:e2e
-```
+## Automated Gates
 
-Run dependency audit before release/publication:
+- Pre-commit: lint and format staged files.
+- Pre-push: format, lint, typecheck, unit, integration, architecture, build.
+- CI: all local gates plus Playwright with local Supabase.
+- CodeQL and Dependabot: GitHub-hosted security checks.
+- Deploy: protected `main`, guarded repository, hosted migrations before upload.
 
-```powershell
-npm.cmd audit --audit-level=moderate
-```
+## Architecture Check
 
-## Git Hooks
+`scripts/check-public-readiness.mjs` guards:
 
-Husky enforces the common local checks.
+- required public-repo files
+- test scripts wired into CI and pre-push
+- ignored local env files and the public-only `.env.example` shape
+- obvious committed secrets, local paths, and mojibake
+- safe workflow permissions and deploy repository guard
+- no unsafe HTML or direct sensitive-table reads
+- Supabase imports and frontend env variables staying inside approved boundaries
 
-- `pre-commit`: runs `lint-staged` to lint and format staged files.
-- `pre-push`: runs lint, typecheck, unit tests, integration tests, architecture checks, and build.
-- E2E stays manual/CI-only because it depends on browser and Supabase runtime setup.
-
-## CI Gates
-
-GitHub Actions protects pushes and pull requests with:
-
-- Prettier format check
-- ESLint
-- TypeScript typecheck
-- Unit tests
-- Integration tests
-- Public-readiness architecture checks
-- Production build
-- Playwright E2E smoke test with local Supabase
-
-Deployment is handled by a separate Cloudflare Pages workflow guarded to the intended repository. That workflow also applies hosted Supabase migrations before publishing the frontend.
-
-Codex pull request review is handled by the ChatGPT/Codex GitHub connector. It is configured outside the repository, and forks must authorize their own Codex GitHub connector if they want automated reviews.
-
-## Repository Controls
-
-- `main` is the trunk branch.
-- All changes must merge through pull requests.
-- `CODEOWNERS` requires `@LandonTomaine` review.
-- Public issues are enabled for bug reports and enhancement requests.
-- Pull request merges require owner approval and passing required checks.
-
-## Security And Public-Repo Checks
-
-Security safeguards include:
-
-- CodeQL scanning on pushes to `main`, pull requests, and a weekly schedule.
-- Dependabot alerts and weekly update PRs for npm and GitHub Actions.
-- Weekly Dependabot review automation reviews clean passing dependency PRs and labels blocked updates for Codex follow-up.
-- `npm audit --audit-level=moderate` for local dependency vulnerability checks.
-- `scripts/check-public-readiness.mjs` for repo-specific architecture/security checks.
-
-The architecture check currently guards:
-
-- required public-repo files exist
-- no tracked `.env` files
-- no obvious committed secrets or local machine paths
-- no unsafe `pull_request_target` workflow usage
-- workflows declare explicit permissions and do not grant `contents: write`
-- deploy workflow has the intended repository guard
-- frontend code avoids unsafe HTML rendering
-- frontend code avoids direct sensitive table reads
-- Supabase client imports stay behind the intended data/realtime boundaries
-
-## Secrets And Deployment Safety
-
-- Local `.env` files are ignored and must stay untracked.
-- Frontend code may use only Supabase anon or publishable public keys.
-- Never commit Supabase service-role keys, database passwords, API tokens, or access tokens.
-- GitHub deployment secrets are repository settings, not source files.
-- Forks must update the Cloudflare deploy repository guard before deploying to their own resources.
-
-## Documentation And Ownership
-
-Keep these docs aligned when safeguards change:
-
-- [tooling.md](tooling.md): command and hook reference
-- [../deployment/fork-setup.md](../deployment/fork-setup.md): fork-owned hosting and optional Codex review setup
-- [testing/strategy.md](testing/strategy.md): test layer expectations
-- [bootstrap-checklist.md](bootstrap-checklist.md): standards coverage ledger
-- [../../README.md](../../README.md): setup and common validation commands
-- [../../CONTRIBUTING.md](../../CONTRIBUTING.md): contributor validation rules
+See [testing/README.md](testing/README.md) for layer selection, [../deployment/fork-setup.md](../deployment/fork-setup.md) for fork deployment, and [../../SECURITY.md](../../SECURITY.md) for secret handling.

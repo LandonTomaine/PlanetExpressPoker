@@ -3,6 +3,6 @@
 ## Active Capability Backlogs
 
 - [01 Core Room Flow](01-core-room-flow/backlog.md)
-  - Status: Draft
+  - Status: Delivered; follow-ups remain
   - Scope: the main v1 product loop from room creation through reveal, reset, and cosmetic chaos events
-  - Next slice: `S1 Room entry and live presence`
+  - Next work: select an explicit follow-up or define the next capability in a child PRD

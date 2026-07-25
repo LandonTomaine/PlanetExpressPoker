@@ -1,6 +1,6 @@
 # Planet Express Poker
 
-Lightweight planning poker with realtime rooms, persistent room state, animated reveal flow, and a switchable themed presentation layer. The current built-in themes are Futurama and Zootopia.
+Lightweight planning poker with realtime rooms, persistent room state, animated reveal flow, and a switchable themed presentation layer. The current built-in themes are Futurama, Toy Story, and Zootopia.
 
 ## Stack
 
@@ -39,42 +39,9 @@ Choose the smallest path that fits:
 
 Default local app URL: `http://127.0.0.1:5173`
 
-## Local Env
-
-```text
-VITE_SUPABASE_URL=https://<project-ref>.supabase.co
-VITE_SUPABASE_ANON_KEY=<anon-or-publishable-public-key>
-```
-
-GitHub secrets do not populate your local shell or `.env`. Local development always needs local values.
-
-Use only the Supabase anon/publishable public key in frontend or GitHub configuration. Never use the secret or service-role key in this app.
-
 ## Validation
 
-Run before opening or updating a pull request:
-
-```powershell
-npm.cmd run format:check
-npm.cmd run lint
-npm.cmd run typecheck
-npm.cmd run test:unit
-npm.cmd run test:integration
-npm.cmd run test:architecture
-npm.cmd run build
-```
-
-Run the browser smoke test when `.env` points at a local or hosted Supabase project:
-
-```powershell
-npm.cmd run test:e2e
-```
-
-Dependency audit:
-
-```powershell
-npm.cmd audit --audit-level=moderate
-```
+Use [docs/development/safeguards.md](docs/development/safeguards.md) before pushing. Test-layer guidance lives in [docs/development/testing/README.md](docs/development/testing/README.md).
 
 ## Public Repo Notes
 
@@ -94,24 +61,6 @@ This repository uses the ChatGPT/Codex GitHub connector for pull request review.
 Codex review is configured outside the repository through the ChatGPT/Codex GitHub app. It can automatically review new pull requests and can also be requested in a pull request with `@codex review`.
 
 Forks do not inherit this repository's Codex GitHub connector configuration, GitHub secrets, Cloudflare account, or Supabase project.
-
-## Common Commands
-
-```powershell
-npm.cmd run dev
-npm.cmd run build
-npm.cmd run preview
-npm.cmd run lint
-npm.cmd run typecheck
-npm.cmd run test:unit
-npm.cmd run test:integration
-npm.cmd run test:architecture
-npm.cmd run test:e2e
-npm.cmd run format
-npm.cmd run supabase:start
-npm.cmd run supabase:stop
-npm.cmd run supabase:status
-```
 
 ## Docs Map
 
