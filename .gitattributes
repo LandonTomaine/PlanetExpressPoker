@@ -1,0 +1,2 @@
+# Keep tracked text identical across Windows, macOS, Linux, Git, and Prettier.
+* text=auto eol=lf
