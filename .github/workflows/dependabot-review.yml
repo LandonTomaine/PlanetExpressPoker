@@ -1,4 +1,4 @@
-name: Dependabot Weekly Review
+name: Dependabot Weekly Triage
 
 on:
   schedule:
@@ -13,7 +13,7 @@ permissions:
   checks: read
   contents: read
   issues: write
-  pull-requests: write
+  pull-requests: read
 
 jobs:
   review_dependabot_prs:
@@ -105,13 +105,6 @@ jobs:
                 continue;
               }
 
-              const reviews = await github.paginate(github.rest.pulls.listReviews, {
-                owner,
-                repo,
-                pull_number: pr.number,
-              });
-              const alreadyApproved = reviews.some((review) => review.state === 'APPROVED');
-
               const status = await github.rest.repos.getCombinedStatusForRef({
                 owner,
                 repo,
@@ -142,7 +135,7 @@ jobs:
                 (label) => (label.name ?? label) === codexLabel
               );
 
-              if (currentPr.mergeable_state !== 'clean') {
+              if (['dirty', 'behind', 'unstable', 'unknown'].includes(currentPr.mergeable_state)) {
                 blockers.push(`mergeable_state is ${currentPr.mergeable_state}`);
               }
               if (currentPr.mergeable === false) {
@@ -195,7 +188,7 @@ jobs:
                     repo,
                     issue_number: pr.number,
                     body: [
-                      'Dependabot review found blockers and could not approve this PR.',
+                      'Dependabot triage found automated blockers. Owner review is held until they are resolved.',
                       '',
                       `- ${blockers.join('\n- ')}`,
                       '',
@@ -212,30 +205,26 @@ jobs:
                 continue;
               }
 
-              try {
-                if (!alreadyApproved) {
-                  await github.rest.pulls.createReview({
+              if (hasCodexLabel) {
+                try {
+                  await github.rest.issues.removeLabel({
                     owner,
                     repo,
-                    pull_number: pr.number,
-                    event: 'APPROVE',
-                    body:
-                      'Automated approval: Dependabot PR passes checks and is mergeable.',
+                    issue_number: pr.number,
+                    name: codexLabel,
                   });
+                } catch (labelError) {
+                  core.warning(`Could not remove stale ${codexLabel} label: ${labelError.message}`);
                 }
-
-                reportRows.push(
-                  `| [#${pr.number}](${pr.html_url}) | approved | clean passing Dependabot PR approved for maintainer merge |`
-                );
-              } catch (mergeError) {
-                reportRows.push(
-                  `| [#${pr.number}](${pr.html_url}) | blocked | auto-approval failed: ${mergeError.message} |`
-                );
               }
+
+              reportRows.push(
+                `| [#${pr.number}](${pr.html_url}) | awaiting owner review | clean, passing, and ready for required code-owner approval |`
+              );
             }
 
             const report = [
-              '# Dependabot Weekly Review',
+              '# Dependabot Weekly Triage',
               '',
               `Owner: ${owner}/${repo}`,
               `Run time: ${new Date().toISOString()} (America/New_York)`,
