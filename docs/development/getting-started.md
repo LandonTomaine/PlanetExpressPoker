@@ -20,7 +20,7 @@ PowerShell may block npm shims. Use `npm.cmd` and `npx.cmd` if needed.
 
 ## Local Frontend With Local Supabase
 
-1. `npm.cmd install`
+1. `npm.cmd ci`
 2. `Copy-Item .env.example .env`
 3. `npm.cmd run supabase:start`
 4. `npm.cmd run supabase:status`
@@ -36,7 +36,7 @@ Stop local Supabase when finished:
 
 Use this when you want to run the frontend locally while sharing rooms through a hosted Supabase project.
 
-1. `npm.cmd install`
+1. `npm.cmd ci`
 2. Create `.env` with:
 
 ```text
@@ -56,6 +56,12 @@ Expected local URLs:
 - app: `http://127.0.0.1:5173`
 - Supabase API: `http://127.0.0.1:54321`
 - Supabase Studio is intentionally disabled in the local config for now
+
+## If Local Supabase Ports Are Busy
+
+The tracked configuration uses the standard Supabase ports in the `54320`-`54329` range. If startup reports a conflict, identify the existing stack with `docker ps` and stop only the stack you own before retrying. Do not change the tracked `supabase/config.toml` just to reuse a port.
+
+To run two stacks at once, start the other checkout from a temporary copy with different Supabase ports, then point that checkout's ignored `.env` at the URL and anon/publishable key reported by `supabase status`.
 
 ## Next Docs
 

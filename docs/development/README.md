@@ -13,3 +13,4 @@ Use [getting-started.md](getting-started.md) first for local setup. Use the rest
 - [testing/README.md](testing/README.md): test layers, commands, and scope
 - [safeguards.md](safeguards.md): quality, test, CI, and security safeguards
 - [documentation.md](documentation.md): when and how to update repo docs
+- [../../CONTRIBUTING.md](../../CONTRIBUTING.md): trunk-based branch and pull-request workflow
