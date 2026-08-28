@@ -10,10 +10,6 @@ Current v1
 
 July 24, 2026
 
-### Delivery Backlog
-
-- [../../backlog/01-core-room-flow/backlog.md](../../backlog/01-core-room-flow/backlog.md)
-
 ## 1. Product Summary
 
 Planet Express Poker is a lightweight planning poker web app for small teams and friends. Users join a room with a unique display name and themed avatar, vote privately using planning poker cards, and reveal scores together with playful theme-specific animations.
