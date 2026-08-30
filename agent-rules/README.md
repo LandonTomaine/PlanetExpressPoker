@@ -38,8 +38,6 @@ Use these routes only when the task actually needs them:
   - [../docs/product/domain-concepts.md](../docs/product/domain-concepts.md)
 - Current product requirements:
   - [../docs/product/requirements/README.md](../docs/product/requirements/README.md)
-- Delivery tracking or backlog planning:
-  - [../docs/backlog/README.md](../docs/backlog/README.md)
 - Product workflow questions:
   - [../docs/product/workflows.md](../docs/product/workflows.md)
 - Engineering standards and setup:

@@ -10,7 +10,7 @@ This repository uses:
 
 ## Prerequisites
 
-- Node.js `24.x` is the current known-good local version in this repo
+- Node.js `24.x` is required. Run `node --version` first; it must report `v24.x`.
 - Git `2.32+`
 - Docker Desktop, only if you want to run the local Supabase stack
 - A Supabase account, only if you want a hosted shared environment

@@ -10,10 +10,6 @@ Current v1
 
 July 24, 2026
 
-### Delivery Backlog
-
-- [../../backlog/01-core-room-flow/backlog.md](../../backlog/01-core-room-flow/backlog.md)
-
 ## 1. Product Summary
 
 Planet Express Poker is a lightweight planning poker web app for small teams and friends. Users join a room with a unique display name and themed avatar, vote privately using planning poker cards, and reveal scores together with playful theme-specific animations.
@@ -247,3 +243,9 @@ The target user is a small private group that wants a simple planning poker room
 - Fun effects add personality without slowing down the estimation flow.
 - Repeat sessions in the same room preserve expected settings.
 - The product feels intentionally small rather than incomplete.
+
+## 15. Deferred Follow-Ups
+
+- Add database-level regression coverage proving requested themes apply to new rooms without retheming existing rooms.
+- Consolidate hardcoded built-in theme checks behind one compatibility boundary before adding another theme.
+- Replace Zootopia's police-car stand-in with a sourced, usable Judy meter-maid cart asset when one becomes available.

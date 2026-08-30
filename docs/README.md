@@ -12,7 +12,6 @@ Start here when you need a route. Then read only the smallest doc that fits the 
 - [development/themes.md](development/themes.md): theme registry, asset inventory, and add-theme workflow
 - [deployment/cloudflare-pages.md](deployment/cloudflare-pages.md): Cloudflare Pages and hosted Supabase deployment
 - [deployment/fork-setup.md](deployment/fork-setup.md): checklist for deploying a fork with your own resources
-- [backlog/README.md](backlog/README.md): delivery tracking and implementation planning
 
 ## Maintenance
 
