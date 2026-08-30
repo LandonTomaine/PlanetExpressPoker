@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
-    "lint": "eslint . --max-warnings=0",
+    "lint": "oxlint --deny-warnings .",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "preview": "vite preview",
@@ -27,7 +27,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
-      "eslint --fix",
+      "oxlint --fix --deny-warnings",
       "prettier --write"
     ],
     "*.{css,html,json,md,yml,yaml}": [
@@ -44,7 +44,6 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.1.17",
     "@testing-library/jest-dom": "^6.9.1",
@@ -54,17 +53,13 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
-    "eslint": "^10.6.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.5",
-    "globals": "^17.7.0",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.8",
+    "oxlint": "^1.80.0",
     "prettier": "^3.9.6",
     "supabase": "^2.109.1",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "^8.68.0",
+    "typescript": "~7.0.2",
     "vite": "^8.1.4",
     "vitest": "^4.1.9",
     "wrangler": "^4.126.0"
