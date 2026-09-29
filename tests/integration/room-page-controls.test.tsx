@@ -11,6 +11,7 @@ import {
 } from '../../src/features/room/data/roomApi'
 import { useRoomLiveState } from '../../src/features/room/realtime/useRoomLiveState'
 import { useRoomSettingsLiveState } from '../../src/features/room/realtime/useRoomSettingsLiveState'
+import { useVotingLiveState } from '../../src/features/room/realtime/useVotingLiveState'
 import { ThemeProvider } from '../../src/features/theme/context'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
@@ -234,6 +235,101 @@ describe('RoomPage controls', () => {
     await new Promise((resolve) => window.setTimeout(resolve, 0))
 
     expect(vi.mocked(setRoomTheme)).not.toHaveBeenCalled()
+  })
+
+  it('explains rounded averages and separates voters from spectators', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-2',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Owner',
+          avatarKey: 'fry',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-2',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-3',
+          roomId: 'room-1',
+          displayName: 'Leela',
+          avatarKey: 'leela',
+          role: 'spectator',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {
+        'participant-1': {
+          participantId: 'participant-1',
+          displayName: 'Owner',
+          avatarKey: 'fry',
+          role: 'voter',
+          onlineAt: new Date().toISOString(),
+        },
+      },
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'revealed',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: new Date().toISOString(),
+        reactionKind: null,
+      },
+      votes: [
+        {
+          roundId: 'round-1',
+          participantId: 'participant-1',
+          cardValue: '3',
+          submittedAt: new Date().toISOString(),
+        },
+        {
+          roundId: 'round-1',
+          participantId: 'participant-2',
+          cardValue: '5',
+          submittedAt: new Date().toISOString(),
+        },
+      ],
+      errorMessage: null,
+    })
+
+    renderRoomPage()
+
+    expect(
+      await screen.findByText(
+        'Rounded up to the next available card. Special cards are excluded.'
+      )
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Voters' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Spectators' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('Watching this round')).toBeInTheDocument()
+    expect(screen.getByText('online now')).toBeInTheDocument()
+    expect(screen.getAllByText('offline')).toHaveLength(2)
   })
 })
 

@@ -1539,6 +1539,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
               <p className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]">
                 {scoreSummary.averageLabel}
               </p>
+              <p className="mt-1.5 text-[11px] font-semibold leading-4 text-[var(--pep-ink-soft)]">
+                Rounded up to the next available card. Special cards are
+                excluded.
+              </p>
             </div>
             <div className="min-w-0 rounded-[14px] border-2 border-[var(--pep-accent)]/25 bg-white p-2.5 shadow-[0_10px_24px_rgba(212,47,38,0.08)]">
               <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--pep-accent)]">
@@ -1881,199 +1885,284 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         </div>
       ) : null}
 
-      <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(13rem,13rem))] gap-2.5">
-        {participants.map((participant, index) => {
-          const avatar = getAvatarOption(
-            participant.avatarKey,
-            effectiveThemeId
+      <div className="mt-4 space-y-5">
+        {(
+          [
+            {
+              role: 'voter' as const,
+              heading: 'Voters',
+              description: 'People who can submit an estimate this round.',
+            },
+            {
+              role: 'spectator' as const,
+              heading: 'Spectators',
+              description: 'People watching this round without voting.',
+            },
+          ] as const
+        ).map((group) => {
+          const groupedParticipants = participants.filter(
+            (participant) => participant.role === group.role
           )
-          const isOnline = Boolean(
-            displayedPresenceByParticipantId[participant.id]
-          )
-          const isSelf = participant.id === selfParticipant?.participantId
-          const isRoomOwner = participant.id === roomOwnerParticipantId
-          const hasSubmittedVote =
-            submittedVoteParticipantIds.has(participant.id) ||
-            (isSelf && Boolean(displayedOwnCardValue))
-          const revealedCardValue = revealedVoteByParticipantId.get(
-            participant.id
-          )
-          const isRevealedShipCard = revealedCardValue === 'ship'
-          const nextRole = participant.role === 'voter' ? 'spectator' : 'voter'
-          const isParticipantActionPending =
-            pendingParticipantActionId === participant.id
-          const canDevVoteAsParticipant =
-            isSimulatorMode &&
-            isJoinedToRoom &&
-            isActiveRoundVotingForDisplay &&
-            participant.role === 'voter' &&
-            Boolean(devClientIdByParticipantId[participant.id])
 
           return (
-            <motion.article
-              key={participant.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18, delay: index * 0.03 }}
-              className="relative min-w-0 overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.86),_rgba(238,245,243,0.92))] p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]"
-            >
-              <div className="flex items-start gap-2">
-                <div
-                  className={`grid h-9 w-9 shrink-0 overflow-hidden rounded-[9px] bg-gradient-to-br ${avatar.accentClassName} shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]`}
-                >
-                  <img
-                    src={avatar.portraitPath}
-                    alt={avatar.label}
-                    className={getAvatarPortraitClassName(avatar)}
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="min-h-[3.6rem]">
-                    <h4 className="truncate text-sm font-black text-[var(--pep-ink)]">
-                      {participant.displayName}
-                    </h4>
-                    <p className="mt-0.5 truncate text-xs text-[var(--pep-ink-soft)]">
-                      {avatar.label}
-                    </p>
-                    <div className="mt-1 flex h-4 items-center gap-1.5">
-                      {isRoomOwner ? (
-                        <span className="rounded-full bg-[var(--pep-panel-strong)] px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-ink)]">
-                          Owner
-                        </span>
-                      ) : null}
-                      {isSelf ? (
-                        <span className="rounded-full bg-[var(--pep-accent)]/10 px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-accent)]">
-                          You
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <p
-                    className={[
-                      'mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
-                      isActiveRoundRevealedForDisplay
-                        ? revealedCardValue
-                          ? [
-                              'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
-                              isRevealedShipCard ? 'text-3xl' : 'text-xl',
-                            ].join(' ')
-                          : 'border-slate-300 bg-slate-100 text-sm text-slate-500'
-                        : 'border-transparent bg-transparent text-transparent',
-                    ].join(' ')}
+            <section key={group.role} aria-labelledby={`${group.role}-heading`}>
+              <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1">
+                <div className="flex items-baseline gap-2">
+                  <h4
+                    id={`${group.role}-heading`}
+                    className="text-xs font-black uppercase tracking-[0.1em] text-[var(--pep-ink)]"
                   >
-                    {isActiveRoundRevealedForDisplay
-                      ? revealedCardValue
-                        ? getCardDisplayLabel(revealedCardValue)
-                        : 'No vote'
-                      : ''}
-                  </p>
-                  <div className="mt-2 flex flex-col items-start gap-1 pr-11">
-                    <span
-                      className={[
-                        'whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.06em]',
-                        participant.role === 'voter'
-                          ? 'bg-sky-100 text-sky-800'
-                          : 'bg-slate-200 text-slate-700',
-                      ].join(' ')}
-                    >
-                      {participant.role}
-                    </span>
-                    <span
-                      className={[
-                        'whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.06em]',
-                        isOnline
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-slate-200 text-slate-700',
-                      ].join(' ')}
-                    >
-                      {isOnline ? 'online' : 'offline'}
-                    </span>
-                  </div>
-                  {isJoinedToRoom ? (
-                    <div className="mt-3 flex items-center gap-1.5 pr-11">
-                      <button
-                        type="button"
-                        aria-label={`Switch ${participant.displayName} to ${nextRole} mode`}
-                        title={`Switch ${participant.displayName} to ${nextRole} mode`}
-                        onClick={() =>
-                          void handleRoleChange({
-                            participantId: participant.id,
-                            nextRole,
-                            isSelfTarget: isSelf,
-                          })
-                        }
-                        disabled={isParticipantActionPending}
+                    {group.heading}
+                  </h4>
+                  <span className="rounded-full bg-[var(--pep-panel-strong)] px-2 py-0.5 text-[10px] font-black uppercase text-[var(--pep-ink-soft)]">
+                    {groupedParticipants.length}
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--pep-ink-soft)]">
+                  {group.description}
+                </p>
+              </div>
+              {groupedParticipants.length === 0 ? (
+                <p className="rounded-[12px] border border-dashed border-[var(--pep-line)] bg-white/55 px-3 py-2 text-sm text-[var(--pep-ink-soft)]">
+                  No {group.role}s in the room.
+                </p>
+              ) : (
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,13rem))] gap-2.5">
+                  {groupedParticipants.map((participant) => {
+                    const index = participants.indexOf(participant)
+                    const avatar = getAvatarOption(
+                      participant.avatarKey,
+                      effectiveThemeId
+                    )
+                    const isOnline = Boolean(
+                      displayedPresenceByParticipantId[participant.id]
+                    )
+                    const isSelf =
+                      participant.id === selfParticipant?.participantId
+                    const isRoomOwner =
+                      participant.id === roomOwnerParticipantId
+                    const hasSubmittedVote =
+                      submittedVoteParticipantIds.has(participant.id) ||
+                      (isSelf && Boolean(displayedOwnCardValue))
+                    const revealedCardValue = revealedVoteByParticipantId.get(
+                      participant.id
+                    )
+                    const isRevealedShipCard = revealedCardValue === 'ship'
+                    const nextRole =
+                      participant.role === 'voter' ? 'spectator' : 'voter'
+                    const isParticipantActionPending =
+                      pendingParticipantActionId === participant.id
+                    const canDevVoteAsParticipant =
+                      isSimulatorMode &&
+                      isJoinedToRoom &&
+                      isActiveRoundVotingForDisplay &&
+                      participant.role === 'voter' &&
+                      Boolean(devClientIdByParticipantId[participant.id])
+
+                    return (
+                      <motion.article
+                        key={participant.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.18, delay: index * 0.03 }}
                         className={[
-                          'grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
-                          nextRole === 'spectator'
-                            ? 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)]'
-                            : 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_5px_12px_rgba(31,152,134,0.18)]',
+                          'relative min-w-0 overflow-hidden rounded-[12px] border p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]',
+                          participant.role === 'voter'
+                            ? 'border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.92),_rgba(238,245,243,0.96))]'
+                            : 'border-slate-300 bg-[linear-gradient(180deg,_rgba(248,250,252,0.94),_rgba(231,237,242,0.94))]',
                         ].join(' ')}
                       >
-                        <EyeIcon crossed={nextRole === 'spectator'} />
-                      </button>
-                      {isSelf && !isRoomOwner ? (
-                        <button
-                          type="button"
-                          aria-label="Leave room"
-                          title="Leave room"
-                          onClick={() => void handleLeaveRoom(participant.id)}
-                          disabled={isParticipantActionPending}
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
-                        >
-                          <LeaveIcon />
-                        </button>
-                      ) : isRoomOwner ? (
-                        <span
-                          aria-label="Room owner cannot be kicked"
-                          title="Room owner cannot be kicked"
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-slate-300 bg-slate-100 text-slate-500"
-                        >
-                          <ShieldIcon />
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          aria-label={`Kick ${participant.displayName}`}
-                          title={`Kick ${participant.displayName}`}
-                          onClick={() =>
-                            void handleKick(participant.id, isRoomOwner)
-                          }
-                          disabled={isParticipantActionPending}
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_5px_12px_rgba(212,47,38,0.14)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
-                        >
-                          <KickIcon />
-                        </button>
-                      )}
-                    </div>
-                  ) : null}
-                  {canDevVoteAsParticipant ? (
-                    <button
-                      type="button"
-                      onClick={() => setDevVoteParticipantId(participant.id)}
-                      disabled={pendingDevVoteParticipantId === participant.id}
-                      className="mt-2 mr-11 inline-flex min-h-7 items-center rounded-full border border-[var(--pep-line-strong)] bg-white/86 px-2.5 py-1 text-[10px] font-black text-[var(--pep-ink)] shadow-[0_4px_10px_rgba(12,32,42,0.06)] hover:border-[var(--pep-accent-2)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
-                    >
-                      Simulate vote
-                    </button>
-                  ) : null}
+                        <div className="flex items-start gap-2">
+                          <div
+                            className={`grid h-9 w-9 shrink-0 overflow-hidden rounded-[9px] bg-gradient-to-br ${avatar.accentClassName} shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]`}
+                          >
+                            <img
+                              src={avatar.portraitPath}
+                              alt={avatar.label}
+                              className={getAvatarPortraitClassName(avatar)}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="min-h-[4.2rem]">
+                              <h4 className="truncate text-sm font-black text-[var(--pep-ink)]">
+                                {participant.displayName}
+                              </h4>
+                              <div className="mt-1 flex flex-wrap items-center gap-1">
+                                <span
+                                  className={[
+                                    'rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase leading-none',
+                                    participant.role === 'voter'
+                                      ? 'bg-sky-100 text-sky-800'
+                                      : 'bg-slate-200 text-slate-700',
+                                  ].join(' ')}
+                                >
+                                  {participant.role}
+                                </span>
+                                <span
+                                  className={[
+                                    'inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase leading-none',
+                                    isOnline
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : 'bg-slate-200 text-slate-700',
+                                  ].join(' ')}
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className={[
+                                      'h-1.5 w-1.5 rounded-full',
+                                      isOnline
+                                        ? 'bg-emerald-600'
+                                        : 'bg-slate-500',
+                                    ].join(' ')}
+                                  />
+                                  {isOnline ? 'online now' : 'offline'}
+                                </span>
+                                {isRoomOwner ? (
+                                  <span className="rounded-full bg-[var(--pep-panel-strong)] px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-ink)]">
+                                    Owner
+                                  </span>
+                                ) : null}
+                                {isSelf ? (
+                                  <span className="rounded-full bg-[var(--pep-accent)]/10 px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-accent)]">
+                                    You
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                            {participant.role === 'voter' ? (
+                              <p
+                                className={[
+                                  'mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
+                                  isActiveRoundRevealedForDisplay
+                                    ? revealedCardValue
+                                      ? [
+                                          'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
+                                          isRevealedShipCard
+                                            ? 'text-3xl'
+                                            : 'text-xl',
+                                        ].join(' ')
+                                      : 'border-slate-300 bg-slate-100 text-sm text-slate-500'
+                                    : 'border-transparent bg-transparent text-transparent',
+                                ].join(' ')}
+                              >
+                                {isActiveRoundRevealedForDisplay
+                                  ? revealedCardValue
+                                    ? getCardDisplayLabel(revealedCardValue)
+                                    : 'No vote'
+                                  : ''}
+                              </p>
+                            ) : (
+                              <p className="mt-1 flex min-h-9 items-center justify-center rounded-[10px] bg-slate-200/70 px-2 py-1 text-center text-xs font-bold text-slate-600">
+                                Watching this round
+                              </p>
+                            )}
+                            {isJoinedToRoom ? (
+                              <div className="mt-3 flex items-center gap-1.5 pr-11">
+                                <button
+                                  type="button"
+                                  aria-label={`Switch ${participant.displayName} to ${nextRole} mode`}
+                                  title={`Switch ${participant.displayName} to ${nextRole} mode`}
+                                  onClick={() =>
+                                    void handleRoleChange({
+                                      participantId: participant.id,
+                                      nextRole,
+                                      isSelfTarget: isSelf,
+                                    })
+                                  }
+                                  disabled={isParticipantActionPending}
+                                  className={[
+                                    'grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
+                                    nextRole === 'spectator'
+                                      ? 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)]'
+                                      : 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_5px_12px_rgba(31,152,134,0.18)]',
+                                  ].join(' ')}
+                                >
+                                  <EyeIcon crossed={nextRole === 'spectator'} />
+                                </button>
+                                {isSelf && !isRoomOwner ? (
+                                  <button
+                                    type="button"
+                                    aria-label="Leave room"
+                                    title="Leave room"
+                                    onClick={() =>
+                                      void handleLeaveRoom(participant.id)
+                                    }
+                                    disabled={isParticipantActionPending}
+                                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                                  >
+                                    <LeaveIcon />
+                                  </button>
+                                ) : isRoomOwner ? (
+                                  <span
+                                    aria-label="Room owner cannot be kicked"
+                                    title="Room owner cannot be kicked"
+                                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-slate-300 bg-slate-100 text-slate-500"
+                                  >
+                                    <ShieldIcon />
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    aria-label={`Kick ${participant.displayName}`}
+                                    title={`Kick ${participant.displayName}`}
+                                    onClick={() =>
+                                      void handleKick(
+                                        participant.id,
+                                        isRoomOwner
+                                      )
+                                    }
+                                    disabled={isParticipantActionPending}
+                                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_5px_12px_rgba(212,47,38,0.14)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                                  >
+                                    <KickIcon />
+                                  </button>
+                                )}
+                              </div>
+                            ) : null}
+                            {canDevVoteAsParticipant ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDevVoteParticipantId(participant.id)
+                                }
+                                disabled={
+                                  pendingDevVoteParticipantId === participant.id
+                                }
+                                className="mt-2 mr-11 inline-flex min-h-7 items-center rounded-full border border-[var(--pep-line-strong)] bg-white/86 px-2.5 py-1 text-[10px] font-black text-[var(--pep-ink)] shadow-[0_4px_10px_rgba(12,32,42,0.06)] hover:border-[var(--pep-accent-2)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                              >
+                                Simulate vote
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                        {participant.role === 'voter' ? (
+                          <div
+                            title={
+                              hasSubmittedVote
+                                ? 'Vote submitted'
+                                : 'Waiting for vote'
+                            }
+                            aria-label={
+                              hasSubmittedVote
+                                ? 'Vote submitted'
+                                : 'Waiting for vote'
+                            }
+                            className={[
+                              'absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
+                              hasSubmittedVote
+                                ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
+                                : 'border-slate-300 bg-slate-100 text-slate-400',
+                            ].join(' ')}
+                          >
+                            <CheckIcon />
+                          </div>
+                        ) : null}
+                      </motion.article>
+                    )
+                  })}
                 </div>
-              </div>
-              <div
-                title={hasSubmittedVote ? 'Vote submitted' : 'Waiting for vote'}
-                aria-label={
-                  hasSubmittedVote ? 'Vote submitted' : 'Waiting for vote'
-                }
-                className={[
-                  'absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
-                  hasSubmittedVote
-                    ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
-                    : 'border-slate-300 bg-slate-100 text-slate-400',
-                ].join(' ')}
-              >
-                <CheckIcon />
-              </div>
-            </motion.article>
+              )}
+            </section>
           )
         })}
       </div>
