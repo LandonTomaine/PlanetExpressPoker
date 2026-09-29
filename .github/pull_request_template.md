@@ -8,4 +8,4 @@
 
 ## Notes
 
-- Owner approval is required before merge.
+- Code-owner approval from @LandonTomaine is required before merge.

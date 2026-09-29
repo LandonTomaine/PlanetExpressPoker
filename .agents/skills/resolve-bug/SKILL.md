@@ -1,6 +1,6 @@
 ---
 name: resolve-bug
-description: Investigate, fix, and validate a reported bug or regression. Use when the user reports broken behavior from human testing, asks Codex to reproduce and fix a defect, or an orchestrated workflow needs a focused bug-resolution pass. Do not use for general code review, broad architecture audits, CI failures, or unresolved PR review comments unless the issue is first converted into a concrete bug to reproduce.
+description: Investigate, fix, and validate a reported bug or regression. Use when the user reports broken behavior from testing or asks Codex to reproduce and fix a defect. Do not use for general code review, broad architecture audits, CI failures, or unresolved PR review comments unless first converted into a concrete bug.
 ---
 
 # Resolve Bug
@@ -36,7 +36,7 @@ Turn a reported symptom into a minimal, validated fix with regression coverage w
    - Re-run the failing reproduction first.
    - Run the narrowest relevant automated tests, then broader validation if the touched area warrants it.
    - Use a concrete browser or UI validation path when the bug or fix affects user-visible behavior.
-   - Use `review-changed-code` for a reviewer pass when the fix is non-trivial, risky, or part of an orchestrated workflow.
+   - Use `review-changed-code` for a reviewer pass when the fix is non-trivial or risky.
 
 6. Report the outcome.
    - State the reproduced symptom, root cause, files changed, tests or browser checks run, and any residual risk.
@@ -44,6 +44,4 @@ Turn a reported symptom into a minimal, validated fix with regression coverage w
 
 ## Routing Notes
 
-- Use `plan-implementation-work` first only when the bug is ambiguous, broad, or needs an approved implementation plan before coding.
-- Use `orchestrate-work-plan` only when the bug is part of a durable multi-task workflow; this skill can be a focused execution step inside that workflow.
 - Prefer GitHub-specific skills for PR comments, issues, or CI failures until they identify a concrete app defect to fix.

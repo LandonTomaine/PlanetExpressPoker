@@ -17,6 +17,7 @@ Documentation is part of the change when behavior, commands, setup, deployment, 
 - Commands, scripts, hooks, CI, dependencies, or environment variables require README and development docs updates.
 - Deployment, secret, or provider changes require deployment docs and README deploy sections.
 - Validation changes require the testing docs.
+- GitHub protections, branch workflow, review ownership, or required checks require `CONTRIBUTING.md` and its development-doc route.
 - License, contribution, or third-party asset changes require `README.md`, `LICENSE.md`, `ASSET_NOTICES.md`, or `CONTRIBUTING.md` updates as applicable.
 - Repo-local skill or routing changes require `agent-rules/README.md` and `.agents/skills/README.md`.
 

@@ -28,7 +28,7 @@ PowerShell note: if `npm` or `npx` are blocked by execution policy, use `npm.cmd
 ```powershell
 git clone https://github.com/LandonTomaine/PlanetExpressPoker.git
 cd PlanetExpressPoker
-npm.cmd install
+npm.cmd ci
 ```
 
 Choose the smallest path that fits:
