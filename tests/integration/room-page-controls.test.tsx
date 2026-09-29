@@ -10,6 +10,7 @@ import {
   setRoomFunLevel,
   setRoomTheme,
   startRevealCountdown,
+  submitVote,
 } from '../../src/features/room/data/roomApi'
 import { useRoomLiveState } from '../../src/features/room/realtime/useRoomLiveState'
 import { useRoomSettingsLiveState } from '../../src/features/room/realtime/useRoomSettingsLiveState'
@@ -419,6 +420,74 @@ describe('RoomPage controls', () => {
         actorClientId: 'client-1',
       })
     )
+  })
+
+  it('counts the revealer’s optimistic vote while live vote state is catching up', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-2',
+          roomId: 'room-1',
+          displayName: 'Leela',
+          avatarKey: 'leela',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [
+        {
+          roundId: 'round-1',
+          participantId: 'participant-2',
+          cardValue: '3',
+          submittedAt: new Date().toISOString(),
+        },
+      ],
+      errorMessage: null,
+    })
+    const confirmSpy = vi.spyOn(window, 'confirm')
+    const user = userEvent.setup()
+
+    renderRoomPage()
+
+    await user.click(await screen.findByRole('button', { name: /5 card/i }))
+    await user.click(screen.getByRole('button', { name: 'Reveal' }))
+
+    expect(vi.mocked(submitVote)).toHaveBeenCalled()
+    expect(confirmSpy).not.toHaveBeenCalled()
+    await waitFor(() => expect(vi.mocked(revealRound)).toHaveBeenCalled())
   })
 })
 

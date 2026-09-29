@@ -1264,7 +1264,12 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
   function confirmIncompleteReveal() {
     const missingVoterCount = activeVoters.filter(
-      (participant) => !submittedVoteParticipantIds.has(participant.id)
+      (participant) =>
+        !submittedVoteParticipantIds.has(participant.id) &&
+        !(
+          participant.id === selfParticipant?.participantId &&
+          optimisticOwnCardValue
+        )
     ).length
 
     return (
