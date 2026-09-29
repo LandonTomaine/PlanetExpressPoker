@@ -6,8 +6,10 @@ import { RoomPage } from '../../src/routes/RoomPage'
 import {
   createOrGetRoom,
   joinRoom,
+  revealRound,
   setRoomFunLevel,
   setRoomTheme,
+  startRevealCountdown,
 } from '../../src/features/room/data/roomApi'
 import { useRoomLiveState } from '../../src/features/room/realtime/useRoomLiveState'
 import { useRoomSettingsLiveState } from '../../src/features/room/realtime/useRoomSettingsLiveState'
@@ -237,7 +239,7 @@ describe('RoomPage controls', () => {
     expect(vi.mocked(setRoomTheme)).not.toHaveBeenCalled()
   })
 
-  it('explains rounded averages and separates voters from spectators', async () => {
+  it('explains score calculations and separates voters from spectators', async () => {
     vi.mocked(joinRoom).mockResolvedValue({
       participantId: 'participant-2',
       roomId: 'room-1',
@@ -320,8 +322,12 @@ describe('RoomPage controls', () => {
 
     expect(
       await screen.findByText(
-        'Rounded up to the next available card. Special cards are excluded.'
+        'Votes used: 3 + 5 = 8. 8 ÷ 2 = 4; rounded up to 5. Special cards are excluded.'
       )
+    ).toBeInTheDocument()
+    expect(screen.getByText('Suggested card')).toBeInTheDocument()
+    expect(
+      screen.getByText('Middle votes: 3 and 5. Uses the lower middle card: 3.')
     ).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Voters' })).toBeInTheDocument()
     expect(
@@ -330,6 +336,89 @@ describe('RoomPage controls', () => {
     expect(screen.getByText('Watching this round')).toBeInTheDocument()
     expect(screen.getByText('online now')).toBeInTheDocument()
     expect(screen.getAllByText('offline')).toHaveLength(2)
+  })
+
+  it('confirms before revealing when a voter has not submitted a vote', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-2',
+          roomId: 'room-1',
+          displayName: 'Leela',
+          avatarKey: 'leela',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [
+        {
+          roundId: 'round-1',
+          participantId: 'participant-1',
+          cardValue: '3',
+          submittedAt: new Date().toISOString(),
+        },
+      ],
+      errorMessage: null,
+    })
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    const user = userEvent.setup()
+
+    renderRoomPage()
+
+    await user.click(await screen.findByRole('button', { name: 'Reveal' }))
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      '1 voter has not voted yet. Reveal anyway?'
+    )
+    expect(vi.mocked(revealRound)).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Countdown' }))
+
+    expect(confirmSpy).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(startRevealCountdown)).not.toHaveBeenCalled()
+
+    confirmSpy.mockReturnValue(true)
+    await user.click(screen.getByRole('button', { name: 'Reveal' }))
+
+    await waitFor(() =>
+      expect(vi.mocked(revealRound)).toHaveBeenCalledWith({
+        roomId: 'room-1',
+        actorClientId: 'client-1',
+      })
+    )
   })
 })
 

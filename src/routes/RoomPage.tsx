@@ -1213,6 +1213,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
+    if (!confirmIncompleteReveal()) {
+      return
+    }
+
     setLocalCountdownStartedAt(Date.now())
     setOptimisticRevealedRoundId(null)
     setCountdownNow(Date.now())
@@ -1256,6 +1260,27 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     } finally {
       setIsRevealSubmitting(false)
     }
+  }
+
+  function confirmIncompleteReveal() {
+    const missingVoterCount = activeVoters.filter(
+      (participant) => !submittedVoteParticipantIds.has(participant.id)
+    ).length
+
+    return (
+      missingVoterCount === 0 ||
+      window.confirm(
+        `${missingVoterCount} voter${missingVoterCount === 1 ? '' : 's'} ${missingVoterCount === 1 ? 'has' : 'have'} not voted yet. Reveal anyway?`
+      )
+    )
+  }
+
+  async function handleReveal() {
+    if (!confirmIncompleteReveal()) {
+      return
+    }
+
+    await handleInstantReveal()
   }
 
   async function finalizeReveal() {
@@ -1534,22 +1559,28 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <div className="min-w-0 rounded-[14px] border border-[var(--pep-line)] bg-white/86 p-2.5">
               <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--pep-accent)]">
-                Average
+                Average (rounded)
               </p>
               <p className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]">
                 {scoreSummary.averageLabel}
               </p>
               <p className="mt-1.5 text-[11px] font-semibold leading-4 text-[var(--pep-ink-soft)]">
-                Rounded up to the next available card. Special cards are
-                excluded.
+                {scoreSummary.numericVotesLabel}{' '}
+                {scoreSummary.averageCalculationLabel}
+                {scoreSummary.numericVoteCount > 0
+                  ? ' Special cards are excluded.'
+                  : null}
               </p>
             </div>
             <div className="min-w-0 rounded-[14px] border-2 border-[var(--pep-accent)]/25 bg-white p-2.5 shadow-[0_10px_24px_rgba(212,47,38,0.08)]">
               <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--pep-accent)]">
-                Recommended
+                Suggested card
               </p>
               <p className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]">
                 {scoreSummary.recommendedLabel}
+              </p>
+              <p className="mt-1.5 text-[11px] font-semibold leading-4 text-[var(--pep-ink-soft)]">
+                {scoreSummary.recommendationExplanation}
               </p>
             </div>
           </div>
@@ -2603,7 +2634,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
               <div className="grid w-full gap-2 sm:grid-cols-3">
                 <button
                   type="button"
-                  onClick={() => void handleInstantReveal()}
+                  onClick={() => void handleReveal()}
                   disabled={!canReveal}
                   className={[
                     'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',

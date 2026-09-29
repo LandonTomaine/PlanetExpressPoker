@@ -40,5 +40,5 @@ test('simulator room supports join, voting, reveal, and result summary', async (
 
   const pageText = await page.locator('main').innerText()
   expect(pageText).toMatch(/2 numeric votes/i)
-  expect(pageText).toMatch(/recommended\s+3/i)
+  expect(pageText).toMatch(/suggested card\s+3/i)
 })
