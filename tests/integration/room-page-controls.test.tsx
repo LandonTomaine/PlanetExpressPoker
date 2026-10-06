@@ -307,12 +307,14 @@ describe('RoomPage controls', () => {
           roundId: 'round-1',
           participantId: 'participant-1',
           cardValue: '3',
+          isUnsure: false,
           submittedAt: new Date().toISOString(),
         },
         {
           roundId: 'round-1',
           participantId: 'participant-2',
           cardValue: '5',
+          isUnsure: true,
           submittedAt: new Date().toISOString(),
         },
       ],
@@ -337,6 +339,86 @@ describe('RoomPage controls', () => {
     expect(screen.getByText('Watching this round')).toBeInTheDocument()
     expect(screen.getByText('online now')).toBeInTheDocument()
     expect(screen.getAllByText('offline')).toHaveLength(2)
+    expect(
+      document.querySelector('span[aria-label="Unsure estimate"]')
+    ).toBeInTheDocument()
+  })
+
+  it('defaults estimates to regular and submits an unsure marker when toggled', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [],
+      errorMessage: null,
+    })
+
+    const user = userEvent.setup()
+    renderRoomPage()
+
+    await user.click(await screen.findByRole('button', { name: '3 card' }))
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '3',
+        isUnsure: false,
+      })
+    )
+    expect(
+      screen.getByRole('button', { name: 'Unsure estimate' })
+    ).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(screen.getByRole('button', { name: 'Unsure estimate' }))
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '3',
+        isUnsure: true,
+      })
+    )
+
+    await user.click(screen.getByRole('button', { name: '5 card' }))
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '5',
+        isUnsure: true,
+      })
+    )
   })
 
   it('confirms before revealing when a voter has not submitted a vote', async () => {
@@ -389,6 +471,7 @@ describe('RoomPage controls', () => {
           roundId: 'round-1',
           participantId: 'participant-1',
           cardValue: '3',
+          isUnsure: false,
           submittedAt: new Date().toISOString(),
         },
       ],
@@ -472,6 +555,7 @@ describe('RoomPage controls', () => {
           roundId: 'round-1',
           participantId: 'participant-2',
           cardValue: '3',
+          isUnsure: false,
           submittedAt: new Date().toISOString(),
         },
       ],

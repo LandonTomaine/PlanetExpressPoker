@@ -30,10 +30,15 @@ test('simulator room supports join, voting, reveal, and result summary', async (
 
   await page.getByRole('button', { exact: true, name: '3 card' }).click()
   await expect(page.getByText('Your vote: 3')).toBeVisible()
+  await page.getByRole('button', { name: 'Unsure estimate' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Unsure estimate' })
+  ).toHaveAttribute('aria-pressed', 'true')
 
   await page.getByRole('button', { name: 'Reveal' }).click()
 
   await expect(page.getByText('Round 1 results')).toBeVisible()
+  await expect(page.locator('span[aria-label="Unsure estimate"]')).toBeVisible()
   await expect(
     page.getByText('Everyone matched on the same estimate.')
   ).toBeVisible()

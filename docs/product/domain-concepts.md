@@ -83,13 +83,16 @@ The round resets for the next estimate without maintaining public round history.
 
 ### Vote
 
-A vote is a participant's current selection for the active round.
+A vote is a participant's current selection for the active round. It can also
+carry an optional unsure marker, which defaults to regular and does not change
+the selected card's score.
 
 Rules:
 
 - only voters can submit votes
 - spectators cannot submit votes
 - a participant may change their vote until reveal
+- the unsure marker remains private until reveal, alongside the card value
 - non-numeric cards do not affect average or recommendation
 - the numeric average rounds up to the next available deck value
 
