@@ -1773,7 +1773,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           className={[
             'inline-flex min-h-10 items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-black shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
             displayedOwnVoteIsUnsure
-              ? 'border-[var(--pep-accent)] bg-[var(--pep-yellow)] text-[var(--pep-ink)]'
+              ? 'pep-yellow-control border-[var(--pep-accent)] bg-[var(--pep-yellow)] text-[var(--pep-ink)]'
               : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)]',
           ].join(' ')}
         >
@@ -2145,7 +2145,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                             {participant.role === 'voter' ? (
                               <p
                                 className={[
-                                  'mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
+                                  'pep-revealed-vote mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
                                   isActiveRoundRevealedForDisplay
                                     ? revealedCardValue
                                       ? [
@@ -2276,7 +2276,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                                 : 'Waiting for vote'
                             }
                             className={[
-                              'absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
+                              'pep-vote-status absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
                               hasSubmittedVote
                                 ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
                                 : 'border-slate-300 bg-slate-100 text-slate-400',
@@ -2754,7 +2754,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   onClick={() => void handleRevealCountdown()}
                   disabled={!canStartCountdown}
                   className={[
-                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
+                    'pep-yellow-control min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
                     canStartCountdown
                       ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_8px_0_rgba(20,38,51,0.18)]'
                       : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',

@@ -347,6 +347,8 @@ describe('RoomPage controls', () => {
     expect(screen.getByText('Watching this round')).toBeInTheDocument()
     expect(screen.getByText('online now')).toBeInTheDocument()
     expect(screen.getAllByText('offline')).toHaveLength(2)
+    expect(document.querySelector('.pep-revealed-vote')).toHaveTextContent('3')
+    expect(document.querySelector('.pep-vote-status')).toBeInTheDocument()
     expect(
       document.querySelector('span[aria-label="Unsure estimate"]')
     ).toBeInTheDocument()

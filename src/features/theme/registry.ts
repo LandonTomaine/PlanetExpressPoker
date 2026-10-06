@@ -34,24 +34,24 @@ const futuramaPalette: ThemePalette = {
   bodyBackground:
     'linear-gradient(rgba(20, 38, 51, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 38, 51, 0.035) 1px, transparent 1px)',
   dark: {
-    bg: '#10262c',
-    panel: 'rgba(20, 46, 52, 0.9)',
-    panelStrong: '#1d4248',
-    line: 'rgba(220, 250, 243, 0.16)',
-    lineStrong: 'rgba(220, 250, 243, 0.38)',
-    ink: '#f2fcf8',
-    inkSoft: '#b6d0ca',
+    bg: '#111c29',
+    panel: 'rgba(19, 32, 47, 0.92)',
+    panelStrong: '#1c2e40',
+    line: 'rgba(229, 242, 255, 0.18)',
+    lineStrong: 'rgba(229, 242, 255, 0.4)',
+    ink: '#f4f8fc',
+    inkSoft: '#bdcddb',
     accent: '#ff8278',
-    accent2: '#66d9c5',
-    mint: '#318f80',
-    yellow: '#f7d45c',
-    sky: '#429cb7',
+    accent2: '#76c9d9',
+    mint: '#357e8b',
+    yellow: '#e3c45e',
+    sky: '#3d89b5',
     fontBody: "'Trebuchet MS', 'Segoe UI', sans-serif",
     fontDisplay: "'Arial Narrow', 'Franklin Gothic Medium', sans-serif",
     rootBackground:
-      'radial-gradient(circle at top left, rgba(247, 212, 92, 0.17), transparent 26%), radial-gradient(circle at 85% 12%, rgba(102, 217, 197, 0.15), transparent 20%), radial-gradient(circle at 70% 92%, rgba(255, 130, 120, 0.12), transparent 22%), linear-gradient(180deg, #102a33 0%, #0e2027 52%, #102c2c 100%)',
+      'radial-gradient(circle at top left, rgba(227, 196, 94, 0.14), transparent 26%), radial-gradient(circle at 85% 12%, rgba(118, 201, 217, 0.12), transparent 20%), radial-gradient(circle at 70% 92%, rgba(255, 130, 120, 0.1), transparent 22%), linear-gradient(180deg, #142438 0%, #0f1b2b 52%, #17293a 100%)',
     bodyBackground:
-      'linear-gradient(rgba(225, 251, 245, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(225, 251, 245, 0.045) 1px, transparent 1px)',
+      'linear-gradient(rgba(229, 242, 255, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(229, 242, 255, 0.045) 1px, transparent 1px)',
   },
 }
 
