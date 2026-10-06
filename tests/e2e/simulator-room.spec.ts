@@ -21,13 +21,6 @@ test('simulator room supports join, voting, reveal, and result summary', async (
     1
   )
 
-  await page.getByRole('button', { name: 'Simulate vote' }).click()
-  const simulateVoteDialog = page.getByRole('dialog', { name: /^Dev-/ })
-  await simulateVoteDialog
-    .getByRole('button', { exact: true, name: '3' })
-    .click()
-  await expect(simulateVoteDialog).toBeHidden()
-
   await page.getByRole('button', { exact: true, name: '3 card' }).click()
   await expect(page.getByText('Your vote: 3')).toBeVisible()
   await page.getByRole('button', { name: 'Unsure estimate' }).click()
@@ -35,7 +28,12 @@ test('simulator room supports join, voting, reveal, and result summary', async (
     page.getByRole('button', { name: 'Unsure estimate' })
   ).toHaveAttribute('aria-pressed', 'true')
 
-  await page.getByRole('button', { name: 'Reveal' }).click()
+  await page.getByRole('button', { name: 'Simulate vote' }).click()
+  const simulateVoteDialog = page.getByRole('dialog', { name: /^Dev-/ })
+  await simulateVoteDialog
+    .getByRole('button', { exact: true, name: '3' })
+    .click()
+  await expect(simulateVoteDialog).toBeHidden()
 
   await expect(page.getByText('Round 1 results')).toBeVisible()
   await expect(page.locator('span[aria-label="Unsure estimate"]')).toBeVisible()

@@ -3,6 +3,13 @@ import {
   numericCardValues as deckNumericCardValues,
 } from './voting'
 
+export const unsureVoteWeight = 0.75
+
+export type ScoreVote = {
+  cardValue: string
+  isUnsure: boolean
+}
+
 const fibonacciStepByValue = new Map(
   deckNumericCardValues.map((cardValue, index) => [cardValue, index])
 )
@@ -15,13 +22,18 @@ export type ScoreSummary = {
   recommendationExplanation: string
   recommendedLabel: string
   unanimousNumericValue: number | null
+  weightingLabel: string
 }
 
-function getNumericVotes(cardValues: string[]) {
-  return cardValues
-    .filter((cardValue) => isNumericCardValue(cardValue))
-    .map((cardValue) => Number(cardValue))
-    .sort((left, right) => left - right)
+function getNumericVotes(votes: ScoreVote[]) {
+  return votes
+    .filter((vote) => isNumericCardValue(vote.cardValue))
+    .map((vote) => ({
+      ...vote,
+      value: Number(vote.cardValue),
+      weight: vote.isUnsure ? unsureVoteWeight : 1,
+    }))
+    .sort((left, right) => left.value - right.value)
 }
 
 function formatAverage(averageValue: number) {
@@ -72,11 +84,10 @@ function hasWideSpread(numericCardValues: string[]) {
   return highestStep - lowestStep > 2
 }
 
-export function buildScoreSummary(cardValues: string[]): ScoreSummary {
-  const numericCardValues = cardValues
-    .filter((cardValue) => isNumericCardValue(cardValue))
-    .sort((left, right) => Number(left) - Number(right))
-  const numericVotes = getNumericVotes(cardValues)
+export function buildScoreSummary(votes: ScoreVote[]): ScoreSummary {
+  const numericVotes = getNumericVotes(votes)
+  const numericCardValues = numericVotes.map((vote) => vote.cardValue)
+  const numericVoteValues = numericVotes.map((vote) => vote.value)
 
   if (numericVotes.length === 0) {
     return {
@@ -87,29 +98,52 @@ export function buildScoreSummary(cardValues: string[]): ScoreSummary {
       recommendationExplanation: 'No numeric card can be suggested.',
       recommendedLabel: 'No recommendation',
       unanimousNumericValue: null,
+      weightingLabel: '',
     }
   }
 
-  const sum = numericVotes.reduce((total, cardValue) => total + cardValue, 0)
-  const averageValue = sum / numericVotes.length
-  const roundedAverage = formatAverage(averageValue)
-  const numericVotesLabel = `Votes used: ${numericVotes.join(' + ')} = ${sum}.`
-  const averageCalculationLabel = `${sum} ÷ ${numericVotes.length} = ${formatRawAverage(averageValue)}; rounded up to ${roundedAverage}.`
-  const unanimousNumericValue = numericVotes.every(
-    (cardValue) => cardValue === numericVotes[0]
+  const weightedTotal = numericVotes.reduce(
+    (total, vote) => total + vote.value * vote.weight,
+    0
   )
-    ? numericVotes[0]
+  const totalWeight = numericVotes.reduce(
+    (total, vote) => total + vote.weight,
+    0
+  )
+  const averageValue = weightedTotal / totalWeight
+  const roundedAverage = formatAverage(averageValue)
+  const hasUnsureNumericVote = numericVotes.some((vote) => vote.isUnsure)
+  const numericVotesLabel = hasUnsureNumericVote
+    ? `Numeric votes: ${numericVotes
+        .map((vote) =>
+          vote.isUnsure
+            ? `${vote.value} (unsure × 75%)`
+            : `${vote.value} (regular)`
+        )
+        .join(' + ')}.`
+    : `Votes used: ${numericVoteValues.join(' + ')} = ${formatRawAverage(weightedTotal)}.`
+  const averageCalculationLabel = hasUnsureNumericVote
+    ? `Weighted total: ${formatRawAverage(weightedTotal)} ÷ ${formatRawAverage(totalWeight)} vote weight = ${formatRawAverage(averageValue)}; rounded up to ${roundedAverage}.`
+    : `${formatRawAverage(weightedTotal)} ÷ ${numericVotes.length} = ${formatRawAverage(averageValue)}; rounded up to ${roundedAverage}.`
+  const weightingLabel = hasUnsureNumericVote
+    ? 'Unsure numeric votes count at 75% for the average. Special cards are excluded.'
+    : 'Regular numeric votes count at 100%. Special cards are excluded.'
+  const unanimousNumericValue = numericVoteValues.every(
+    (cardValue) => cardValue === numericVoteValues[0]
+  )
+    ? numericVoteValues[0]
     : null
 
   if (unanimousNumericValue !== null) {
     return {
       averageCalculationLabel,
       averageLabel: roundedAverage,
-      numericVoteCount: numericVotes.length,
+      numericVoteCount: numericVoteValues.length,
       numericVotesLabel,
       recommendationExplanation: 'All numeric votes match.',
       recommendedLabel: String(unanimousNumericValue),
       unanimousNumericValue,
+      weightingLabel,
     }
   }
 
@@ -117,30 +151,32 @@ export function buildScoreSummary(cardValues: string[]): ScoreSummary {
     return {
       averageCalculationLabel,
       averageLabel: roundedAverage,
-      numericVoteCount: numericVotes.length,
+      numericVoteCount: numericVoteValues.length,
       numericVotesLabel,
-      recommendationExplanation: `Votes range from ${numericVotes[0]} to ${numericVotes[numericVotes.length - 1]}, which is more than two card steps apart.`,
+      recommendationExplanation: `Votes range from ${numericVoteValues[0]} to ${numericVoteValues[numericVoteValues.length - 1]}, which is more than two card steps apart.`,
       recommendedLabel: 'Discuss',
       unanimousNumericValue: null,
+      weightingLabel,
     }
   }
 
-  const middleIndex = Math.floor(numericVotes.length / 2)
+  const middleIndex = Math.floor(numericVoteValues.length / 2)
   const recommendedValue =
-    numericVotes.length % 2 === 1
-      ? numericVotes[middleIndex]
-      : numericVotes[middleIndex - 1]
+    numericVoteValues.length % 2 === 1
+      ? numericVoteValues[middleIndex]
+      : numericVoteValues[middleIndex - 1]
 
   return {
     averageCalculationLabel,
     averageLabel: roundedAverage,
-    numericVoteCount: numericVotes.length,
+    numericVoteCount: numericVoteValues.length,
     numericVotesLabel,
     recommendationExplanation: getMedianExplanation(
-      numericVotes,
+      numericVoteValues,
       recommendedValue
     ),
     recommendedLabel: String(recommendedValue),
     unanimousNumericValue: null,
+    weightingLabel,
   }
 }

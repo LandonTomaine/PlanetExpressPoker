@@ -64,6 +64,7 @@ import {
   numericCardValues,
 } from '../features/room/voting'
 import { ThemeSelect } from '../features/theme/ThemeSelect'
+import { AppearanceSelect } from '../features/theme/AppearanceSelect'
 import { useTheme } from '../features/theme/useTheme'
 import {
   getThemeCardArtworkPath,
@@ -115,8 +116,13 @@ type RoomPageProps = {
 export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { personalThemeId, setPersonalThemeId, setRoomThemeOverride } =
-    useTheme()
+  const {
+    appearance,
+    personalThemeId,
+    setAppearance,
+    setPersonalThemeId,
+    setRoomThemeOverride,
+  } = useTheme()
   const { roomName: roomNameParam = '' } = useParams()
   const displayRoomName = normalizeRoomName(roomNameParam)
   const backingRoomName =
@@ -717,11 +723,15 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     activeVoters.every((participant) =>
       submittedVoteParticipantIds.has(participant.id)
     )
-  const revealedVoteByParticipantId = new Map(
-    activeRoundVotes.map((vote) => [vote.participantId, vote.cardValue])
+  const revealedVotesByParticipantId = new Map(
+    activeRoundVotes.map((vote) => [vote.participantId, vote])
   )
-  const revealedCardValues = Array.from(revealedVoteByParticipantId.values())
-  const scoreSummary = buildScoreSummary(revealedCardValues)
+  const revealedVotes = Array.from(revealedVotesByParticipantId.values())
+  const revealedVoteByParticipantId = new Map(
+    revealedVotes.map((vote) => [vote.participantId, vote.cardValue])
+  )
+  const revealedCardValues = revealedVotes.map((vote) => vote.cardValue)
+  const scoreSummary = buildScoreSummary(revealedVotes)
   const hasMatchingNumericVotes = hasNumericConsensus(revealedCardValues)
   const isConsensusCelebration =
     isActiveRoundRevealedForDisplay &&
@@ -1566,7 +1576,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="mt-4 mb-4 min-h-[12rem] rounded-[18px] border-2 border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#fff7ce,_#ffffff_58%,_#d7f5eb)] p-4 shadow-[0_14px_34px_rgba(31,160,137,0.13)]"
+      className="pep-surface-gradient mt-4 mb-4 min-h-[12rem] rounded-[18px] border-2 border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#fff7ce,_#ffffff_58%,_#d7f5eb)] p-4 shadow-[0_14px_34px_rgba(31,160,137,0.13)]"
     >
       {isActiveRoundRevealedForDisplay ? (
         <>
@@ -1593,13 +1603,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
               <p className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]">
                 {scoreSummary.averageLabel}
               </p>
-              <p className="mt-1.5 text-[11px] font-semibold leading-4 text-[var(--pep-ink-soft)]">
-                {scoreSummary.numericVotesLabel}{' '}
-                {scoreSummary.averageCalculationLabel}
-                {scoreSummary.numericVoteCount > 0
-                  ? ' Special cards are excluded.'
-                  : null}
-              </p>
+              <div className="mt-1.5 space-y-1 text-[11px] font-semibold leading-4 text-[var(--pep-ink-soft)]">
+                <p>{scoreSummary.numericVotesLabel}</p>
+                <p>{scoreSummary.averageCalculationLabel}</p>
+                {scoreSummary.weightingLabel ? (
+                  <p>{scoreSummary.weightingLabel}</p>
+                ) : null}
+              </div>
             </div>
             <div className="min-w-0 rounded-[14px] border-2 border-[var(--pep-accent)]/25 bg-white p-2.5 shadow-[0_10px_24px_rgba(212,47,38,0.08)]">
               <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--pep-accent)]">
@@ -1804,7 +1814,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         initial={{ opacity: 0, y: 18, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2 }}
-        className="max-h-[calc(100vh-3rem)] w-full max-w-2xl overflow-y-auto rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_26px_70px_rgba(12,32,42,0.28)]"
+        className="pep-surface-gradient max-h-[calc(100vh-3rem)] w-full max-w-2xl overflow-y-auto rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_26px_70px_rgba(12,32,42,0.28)]"
       >
         <div className="flex items-start gap-4">
           <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[14px] border border-[var(--pep-line)] bg-white shadow-[0_12px_26px_rgba(12,32,42,0.12)]">
@@ -2068,7 +2078,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.18, delay: index * 0.03 }}
                         className={[
-                          'relative min-w-0 overflow-hidden rounded-[12px] border p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]',
+                          'pep-surface-gradient relative min-w-0 overflow-hidden rounded-[12px] border p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]',
                           participant.role === 'voter'
                             ? 'border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.92),_rgba(238,245,243,0.96))]'
                             : 'border-slate-300 bg-[linear-gradient(180deg,_rgba(248,250,252,0.94),_rgba(231,237,242,0.94))]',
@@ -2296,7 +2306,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="dev-vote-title"
-          className="w-full max-w-2xl rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
+          className="pep-surface-gradient w-full max-w-2xl rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
         >
           <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--pep-accent-2)]">
             Simulate vote
@@ -2597,13 +2607,20 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
                 <div className="mt-3 space-y-2.5">
                   {!isJoinedToRoom ? (
-                    <ThemeSelect
-                      label="Page theme"
-                      value={personalThemeId}
-                      onChange={(nextThemeId) =>
-                        setPersonalThemeId(nextThemeId)
-                      }
-                    />
+                    <>
+                      <ThemeSelect
+                        label="Page theme"
+                        value={personalThemeId}
+                        onChange={(nextThemeId) =>
+                          setPersonalThemeId(nextThemeId)
+                        }
+                      />
+                      <AppearanceSelect
+                        label="Page appearance"
+                        value={appearance}
+                        onChange={setAppearance}
+                      />
+                    </>
                   ) : null}
                   <label className="block">
                     <span className="text-xs font-black uppercase text-[var(--pep-ink-soft)]">
@@ -2678,7 +2695,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             ) : null}
           </section>
 
-          <section className="min-w-0 overflow-hidden rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(160deg,_rgba(255,255,255,0.92),_rgba(200,239,229,0.86))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.09)]">
+          <section className="pep-surface-gradient min-w-0 overflow-hidden rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(160deg,_rgba(255,255,255,0.92),_rgba(200,239,229,0.86))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.09)]">
             <div className="mb-5 flex items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase text-[var(--pep-accent)]">

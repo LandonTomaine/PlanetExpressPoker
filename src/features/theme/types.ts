@@ -1,6 +1,8 @@
 export type ThemeId = 'futurama' | 'zootopia' | 'toy-story'
 
-export type ThemePalette = {
+export type Appearance = 'light' | 'dark'
+
+type ThemePaletteValues = {
   bg: string
   panel: string
   panelStrong: string
@@ -17,6 +19,10 @@ export type ThemePalette = {
   fontDisplay: string
   rootBackground: string
   bodyBackground: string
+}
+
+export type ThemePalette = ThemePaletteValues & {
+  dark: ThemePaletteValues
 }
 
 export type ThemeAvatar = {

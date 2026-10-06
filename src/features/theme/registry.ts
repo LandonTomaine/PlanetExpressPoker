@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type {
+  Appearance,
   ThemeReactionDisplay,
   ThemeAvatar,
   ThemeConfig,
@@ -32,6 +33,26 @@ const futuramaPalette: ThemePalette = {
     'radial-gradient(circle at top left, rgba(244, 212, 79, 0.56), transparent 26%), radial-gradient(circle at 85% 12%, rgba(23, 152, 134, 0.22), transparent 20%), radial-gradient(circle at 70% 92%, rgba(212, 47, 38, 0.12), transparent 22%), linear-gradient(180deg, #c7eef0 0%, #e7fbf1 52%, #d6f1e9 100%)',
   bodyBackground:
     'linear-gradient(rgba(20, 38, 51, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 38, 51, 0.035) 1px, transparent 1px)',
+  dark: {
+    bg: '#10262c',
+    panel: 'rgba(20, 46, 52, 0.9)',
+    panelStrong: '#1d4248',
+    line: 'rgba(220, 250, 243, 0.16)',
+    lineStrong: 'rgba(220, 250, 243, 0.38)',
+    ink: '#f2fcf8',
+    inkSoft: '#b6d0ca',
+    accent: '#ff8278',
+    accent2: '#66d9c5',
+    mint: '#318f80',
+    yellow: '#f7d45c',
+    sky: '#429cb7',
+    fontBody: "'Trebuchet MS', 'Segoe UI', sans-serif",
+    fontDisplay: "'Arial Narrow', 'Franklin Gothic Medium', sans-serif",
+    rootBackground:
+      'radial-gradient(circle at top left, rgba(247, 212, 92, 0.17), transparent 26%), radial-gradient(circle at 85% 12%, rgba(102, 217, 197, 0.15), transparent 20%), radial-gradient(circle at 70% 92%, rgba(255, 130, 120, 0.12), transparent 22%), linear-gradient(180deg, #102a33 0%, #0e2027 52%, #102c2c 100%)',
+    bodyBackground:
+      'linear-gradient(rgba(225, 251, 245, 0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(225, 251, 245, 0.045) 1px, transparent 1px)',
+  },
 }
 
 const zootopiaPalette: ThemePalette = {
@@ -53,6 +74,26 @@ const zootopiaPalette: ThemePalette = {
     'radial-gradient(circle at top left, rgba(255, 206, 87, 0.48), transparent 24%), radial-gradient(circle at 82% 14%, rgba(61, 134, 198, 0.18), transparent 18%), radial-gradient(circle at 74% 90%, rgba(244, 123, 32, 0.16), transparent 20%), linear-gradient(180deg, #d9ecf7 0%, #fff8ea 48%, #f2e3c7 100%)',
   bodyBackground:
     'linear-gradient(rgba(44, 32, 22, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(44, 32, 22, 0.03) 1px, transparent 1px)',
+  dark: {
+    bg: '#282119',
+    panel: 'rgba(48, 39, 28, 0.91)',
+    panelStrong: '#4a3b2b',
+    line: 'rgba(255, 239, 211, 0.16)',
+    lineStrong: 'rgba(255, 239, 211, 0.38)',
+    ink: '#fff8e9',
+    inkSoft: '#dccbb1',
+    accent: '#ffad65',
+    accent2: '#82beef',
+    mint: '#bd7e39',
+    yellow: '#ffd36c',
+    sky: '#4a91bd',
+    fontBody: "'Gill Sans', 'Trebuchet MS', sans-serif",
+    fontDisplay: "'Impact', 'Arial Black', sans-serif",
+    rootBackground:
+      'radial-gradient(circle at top left, rgba(255, 211, 108, 0.15), transparent 24%), radial-gradient(circle at 82% 14%, rgba(130, 190, 239, 0.14), transparent 18%), radial-gradient(circle at 74% 90%, rgba(255, 173, 101, 0.12), transparent 20%), linear-gradient(180deg, #2d2921 0%, #241e17 48%, #35291e 100%)',
+    bodyBackground:
+      'linear-gradient(rgba(255, 244, 224, 0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 244, 224, 0.04) 1px, transparent 1px)',
+  },
 }
 
 const toyStoryPalette: ThemePalette = {
@@ -74,6 +115,26 @@ const toyStoryPalette: ThemePalette = {
     'radial-gradient(circle at 12% 14%, rgba(255,255,255,0.94) 0 2%, transparent 2.4%), radial-gradient(circle at 28% 9%, rgba(255,255,255,0.88) 0 3%, transparent 3.4%), radial-gradient(circle at 78% 16%, rgba(255,255,255,0.9) 0 2.5%, transparent 2.9%), linear-gradient(180deg, #8ed6f4 0%, #dff6ff 56%, #f7e565 100%)',
   bodyBackground:
     'radial-gradient(circle at 18% 30%, rgba(30,91,184,0.07) 0 1px, transparent 1.5px), radial-gradient(circle at 75% 66%, rgba(216,47,47,0.07) 0 1px, transparent 1.5px)',
+  dark: {
+    bg: '#102b5b',
+    panel: 'rgba(20, 54, 106, 0.91)',
+    panelStrong: '#204b8e',
+    line: 'rgba(226, 243, 255, 0.18)',
+    lineStrong: 'rgba(226, 243, 255, 0.4)',
+    ink: '#f4fbff',
+    inkSoft: '#c0d6ed',
+    accent: '#ff7979',
+    accent2: '#8fc5ff',
+    mint: '#4f9f65',
+    yellow: '#f8df5e',
+    sky: '#3b8fce',
+    fontBody: "'Trebuchet MS', 'Segoe UI', sans-serif",
+    fontDisplay: "'Arial Black', 'Arial Narrow', sans-serif",
+    rootBackground:
+      'radial-gradient(circle at 12% 14%, rgba(255,255,255,0.14) 0 2%, transparent 2.4%), radial-gradient(circle at 28% 9%, rgba(255,255,255,0.12) 0 3%, transparent 3.4%), radial-gradient(circle at 78% 16%, rgba(255,255,255,0.12) 0 2.5%, transparent 2.9%), linear-gradient(180deg, #123a79 0%, #102a59 56%, #4a421d 100%)',
+    bodyBackground:
+      'radial-gradient(circle at 18% 30%, rgba(191,224,255,0.11) 0 1px, transparent 1.5px), radial-gradient(circle at 75% 66%, rgba(255,186,186,0.1) 0 1px, transparent 1.5px)',
+  },
 }
 
 const futuramaAvatars: ThemeAvatar[] = [
@@ -905,8 +966,12 @@ export function getThemeCardArtworkPath(themeId: ThemeId, cardValue: string) {
   return null
 }
 
-export function getThemeCssVars(themeId: ThemeId): CSSProperties {
-  const palette = getThemeConfig(themeId).palette
+export function getThemeCssVars(
+  themeId: ThemeId,
+  appearance: Appearance = 'light'
+): CSSProperties {
+  const themePalette = getThemeConfig(themeId).palette
+  const palette = appearance === 'dark' ? themePalette.dark : themePalette
 
   return {
     ['--pep-bg' as string]: palette.bg,
@@ -925,5 +990,14 @@ export function getThemeCssVars(themeId: ThemeId): CSSProperties {
     ['--pep-font-display' as string]: palette.fontDisplay,
     ['--pep-root-bg' as string]: palette.rootBackground,
     ['--pep-body-bg' as string]: palette.bodyBackground,
+    ['--pep-surface' as string]:
+      appearance === 'dark' ? palette.panel : 'rgba(255, 255, 255, 0.94)',
+    ['--pep-surface-muted' as string]:
+      appearance === 'dark' ? palette.panelStrong : '#e8eef0',
+    ['--pep-surface-gradient' as string]:
+      appearance === 'dark'
+        ? `linear-gradient(160deg, ${palette.panelStrong}, ${palette.panel})`
+        : 'linear-gradient(160deg, rgba(255,255,255,0.96), rgba(231,245,241,0.92))',
+    ['--pep-muted-ink' as string]: palette.inkSoft,
   } as CSSProperties
 }

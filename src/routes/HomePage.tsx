@@ -30,6 +30,7 @@ import {
 } from '../features/room/roomName'
 import type { ParticipantRole, RoomSummary } from '../features/room/types'
 import { ThemeSelect } from '../features/theme/ThemeSelect'
+import { AppearanceSelect } from '../features/theme/AppearanceSelect'
 import { useTheme } from '../features/theme/useTheme'
 import { getThemeConfig } from '../features/theme/registry'
 import type { ThemeId } from '../features/theme/types'
@@ -44,7 +45,13 @@ function getRoomsLoadErrorMessage(error: unknown) {
 
 export function HomePage() {
   const navigate = useNavigate()
-  const { activeTheme, personalThemeId, setPersonalThemeId } = useTheme()
+  const {
+    activeTheme,
+    appearance,
+    personalThemeId,
+    setAppearance,
+    setPersonalThemeId,
+  } = useTheme()
   const [roomName, setRoomName] = useState(
     () => readRoomNamePrefill() ?? readActiveRoomName() ?? ''
   )
@@ -176,7 +183,7 @@ export function HomePage() {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.28, ease: 'easeOut' }}
-      className="grid items-start gap-5 rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(201,240,232,0.82))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.1)] lg:grid-cols-[1fr_19rem]"
+      className="pep-surface-gradient grid items-start gap-5 rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(135deg,_rgba(255,255,255,0.95),_rgba(201,240,232,0.82))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.1)] lg:grid-cols-[1fr_19rem]"
     >
       <div className="max-w-2xl">
         <p className="text-sm font-black uppercase text-[var(--pep-accent)]">
@@ -414,7 +421,7 @@ export function HomePage() {
                 return (
                   <div
                     key={roomSummary.roomId}
-                    className="rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94),_rgba(237,245,242,0.92))] p-3 shadow-[0_8px_20px_rgba(12,32,42,0.05)]"
+                    className="pep-surface-gradient rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94),_rgba(237,245,242,0.92))] p-3 shadow-[0_8px_20px_rgba(12,32,42,0.05)]"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -495,6 +502,11 @@ export function HomePage() {
             label="Page theme"
             value={personalThemeId}
             onChange={(nextThemeId) => setPersonalThemeId(nextThemeId)}
+          />
+          <AppearanceSelect
+            label="Page appearance"
+            value={appearance}
+            onChange={setAppearance}
           />
         </section>
         <section className="rounded-[14px] border border-[var(--pep-line)] bg-[var(--pep-panel-strong)] p-3">
