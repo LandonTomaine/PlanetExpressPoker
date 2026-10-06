@@ -84,8 +84,8 @@ The round resets for the next estimate without maintaining public round history.
 ### Vote
 
 A vote is a participant's current selection for the active round. It can also
-carry an optional unsure marker, which defaults to regular and does not change
-the selected card's score.
+carry an optional unsure marker. Regular numeric votes have a 100% average
+weight; unsure numeric votes have a 75% average weight.
 
 Rules:
 
@@ -93,6 +93,8 @@ Rules:
 - spectators cannot submit votes
 - a participant may change their vote until reveal
 - the unsure marker remains private until reveal, alongside the card value
+- unsure weighting affects only the rounded average; recommendation and spread
+  rules continue to use the revealed card values
 - non-numeric cards do not affect average or recommendation
 - the numeric average rounds up to the next available deck value
 

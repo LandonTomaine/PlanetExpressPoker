@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { ThemeProvider } from '../features/theme/context'
+import { AppearanceSelect } from '../features/theme/AppearanceSelect'
 import { useTheme } from '../features/theme/useTheme'
 
 type DeploymentInfo = {
@@ -25,7 +26,7 @@ function AppFrame() {
   const location = useLocation()
   const shouldShowNav = location.pathname !== '/'
   const pendingTouchLogoClickCountRef = useRef(0)
-  const { activeTheme, cssVars } = useTheme()
+  const { activeTheme, appearance, cssVars, setAppearance } = useTheme()
 
   function dispatchHypnotoadLogoClick() {
     window.dispatchEvent(new CustomEvent('pep:hypnotoad-logo-click'))
@@ -48,6 +49,7 @@ function AppFrame() {
   return (
     <div
       data-pep-theme={activeTheme.id}
+      data-pep-appearance={appearance}
       style={cssVars}
       className="min-h-screen bg-[var(--pep-bg)] text-[var(--pep-ink)]"
     >
@@ -82,6 +84,13 @@ function AppFrame() {
           </div>
 
           <div className="flex flex-col items-start gap-2 sm:items-end">
+            <div className="w-32">
+              <AppearanceSelect
+                label="Appearance"
+                value={appearance}
+                onChange={setAppearance}
+              />
+            </div>
             {shouldShowNav ? (
               <nav className="flex gap-2">
                 <AppNavLink to="/">Home</AppNavLink>

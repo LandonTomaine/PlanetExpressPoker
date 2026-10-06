@@ -13,6 +13,7 @@ import { listRooms, shutdownRoom } from '../features/room/data/roomApi'
 import { useRoomPresenceCounts } from '../features/room/realtime/useRoomPresenceCounts'
 import type { RoomSummary } from '../features/room/types'
 import { ThemeSelect } from '../features/theme/ThemeSelect'
+import { AppearanceSelect } from '../features/theme/AppearanceSelect'
 import { useTheme } from '../features/theme/useTheme'
 import { getThemeConfig } from '../features/theme/registry'
 
@@ -20,7 +21,13 @@ const roomsPageSize = 25
 
 export function RoomsPage() {
   const navigate = useNavigate()
-  const { activeTheme, personalThemeId, setPersonalThemeId } = useTheme()
+  const {
+    activeTheme,
+    appearance,
+    personalThemeId,
+    setAppearance,
+    setPersonalThemeId,
+  } = useTheme()
   const [identity] = useState(() => readStoredIdentity())
   const [pageIndex, setPageIndex] = useState(0)
   const [rooms, setRooms] = useState<RoomSummary[]>([])
@@ -150,7 +157,7 @@ export function RoomsPage() {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.24, ease: 'easeOut' }}
-      className="rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(160deg,_rgba(255,255,255,0.95),_rgba(222,245,236,0.86))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.1)]"
+      className="pep-surface-gradient rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(160deg,_rgba(255,255,255,0.95),_rgba(222,245,236,0.86))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.1)]"
     >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -169,6 +176,11 @@ export function RoomsPage() {
             label="Page theme"
             value={personalThemeId}
             onChange={(nextThemeId) => setPersonalThemeId(nextThemeId)}
+          />
+          <AppearanceSelect
+            label="Page appearance"
+            value={appearance}
+            onChange={setAppearance}
           />
           <button
             type="button"
@@ -203,7 +215,7 @@ export function RoomsPage() {
             return (
               <article
                 key={roomSummary.roomId}
-                className="rounded-[14px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(236,245,241,0.93))] p-4 shadow-[0_10px_24px_rgba(12,32,42,0.06)]"
+                className="pep-surface-gradient rounded-[14px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.95),_rgba(236,245,241,0.93))] p-4 shadow-[0_10px_24px_rgba(12,32,42,0.06)]"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="min-w-0">
@@ -287,7 +299,7 @@ export function RoomsPage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="rooms-shutdown-title"
-            className="w-full max-w-md rounded-[24px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#fff7ce,_#ffffff_55%,_#c8efe5)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
+            className="pep-surface-gradient w-full max-w-md rounded-[24px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#fff7ce,_#ffffff_55%,_#c8efe5)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
           >
             <p className="text-xs font-black uppercase tracking-[0.1em] text-[var(--pep-accent)]">
               Permanent action

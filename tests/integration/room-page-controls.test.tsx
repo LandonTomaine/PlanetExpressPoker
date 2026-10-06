@@ -324,8 +324,16 @@ describe('RoomPage controls', () => {
     renderRoomPage()
 
     expect(
-      await screen.findByText(
-        'Votes used: 3 + 5 = 8. 8 ÷ 2 = 4; rounded up to 5. Special cards are excluded.'
+      await screen.findByText('Numeric votes: 3 (regular) + 5 (unsure × 75%).')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Weighted total: 6.75 ÷ 1.75 vote weight = 3.86; rounded up to 5.'
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Unsure numeric votes count at 75% for the average. Special cards are excluded.'
       )
     ).toBeInTheDocument()
     expect(screen.getByText('Suggested card')).toBeInTheDocument()

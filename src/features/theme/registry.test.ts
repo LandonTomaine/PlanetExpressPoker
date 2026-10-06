@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { themeConfigs } from './registry'
+import { getThemeCssVars, themeConfigs } from './registry'
 
 describe('Toy Story theme registry', () => {
   it('uses ten distinct character SVGs for the roster', () => {
@@ -49,5 +49,18 @@ describe('Toy Story theme registry', () => {
     expect(serializedTheme).not.toContain('toy-story-trio')
     expect(serializedTheme).not.toContain('/cards/question-block')
     expect(serializedTheme).not.toContain('/cards/coffee-cup')
+  })
+})
+
+describe('theme appearance palettes', () => {
+  it('provides a distinct dark palette for every built-in theme', () => {
+    for (const theme of Object.values(themeConfigs)) {
+      expect(theme.palette.dark.bg).not.toBe(theme.palette.bg)
+      expect(theme.palette.dark.ink).not.toBe(theme.palette.ink)
+      expect(getThemeCssVars(theme.id, 'dark')).toMatchObject({
+        '--pep-bg': theme.palette.dark.bg,
+        '--pep-ink': theme.palette.dark.ink,
+      })
+    }
   })
 })

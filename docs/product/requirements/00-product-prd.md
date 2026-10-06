@@ -120,6 +120,8 @@ The target user is a small private group that wants a simple planning poker room
 
 - After reveal, the app shows all revealed votes.
 - The app shows the numeric average rounded up to the next available deck value.
+- An unsure numeric vote counts at 75% when calculating that average, and the
+  summary shows the weighted arithmetic.
 - The app shows a recommended score.
 - If all numeric votes match, the recommended score is that exact value.
 - Otherwise, the recommended score is the median numeric vote, using the lower middle value for an even count.
