@@ -133,7 +133,7 @@ html[data-pep-appearance='dark'] .pep-surface-gradient {
   background-image: var(--pep-surface-gradient) !important;
 }
 
-html[data-pep-appearance='dark'] .pep-nav-control {
+html[data-pep-appearance='dark'] :is(.pep-nav-control, .pep-repository-link) {
   background-image: linear-gradient(
     180deg,
     var(--pep-panel-strong),

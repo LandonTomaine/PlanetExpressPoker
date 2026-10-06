@@ -180,7 +180,7 @@ function RepositoryLink({ repositoryUrl }: { repositoryUrl: string }) {
   return (
     <a
       href={repositoryUrl}
-      className="inline-flex items-center gap-2 self-start rounded-full border border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#f9fbfc,_#dfe8ec)] px-3.5 py-2 text-xs font-black uppercase tracking-[0.06em] text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--pep-ink)] hover:bg-[linear-gradient(180deg,_#ffffff,_#e9f0f2)]"
+      className="pep-repository-link inline-flex items-center gap-2 self-start rounded-full border border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#f9fbfc,_#dfe8ec)] px-3.5 py-2 text-xs font-black uppercase tracking-[0.06em] text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--pep-ink)] hover:bg-[linear-gradient(180deg,_#ffffff,_#e9f0f2)]"
       rel="noreferrer"
       target="_blank"
     >
