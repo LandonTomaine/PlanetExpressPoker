@@ -1682,6 +1682,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             >
               <button
                 type="button"
+                aria-pressed={isSelected}
                 aria-label={
                   cardMeaningLabel
                     ? `${cardArtworkLabel} card, ${cardMeaningLabel}`
@@ -1695,7 +1696,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   !isActiveRoundVotingForDisplay
                 }
                 className={[
-                  'relative flex h-full w-full flex-col justify-between rounded-[12px] border p-3 text-left shadow-[0_8px_18px_rgba(12,32,42,0.07)]',
+                  'pep-vote-card relative flex h-full w-full flex-col justify-between rounded-[12px] border p-3 text-left shadow-[0_8px_18px_rgba(12,32,42,0.07)]',
                   isSelected
                     ? 'border-[var(--pep-accent)] bg-[linear-gradient(180deg,_#fff0b8,_#f4d44f)] ring-2 ring-[var(--pep-accent)]/20'
                     : 'border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#ffffff,_#dff7ef)] hover:border-[var(--pep-accent-2)]',
@@ -2420,7 +2421,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   type="button"
                   disabled={isDeliveryInProgress}
                   onClick={() => void handleDeliveryDrop()}
-                  className="mt-4 flex w-full items-center justify-between gap-3 rounded-[14px] border border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#caf6e9,_#fff5b2)] px-4 py-3 text-left text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink)] shadow-[0_12px_24px_rgba(31,160,137,0.16)] disabled:cursor-default disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
+                  className="pep-delivery-action mt-4 flex w-full items-center justify-between gap-3 rounded-[14px] border border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#caf6e9,_#fff5b2)] px-4 py-3 text-left text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink)] shadow-[0_12px_24px_rgba(31,160,137,0.16)] disabled:cursor-default disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
                 >
                   <span>{theme.manualDeliveryLabel}</span>
                   <img

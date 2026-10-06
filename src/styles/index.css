@@ -133,6 +133,30 @@ html[data-pep-appearance='dark'] .pep-surface-gradient {
   background-image: var(--pep-surface-gradient) !important;
 }
 
+html[data-pep-appearance='dark'] .pep-vote-card {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pep-panel-strong) 84%, var(--pep-accent-2)),
+    var(--pep-surface)
+  ) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-vote-card[aria-pressed='true'] {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pep-yellow) 38%, var(--pep-panel-strong)),
+    color-mix(in srgb, var(--pep-yellow) 18%, var(--pep-surface))
+  ) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-delivery-action:not(:disabled) {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--pep-accent-2) 42%, var(--pep-panel-strong)),
+    color-mix(in srgb, var(--pep-yellow) 24%, var(--pep-surface-muted))
+  ) !important;
+}
+
 html[data-pep-appearance='dark']
   :is(.bg-slate-100, .bg-slate-200, .bg-slate-500),
 html[data-pep-appearance='dark'] [class~='bg-slate-100/78'],

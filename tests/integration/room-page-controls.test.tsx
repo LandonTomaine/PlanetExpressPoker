@@ -404,6 +404,13 @@ describe('RoomPage controls', () => {
         isUnsure: false,
       })
     )
+    expect(screen.getByRole('button', { name: '3 card' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    )
+    expect(screen.getByRole('button', { name: '3 card' })).toHaveClass(
+      'pep-vote-card'
+    )
     expect(
       screen.getByRole('button', { name: 'Unsure estimate' })
     ).toHaveAttribute('aria-pressed', 'false')
