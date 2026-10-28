@@ -580,7 +580,7 @@ describe('RoomPage controls', () => {
     )
   })
 
-  it.each(['manual', 'automatic'])(
+  it.each(['manual', 'automatic', 'failed automatic'])(
     'keeps the selected duration for a %s countdown when all votes arrive',
     async (trigger) => {
       vi.mocked(useRoomSettingsLiveState).mockReturnValue({
@@ -664,6 +664,11 @@ describe('RoomPage controls', () => {
         '10'
       )
       expect(screen.getByLabelText('Countdown duration')).toHaveValue('10')
+      if (trigger === 'failed automatic') {
+        vi.mocked(startRevealCountdown).mockRejectedValueOnce(
+          new Error('Countdown unavailable')
+        )
+      }
       if (trigger === 'manual') {
         await user.click(screen.getByRole('button', { name: 'Countdown' }))
       }
@@ -693,6 +698,15 @@ describe('RoomPage controls', () => {
         })
       )
       expect(startRevealCountdown).toHaveBeenCalledTimes(1)
+      if (trigger === 'failed automatic') {
+        expect(
+          await screen.findByText('Countdown unavailable')
+        ).toBeInTheDocument()
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        expect(startRevealCountdown).toHaveBeenCalledTimes(1)
+        confirmSpy.mockRestore()
+        return
+      }
       expect(screen.getByText('reveal in 10')).toBeInTheDocument()
       await new Promise((resolve) => setTimeout(resolve, 3200))
       expect(revealRound).not.toHaveBeenCalled()

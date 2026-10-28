@@ -1298,7 +1298,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       )
       setLocalCountdownStartedAt(null)
       setLocalCountdownSeconds(null)
-      countdownAttemptRef.current = null
     } finally {
       setIsCountdownSubmitting(false)
     }
