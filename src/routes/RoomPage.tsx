@@ -1274,6 +1274,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
+    if (activeRound) {
+      countdownAttemptRef.current = `${activeRound.id}:${activeRound.roundNumber}`
+    }
     setLocalCountdownStartedAt(Date.now())
     setLocalCountdownSeconds(countdownSeconds)
     setOptimisticRevealedRoundId(null)
