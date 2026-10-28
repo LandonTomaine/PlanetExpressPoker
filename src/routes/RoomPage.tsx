@@ -106,8 +106,8 @@ const deliveryStormSequence = [
   'ArrowDown',
 ] as const
 const specialCardValues = ['ship', 'BIG', 'nibbler', 'coffee'] as const
-const revealCountdownDurationMs = 3_000
-const revealCountdownDurationSeconds = revealCountdownDurationMs / 1000
+const defaultRevealCountdownSeconds = 3
+const manualCountdownOptions = [1, 3, 5, 10]
 
 type RoomPageProps = {
   mode?: 'normal' | 'simulator'
@@ -150,8 +150,14 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [isFunLevelSaving, setIsFunLevelSaving] = useState(false)
   const [isRoomThemeSaving, setIsRoomThemeSaving] = useState(false)
+  const [manualCountdownSeconds, setManualCountdownSeconds] = useState(
+    defaultRevealCountdownSeconds
+  )
   const [countdownNow, setCountdownNow] = useState(() => Date.now())
   const [localCountdownStartedAt, setLocalCountdownStartedAt] = useState<
+    number | null
+  >(null)
+  const [localCountdownSeconds, setLocalCountdownSeconds] = useState<
     number | null
   >(null)
   const [optimisticRevealedRoundId, setOptimisticRevealedRoundId] = useState<
@@ -750,9 +756,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       ? new Date(activeRound.countdownStartedAt).getTime()
       : null
   const countdownStartedAt = serverCountdownStartedAt ?? localCountdownStartedAt
+  const countdownDurationSeconds =
+    activeRound?.status === 'countdown'
+      ? activeRound.countdownSeconds
+      : (localCountdownSeconds ?? defaultRevealCountdownSeconds)
   const countdownEndsAt =
     countdownStartedAt !== null
-      ? countdownStartedAt + revealCountdownDurationMs
+      ? countdownStartedAt + countdownDurationSeconds * 1000
       : null
   const countdownMsRemaining =
     countdownEndsAt !== null && isActiveRoundCountdownForDisplay
@@ -761,7 +771,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const countdownSecondsRemaining =
     countdownMsRemaining !== null && countdownMsRemaining > 0
       ? Math.min(
-          revealCountdownDurationSeconds,
+          countdownDurationSeconds,
           Math.ceil(countdownMsRemaining / 1000)
         )
       : null
@@ -887,6 +897,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       lastSeenRoundNumberRef.current = null
       queueMicrotask(() => {
         setLocalCountdownStartedAt(null)
+        setLocalCountdownSeconds(null)
         setOptimisticRevealedRoundId(null)
       })
       return
@@ -898,6 +909,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     ) {
       queueMicrotask(() => {
         setLocalCountdownStartedAt(null)
+        setLocalCountdownSeconds(null)
       })
     }
 
@@ -924,6 +936,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     queueMicrotask(() => {
       setLocalCountdownStartedAt(null)
+      setLocalCountdownSeconds(null)
       setOptimisticRevealedRoundId(null)
       setOptimisticOwnCardValue(null)
       setUnsureDraft(false)
@@ -1089,7 +1102,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
-    if (activeRound.status !== 'voting') {
+    if (activeRound.status !== 'voting' || !roomSettings?.autoRevealEnabled) {
       countdownAttemptRef.current = null
       return
     }
@@ -1108,7 +1121,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     countdownAttemptRef.current = roundAttemptKey
 
     void startRevealCountdownEvent()
-  }, [activeRound, allVotersHaveSubmitted, room, selfParticipant])
+  }, [
+    activeRound,
+    allVotersHaveSubmitted,
+    room,
+    roomSettings?.autoRevealEnabled,
+    selfParticipant,
+  ])
 
   useEffect(() => {
     if (
@@ -1241,7 +1260,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
   }
 
-  async function handleRevealCountdown() {
+  async function handleRevealCountdown(
+    countdownSeconds = defaultRevealCountdownSeconds
+  ) {
     if (!room || !selfParticipant) {
       return
     }
@@ -1251,6 +1272,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
 
     setLocalCountdownStartedAt(Date.now())
+    setLocalCountdownSeconds(countdownSeconds)
     setOptimisticRevealedRoundId(null)
     setCountdownNow(Date.now())
     setIsCountdownSubmitting(true)
@@ -1260,6 +1282,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       await startRevealCountdown({
         roomId: room.id,
         actorClientId: identity.clientId,
+        countdownSeconds,
       })
     } catch (error) {
       setRevealError(
@@ -1268,6 +1291,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           : 'Failed to start reveal countdown.'
       )
       setLocalCountdownStartedAt(null)
+      setLocalCountdownSeconds(null)
       countdownAttemptRef.current = null
     } finally {
       setIsCountdownSubmitting(false)
@@ -1285,6 +1309,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     try {
       await revealRound({ roomId: room.id, actorClientId: identity.clientId })
       setLocalCountdownStartedAt(null)
+      setLocalCountdownSeconds(null)
       setOptimisticRevealedRoundId(activeRound?.id ?? null)
     } catch (error) {
       setRevealError(
@@ -1414,6 +1439,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         actorClientId: identity.clientId,
       })
       setLocalCountdownStartedAt(null)
+      setLocalCountdownSeconds(null)
       setOptimisticRevealedRoundId(null)
       setOptimisticOwnCardValue(null)
     } catch (error) {
@@ -2268,21 +2294,21 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                             title={
                               hasSubmittedVote
                                 ? 'Vote submitted'
-                                : 'Waiting for vote'
+                                : 'No vote yet'
                             }
                             aria-label={
                               hasSubmittedVote
                                 ? 'Vote submitted'
-                                : 'Waiting for vote'
+                                : 'No vote yet'
                             }
                             className={[
                               'pep-vote-status absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
                               hasSubmittedVote
                                 ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
-                                : 'border-slate-300 bg-slate-100 text-slate-400',
+                                : 'pep-no-vote-status border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
                             ].join(' ')}
                           >
-                            <CheckIcon />
+                            {hasSubmittedVote ? <CheckIcon /> : <NoVoteIcon />}
                           </div>
                         ) : null}
                       </motion.article>
@@ -2749,19 +2775,42 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 >
                   Reveal
                 </button>
-                <button
-                  type="button"
-                  onClick={() => void handleRevealCountdown()}
-                  disabled={!canStartCountdown}
-                  className={[
-                    'pep-yellow-control min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
-                    canStartCountdown
-                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_8px_0_rgba(20,38,51,0.18)]'
-                      : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
-                  ].join(' ')}
-                >
-                  Countdown
-                </button>
+                <div className="flex min-h-12 overflow-hidden rounded-[12px] border-2 border-[var(--pep-ink)]">
+                  <label className="sr-only" htmlFor="manual-countdown-seconds">
+                    Countdown duration
+                  </label>
+                  <select
+                    id="manual-countdown-seconds"
+                    aria-label="Countdown duration"
+                    value={manualCountdownSeconds}
+                    onChange={(event) =>
+                      setManualCountdownSeconds(Number(event.target.value))
+                    }
+                    disabled={!canStartCountdown}
+                    className="w-14 bg-white px-2 text-center text-sm font-black text-[var(--pep-ink)] disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    {manualCountdownOptions.map((seconds) => (
+                      <option key={seconds} value={seconds}>
+                        {seconds}s
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void handleRevealCountdown(manualCountdownSeconds)
+                    }
+                    disabled={!canStartCountdown}
+                    className={[
+                      'pep-yellow-control flex-1 px-3 text-xs font-black uppercase sm:text-sm',
+                      canStartCountdown
+                        ? 'cursor-pointer bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_8px_0_rgba(20,38,51,0.18)]'
+                        : 'cursor-default bg-slate-100 text-slate-400 shadow-none',
+                    ].join(' ')}
+                  >
+                    Countdown
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => void handleResetRound()}
@@ -3010,6 +3059,24 @@ function CheckIcon() {
       strokeLinejoin="round"
     >
       <path d="m5 12 4.5 4.5L19 7" />
+    </svg>
+  )
+}
+
+function NoVoteIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="5" y="3.5" width="14" height="17" rx="2.5" />
+      <path d="m8 9 8 8M16 9l-8 8" />
     </svg>
   )
 }
