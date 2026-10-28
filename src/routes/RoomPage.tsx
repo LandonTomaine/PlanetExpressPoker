@@ -710,7 +710,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     isJoinedToRoom &&
     !isCountdownSubmitting &&
     Boolean(activeRound) &&
-    hasSubmittedVotes &&
     isActiveRoundVotingForDisplay
   const canResetRound =
     isJoinedToRoom &&
@@ -1911,9 +1910,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 onClick={() => setJoinRole('voter')}
                 disabled={isJoining || isRoomLoading}
                 className={[
-                  'rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
+                  'pep-role-choice rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
                   joinRole === 'voter'
-                    ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#fff6bf,_#f4d44f)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                    ? 'pep-role-choice-voter border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#fff6bf,_#f4d44f)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
                     : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
                 ].join(' ')}
               >
@@ -1925,9 +1924,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 onClick={() => setJoinRole('spectator')}
                 disabled={isJoining || isRoomLoading}
                 className={[
-                  'rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
+                  'pep-role-choice rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
                   joinRole === 'spectator'
-                    ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#e4f6ef,_#bfe7d8)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                    ? 'pep-role-choice-spectator border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#e4f6ef,_#bfe7d8)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
                     : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
                 ].join(' ')}
               >
@@ -2181,7 +2180,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                                             : 'text-xl',
                                         ].join(' ')
                                       : 'border-slate-300 bg-slate-100 text-sm text-slate-500'
-                                    : 'border-transparent bg-transparent text-transparent',
+                                    : !hasSubmittedVote
+                                      ? 'pep-no-vote-card border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-sm text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]'
+                                      : 'pep-voted-card border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-sm text-white shadow-[0_5px_0_rgba(31,152,134,0.18)]',
                                 ].join(' ')}
                               >
                                 {isActiveRoundRevealedForDisplay ? (
@@ -2201,8 +2202,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                                   ) : (
                                     'No vote'
                                   )
+                                ) : !hasSubmittedVote ? (
+                                  'No vote'
                                 ) : (
-                                  ''
+                                  'Voted'
                                 )}
                               </p>
                             ) : (
@@ -2294,21 +2297,21 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                             title={
                               hasSubmittedVote
                                 ? 'Vote submitted'
-                                : 'No vote yet'
+                                : 'Waiting for vote'
                             }
                             aria-label={
                               hasSubmittedVote
                                 ? 'Vote submitted'
-                                : 'No vote yet'
+                                : 'Waiting for vote'
                             }
                             className={[
                               'pep-vote-status absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
                               hasSubmittedVote
                                 ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
-                                : 'pep-no-vote-status border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
+                                : 'border-slate-300 bg-slate-100 text-slate-400',
                             ].join(' ')}
                           >
-                            {hasSubmittedVote ? <CheckIcon /> : <NoVoteIcon />}
+                            <CheckIcon />
                           </div>
                         ) : null}
                       </motion.article>
@@ -3059,24 +3062,6 @@ function CheckIcon() {
       strokeLinejoin="round"
     >
       <path d="m5 12 4.5 4.5L19 7" />
-    </svg>
-  )
-}
-
-function NoVoteIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="5" y="3.5" width="14" height="17" rx="2.5" />
-      <path d="m8 9 8 8M16 9l-8 8" />
     </svg>
   )
 }

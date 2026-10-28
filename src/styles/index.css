@@ -141,8 +141,35 @@ html[data-pep-appearance='dark'] :is(.pep-nav-control, .pep-repository-link) {
   ) !important;
 }
 
-html[data-pep-appearance='dark']
-  :is(.pep-revealed-vote, .pep-yellow-control, .pep-no-vote-status) {
+html[data-pep-appearance='dark'] :is(.pep-revealed-vote, .pep-yellow-control) {
+  color: var(--pep-bg) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-role-choice-voter {
+  border-color: color-mix(
+    in srgb,
+    var(--pep-yellow) 68%,
+    var(--pep-line-strong)
+  ) !important;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pep-yellow) 74%, var(--pep-panel-strong)),
+    color-mix(in srgb, var(--pep-yellow) 56%, var(--pep-panel))
+  ) !important;
+  color: var(--pep-bg) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-role-choice-spectator {
+  border-color: color-mix(
+    in srgb,
+    var(--pep-accent-2) 62%,
+    var(--pep-line-strong)
+  ) !important;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pep-accent-2) 62%, var(--pep-panel-strong)),
+    color-mix(in srgb, var(--pep-accent-2) 44%, var(--pep-panel))
+  ) !important;
   color: var(--pep-bg) !important;
 }
 
@@ -160,27 +187,18 @@ html[data-pep-appearance='dark'] .pep-vote-status {
 }
 
 html[data-pep-appearance='dark'] .pep-vote-card {
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--pep-panel-strong) 84%, var(--pep-accent-2)),
-    var(--pep-surface)
-  ) !important;
+  --pep-ink: #142633;
+  background-image: linear-gradient(180deg, #ffffff, #dff7ef) !important;
 }
 
 html[data-pep-appearance='dark'] .pep-vote-card[aria-pressed='true'] {
-  background-image: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--pep-yellow) 38%, var(--pep-panel-strong)),
-    color-mix(in srgb, var(--pep-yellow) 18%, var(--pep-surface))
-  ) !important;
+  --pep-ink: #142633;
+  background-image: linear-gradient(180deg, #fff0b8, #f4d44f) !important;
 }
 
 html[data-pep-appearance='dark'] .pep-delivery-action:not(:disabled) {
-  background-image: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--pep-accent-2) 42%, var(--pep-panel-strong)),
-    color-mix(in srgb, var(--pep-yellow) 24%, var(--pep-surface-muted))
-  ) !important;
+  --pep-ink: #142633;
+  background-image: linear-gradient(135deg, #caf6e9, #fff5b2) !important;
 }
 
 html[data-pep-appearance='dark']
