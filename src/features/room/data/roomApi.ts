@@ -510,10 +510,12 @@ export async function shutdownRoom(input: {
 export async function startRevealCountdown(input: {
   roomId: string
   actorClientId: string
+  countdownSeconds: number
 }) {
   const { data, error } = await supabase.rpc('start_reveal_countdown', {
     target_room_id: input.roomId,
     actor_client_id: input.actorClientId,
+    target_countdown_seconds: input.countdownSeconds,
   })
 
   if (error) {
