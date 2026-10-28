@@ -141,7 +141,8 @@ html[data-pep-appearance='dark'] :is(.pep-nav-control, .pep-repository-link) {
   ) !important;
 }
 
-html[data-pep-appearance='dark'] :is(.pep-revealed-vote, .pep-yellow-control) {
+html[data-pep-appearance='dark']
+  :is(.pep-revealed-vote, .pep-yellow-control, .pep-no-vote-status) {
   color: var(--pep-bg) !important;
 }
 

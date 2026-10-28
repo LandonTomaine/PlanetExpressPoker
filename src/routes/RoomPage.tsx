@@ -2305,7 +2305,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                               'pep-vote-status absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
                               hasSubmittedVote
                                 ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
-                                : 'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
+                                : 'pep-no-vote-status border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
                             ].join(' ')}
                           >
                             {hasSubmittedVote ? <CheckIcon /> : <NoVoteIcon />}

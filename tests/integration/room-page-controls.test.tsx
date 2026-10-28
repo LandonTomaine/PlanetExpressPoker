@@ -407,6 +407,7 @@ describe('RoomPage controls', () => {
     expect(noVoteMarkers).toHaveLength(2)
     noVoteMarkers.forEach((marker) => {
       expect(marker).toHaveClass('bg-[var(--pep-yellow)]')
+      expect(marker).toHaveClass('pep-no-vote-status')
     })
   })
 
