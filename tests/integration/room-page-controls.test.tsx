@@ -580,99 +580,140 @@ describe('RoomPage controls', () => {
     )
   })
 
-  it('starts a manual countdown using the selected duration', async () => {
-    vi.mocked(useRoomSettingsLiveState).mockReturnValue({
-      roomSettings: {
-        roomId: 'room-1',
-        deckType: 'fibonacci',
-        autoRevealEnabled: false,
-        revealCountdownEnabled: true,
-        revealCountdownSeconds: 3,
-        funLevel: 'chaotic',
-        themeId: 'futurama',
-        updatedAt: new Date().toISOString(),
-      },
-      errorMessage: null,
-    })
-    vi.mocked(joinRoom).mockResolvedValue({
-      participantId: 'participant-1',
-      roomId: 'room-1',
-      roomName: 'demo-room',
-      displayName: 'Amy',
-      avatarKey: 'bender',
-      role: 'voter',
-      isKicked: false,
-    })
-    vi.mocked(useRoomLiveState).mockReturnValue({
-      participants: [
-        {
-          id: 'participant-1',
+  it.each(['manual', 'automatic', 'failed automatic'])(
+    'keeps the selected duration for a %s countdown when all votes arrive',
+    async (trigger) => {
+      vi.mocked(useRoomSettingsLiveState).mockReturnValue({
+        roomSettings: {
           roomId: 'room-1',
-          displayName: 'Amy',
-          avatarKey: 'bender',
-          role: 'voter',
-          isKicked: false,
-          createdAt: new Date().toISOString(),
+          deckType: 'fibonacci',
+          autoRevealEnabled: true,
+          revealCountdownEnabled: true,
+          revealCountdownSeconds: 3,
+          funLevel: 'chaotic',
+          themeId: 'futurama',
+          updatedAt: new Date().toISOString(),
         },
-        {
-          id: 'participant-2',
-          roomId: 'room-1',
-          displayName: 'Leela',
-          avatarKey: 'leela',
-          role: 'voter',
-          isKicked: false,
-          createdAt: new Date().toISOString(),
-        },
-      ],
-      presenceByParticipantId: {},
-      errorMessage: null,
-    })
-    vi.mocked(useVotingLiveState).mockReturnValue({
-      activeRound: {
-        id: 'round-1',
-        roomId: 'room-1',
-        roundNumber: 1,
-        status: 'voting',
-        countdownStartedAt: null,
-        countdownSeconds: 3,
-        revealedAt: null,
-        reactionKind: null,
-      },
-      votes: [
-        {
-          roundId: 'round-1',
-          participantId: 'participant-1',
-          cardValue: '3',
-          isUnsure: false,
-          submittedAt: new Date().toISOString(),
-        },
-      ],
-      errorMessage: null,
-    })
-
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
-    const user = userEvent.setup()
-    renderRoomPage()
-
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Countdown' })).toBeEnabled()
-    )
-    await user.selectOptions(
-      await screen.findByLabelText('Countdown duration'),
-      '10'
-    )
-    expect(screen.getByLabelText('Countdown duration')).toHaveValue('10')
-    await user.click(screen.getByRole('button', { name: 'Countdown' }))
-
-    await waitFor(() =>
-      expect(vi.mocked(startRevealCountdown)).toHaveBeenCalledWith({
-        roomId: 'room-1',
-        actorClientId: 'client-1',
-        countdownSeconds: 10,
+        errorMessage: null,
       })
-    )
-    confirmSpy.mockRestore()
-  })
+      vi.mocked(joinRoom).mockResolvedValue({
+        participantId: 'participant-1',
+        roomId: 'room-1',
+        roomName: 'demo-room',
+        displayName: 'Amy',
+        avatarKey: 'bender',
+        role: 'voter',
+        isKicked: false,
+      })
+      vi.mocked(useRoomLiveState).mockReturnValue({
+        participants: [
+          {
+            id: 'participant-1',
+            roomId: 'room-1',
+            displayName: 'Amy',
+            avatarKey: 'bender',
+            role: 'voter',
+            isKicked: false,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 'participant-2',
+            roomId: 'room-1',
+            displayName: 'Leela',
+            avatarKey: 'leela',
+            role: 'voter',
+            isKicked: false,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        presenceByParticipantId: {},
+        errorMessage: null,
+      })
+      vi.mocked(useVotingLiveState).mockReturnValue({
+        activeRound: {
+          id: 'round-1',
+          roomId: 'room-1',
+          roundNumber: 1,
+          status: 'voting',
+          countdownStartedAt: null,
+          countdownSeconds: 3,
+          revealedAt: null,
+          reactionKind: null,
+        },
+        votes: [
+          {
+            roundId: 'round-1',
+            participantId: 'participant-1',
+            cardValue: '3',
+            isUnsure: false,
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+        errorMessage: null,
+      })
+
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const user = userEvent.setup()
+      const rerender = renderRoomPage()
+
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Countdown' })).toBeEnabled()
+      )
+      await user.selectOptions(
+        await screen.findByLabelText('Countdown duration'),
+        '10'
+      )
+      expect(screen.getByLabelText('Countdown duration')).toHaveValue('10')
+      if (trigger === 'failed automatic') {
+        vi.mocked(startRevealCountdown).mockRejectedValueOnce(
+          new Error('Countdown unavailable')
+        )
+      }
+      if (trigger === 'manual') {
+        await user.click(screen.getByRole('button', { name: 'Countdown' }))
+      }
+      const votingState = vi
+        .mocked(useVotingLiveState)
+        .mock.results.at(-1)!.value
+      vi.mocked(useVotingLiveState).mockReturnValue({
+        ...votingState,
+        votes: [
+          ...votingState.votes,
+          {
+            roundId: 'round-1',
+            participantId: 'participant-2',
+            cardValue: '5',
+            isUnsure: false,
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+      })
+      rerender()
+
+      await waitFor(() =>
+        expect(vi.mocked(startRevealCountdown)).toHaveBeenCalledWith({
+          roomId: 'room-1',
+          actorClientId: 'client-1',
+          countdownSeconds: 10,
+        })
+      )
+      expect(startRevealCountdown).toHaveBeenCalledTimes(1)
+      if (trigger === 'failed automatic') {
+        expect(
+          await screen.findByText('Countdown unavailable')
+        ).toBeInTheDocument()
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        expect(startRevealCountdown).toHaveBeenCalledTimes(1)
+        confirmSpy.mockRestore()
+        return
+      }
+      expect(screen.getByText('reveal in 10')).toBeInTheDocument()
+      await new Promise((resolve) => setTimeout(resolve, 3200))
+      expect(revealRound).not.toHaveBeenCalled()
+      expect(screen.getByText(/reveal in [67]/)).toBeInTheDocument()
+      confirmSpy.mockRestore()
+    }
+  )
 
   it('allows a manual countdown before anyone has voted', async () => {
     vi.mocked(joinRoom).mockResolvedValue({
@@ -805,7 +846,7 @@ describe('RoomPage controls', () => {
 })
 
 function renderRoomPage(initialEntry = '/rooms/demo-room') {
-  render(
+  const ui = () => (
     <ThemeProvider>
       <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
@@ -814,4 +855,6 @@ function renderRoomPage(initialEntry = '/rooms/demo-room') {
       </MemoryRouter>
     </ThemeProvider>
   )
+  const view = render(ui())
+  return () => view.rerender(ui())
 }

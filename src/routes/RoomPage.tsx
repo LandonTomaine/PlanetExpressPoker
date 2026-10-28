@@ -276,7 +276,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   })
 
   const startRevealCountdownEvent = useEffectEvent(async () => {
-    await handleRevealCountdown()
+    await handleRevealCountdown(manualCountdownSeconds)
   })
 
   const finalizeRevealEvent = useEffectEvent(async () => {
@@ -1111,6 +1111,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
+    if (localCountdownStartedAt !== null || isCountdownSubmitting) {
+      return
+    }
+
     const roundAttemptKey = `${activeRound.id}:${activeRound.roundNumber}`
 
     if (countdownAttemptRef.current === roundAttemptKey) {
@@ -1123,6 +1127,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   }, [
     activeRound,
     allVotersHaveSubmitted,
+    localCountdownStartedAt,
+    isCountdownSubmitting,
     room,
     roomSettings?.autoRevealEnabled,
     selfParticipant,
@@ -1259,9 +1265,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
   }
 
-  async function handleRevealCountdown(
-    countdownSeconds = defaultRevealCountdownSeconds
-  ) {
+  async function handleRevealCountdown(countdownSeconds: number) {
     if (!room || !selfParticipant) {
       return
     }
@@ -1270,6 +1274,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
+    if (activeRound) {
+      countdownAttemptRef.current = `${activeRound.id}:${activeRound.roundNumber}`
+    }
     setLocalCountdownStartedAt(Date.now())
     setLocalCountdownSeconds(countdownSeconds)
     setOptimisticRevealedRoundId(null)
@@ -1291,7 +1298,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       )
       setLocalCountdownStartedAt(null)
       setLocalCountdownSeconds(null)
-      countdownAttemptRef.current = null
     } finally {
       setIsCountdownSubmitting(false)
     }
