@@ -41,6 +41,7 @@ test('simulator room supports join, voting, reveal, and result summary', async (
     page.getByRole('button', { name: 'Sure estimate', exact: true })
   ).toBeEnabled()
   await page.reload()
+  await joinDialog.getByRole('button', { name: 'Join as voter' }).click()
   await expect(
     page.getByRole('button', { name: 'Sure estimate', exact: true })
   ).toHaveAttribute('aria-pressed', 'true')
