@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { buildScoreSummary } from './summary'
 
-function vote(cardValue: string, isUnsure = false) {
-  return { cardValue, isUnsure }
+function vote(cardValue: string, isUnsure = false, isSure = false) {
+  return { cardValue, isUnsure, isSure }
 }
 
 describe('buildScoreSummary', () => {
@@ -62,10 +62,63 @@ describe('buildScoreSummary', () => {
       averageCalculationLabel:
         'Weighted total: 6.75 ÷ 1.75 vote weight = 3.86; rounded up to 5.',
       averageLabel: '5',
-      numericVotesLabel: 'Numeric votes: 3 (regular) + 5 (unsure × 75%).',
+      numericVotesLabel: 'Numeric votes: 3 (default) + 5 (unsure × 75%).',
       recommendedLabel: '3',
       weightingLabel:
-        'Unsure numeric votes count at 75% for the average. Special cards are excluded.',
+        'Average weights: Default 100%, Unsure 75%, Sure 125%. Special cards are excluded.',
+    })
+  })
+
+  it('counts sure numeric votes at 125% without weighting the recommendation', () => {
+    expect(
+      buildScoreSummary([vote('3'), vote('5', false, true)])
+    ).toMatchObject({
+      averageCalculationLabel:
+        'Weighted total: 9.25 ÷ 2.25 vote weight = 4.11; rounded up to 5.',
+      averageLabel: '5',
+      numericVotesLabel: 'Numeric votes: 3 (default) + 5 (sure × 125%).',
+      recommendedLabel: '3',
+    })
+  })
+
+  it('combines all confidence weights and excludes special cards', () => {
+    expect(
+      buildScoreSummary([
+        vote('0', true),
+        vote('3'),
+        vote('8', false, true),
+        vote('coffee', false, true),
+        vote('ship', true),
+      ])
+    ).toMatchObject({
+      averageCalculationLabel:
+        'Weighted total: 13 ÷ 3 vote weight = 4.33; rounded up to 5.',
+      averageLabel: '5',
+      numericVoteCount: 3,
+      numericVotesLabel:
+        'Numeric votes: 0 (unsure × 75%) + 3 (default) + 8 (sure × 125%).',
+      recommendedLabel: 'Discuss',
+    })
+  })
+
+  it('preserves unanimous scores across confidence levels', () => {
+    expect(
+      buildScoreSummary([vote('3', true), vote('3'), vote('3', false, true)])
+    ).toMatchObject({
+      averageLabel: '3',
+      recommendedLabel: '3',
+      unanimousNumericValue: 3,
+    })
+  })
+
+  it('uses confidence weights when the average crosses a deck boundary', () => {
+    expect(buildScoreSummary([vote('0'), vote('5')]).averageLabel).toBe('3')
+    expect(
+      buildScoreSummary([vote('0', true), vote('5', false, true)])
+    ).toMatchObject({
+      averageCalculationLabel:
+        'Weighted total: 6.25 ÷ 2 vote weight = 3.13; rounded up to 5.',
+      averageLabel: '5',
     })
   })
 })

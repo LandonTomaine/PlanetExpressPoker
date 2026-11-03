@@ -81,6 +81,8 @@ import type {
   RoundReactionKind,
 } from '../features/room/types'
 
+type VoteConfidence = 'default' | 'unsure' | 'sure'
+
 type RoundReactionCategory =
   | 'allSpecialCards'
   | 'coffee'
@@ -185,8 +187,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     roundId: string
     cardValue: string
     isUnsure: boolean
+    isSure: boolean
   } | null>(null)
-  const [unsureDraft, setUnsureDraft] = useState(false)
+  const [confidenceDraft, setConfidenceDraft] =
+    useState<VoteConfidence>('default')
   const [inviteState, setInviteState] = useState<'idle' | 'copied' | 'failed'>(
     'idle'
   )
@@ -381,7 +385,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
     setSelfParticipant(null)
     setOptimisticOwnCardValue(null)
-    setUnsureDraft(false)
+    setConfidenceDraft('default')
     setVoteError(null)
     setRevealError(null)
     setParticipantActionError(null)
@@ -397,7 +401,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       setSelfParticipant(null)
       setRoom(null)
       setOptimisticOwnCardValue(null)
-      setUnsureDraft(false)
+      setConfidenceDraft('default')
 
       if (roomNameError) {
         setIsRoomLoading(false)
@@ -498,7 +502,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     queueMicrotask(() => {
       setSelfParticipant(null)
       setOptimisticOwnCardValue(null)
-      setUnsureDraft(false)
+      setConfidenceDraft('default')
       setVoteError('You were kicked from this room.')
       setParticipantActionError(null)
       if (!isSimulatorMode && displayRoomName) {
@@ -673,11 +677,18 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     optimisticOwnCardValue !== null &&
     optimisticOwnCardValue.roundId === activeRound?.id &&
     (ownVote?.cardValue !== optimisticOwnCardValue.cardValue ||
-      ownVote?.isUnsure !== optimisticOwnCardValue.isUnsure)
+      ownVote?.isUnsure !== optimisticOwnCardValue.isUnsure ||
+      ownVote?.isSure !== optimisticOwnCardValue.isSure)
       ? optimisticOwnCardValue
       : ownVote
   const displayedOwnCardValue = displayedOwnVote?.cardValue ?? null
-  const displayedOwnVoteIsUnsure = displayedOwnVote?.isUnsure ?? unsureDraft
+  const displayedOwnConfidence: VoteConfidence = displayedOwnVote
+    ? displayedOwnVote.isUnsure
+      ? 'unsure'
+      : displayedOwnVote.isSure
+        ? 'sure'
+        : 'default'
+    : confidenceDraft
 
   const activeRoundVotes = votes.filter(
     (vote) => vote.roundId === activeRound?.id
@@ -938,7 +949,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       setLocalCountdownSeconds(null)
       setOptimisticRevealedRoundId(null)
       setOptimisticOwnCardValue(null)
-      setUnsureDraft(false)
+      setConfidenceDraft('default')
       setVoteError(null)
       setRevealError(null)
       setActiveFunEvent(null)
@@ -1154,7 +1165,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
   }, [activeRound, countdownEndsAt, isActiveRoundCountdownForDisplay, room])
 
-  async function handleVote(cardValue: string, isUnsure: boolean) {
+  async function handleVote(cardValue: string, confidence: VoteConfidence) {
     if (!room || !selfParticipant) {
       return
     }
@@ -1166,11 +1177,14 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     setIsVoteSubmitting(true)
     setVoteError(null)
-    setUnsureDraft(isUnsure)
+    const isUnsure = confidence === 'unsure'
+    const isSure = confidence === 'sure'
+    setConfidenceDraft(confidence)
     setOptimisticOwnCardValue({
       roundId: activeRound?.id ?? '',
       cardValue,
       isUnsure,
+      isSure,
     })
 
     try {
@@ -1179,6 +1193,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         clientId: identity.clientId,
         cardValue,
         isUnsure,
+        isSure,
       })
     } catch (error) {
       setOptimisticOwnCardValue(null)
@@ -1228,7 +1243,11 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
   }
 
-  async function handleDevVote(cardValue: string, isUnsure = false) {
+  async function handleDevVote(
+    cardValue: string,
+    isUnsure = false,
+    isSure = false
+  ) {
     if (!isSimulatorMode || !room || !devVoteParticipant) {
       return
     }
@@ -1254,6 +1273,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         clientId: devClientId,
         cardValue,
         isUnsure,
+        isSure,
       })
       setDevVoteParticipantId(null)
     } catch (error) {
@@ -1502,7 +1522,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
       if (input.isSelfTarget && input.nextRole === 'spectator') {
         setOptimisticOwnCardValue(null)
-        setUnsureDraft(false)
+        setConfidenceDraft('default')
         setVoteError(null)
       }
     } catch (error) {
@@ -1719,7 +1739,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                     ? `${cardArtworkLabel} card, ${cardMeaningLabel}`
                     : `${cardLabel} card`
                 }
-                onClick={() => void handleVote(card, displayedOwnVoteIsUnsure)}
+                onClick={() => void handleVote(card, displayedOwnConfidence)}
                 disabled={
                   !isJoinedToRoom ||
                   effectiveSelfRole !== 'voter' ||
@@ -1781,38 +1801,58 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             Confidence
           </p>
           <p className="mt-1 text-sm leading-5 text-[var(--pep-ink-soft)]">
-            Mark this estimate as unsure.
+            Default × 1 · Unsure ? × 0.75 · Sure ! × 1.25
           </p>
         </div>
-        <button
-          type="button"
-          aria-pressed={displayedOwnVoteIsUnsure}
-          aria-label="Unsure estimate"
-          onClick={() => {
-            const nextIsUnsure = !displayedOwnVoteIsUnsure
-            setUnsureDraft(nextIsUnsure)
-            if (displayedOwnCardValue) {
-              void handleVote(displayedOwnCardValue, nextIsUnsure)
-            }
-          }}
-          disabled={
-            !isJoinedToRoom ||
-            effectiveSelfRole !== 'voter' ||
-            isVoteSubmitting ||
-            !isActiveRoundVotingForDisplay
-          }
-          className={[
-            'inline-flex min-h-10 items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-black shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
-            displayedOwnVoteIsUnsure
-              ? 'pep-yellow-control border-[var(--pep-accent)] bg-[var(--pep-yellow)] text-[var(--pep-ink)]'
-              : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)]',
-          ].join(' ')}
+        <div
+          role="group"
+          aria-label="Estimate confidence"
+          className="flex flex-wrap gap-2"
         >
-          <span aria-hidden="true" className="text-lg leading-none">
-            ?
-          </span>
-          Unsure
-        </button>
+          {(['default', 'unsure', 'sure'] as const).map((confidence) => {
+            const label =
+              confidence === 'default'
+                ? 'Default'
+                : confidence === 'unsure'
+                  ? 'Unsure'
+                  : 'Sure'
+            const marker =
+              confidence === 'unsure' ? '?' : confidence === 'sure' ? '!' : ''
+            return (
+              <button
+                key={confidence}
+                type="button"
+                aria-pressed={displayedOwnConfidence === confidence}
+                aria-label={`${label} estimate`}
+                onClick={() => {
+                  setConfidenceDraft(confidence)
+                  if (displayedOwnCardValue) {
+                    void handleVote(displayedOwnCardValue, confidence)
+                  }
+                }}
+                disabled={
+                  !isJoinedToRoom ||
+                  effectiveSelfRole !== 'voter' ||
+                  isVoteSubmitting ||
+                  !isActiveRoundVotingForDisplay
+                }
+                className={[
+                  'inline-flex min-h-10 items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-black shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
+                  displayedOwnConfidence === confidence
+                    ? 'pep-yellow-control border-[var(--pep-accent)] bg-[var(--pep-yellow)] text-[var(--pep-ink)]'
+                    : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)]',
+                ].join(' ')}
+              >
+                {marker ? (
+                  <span aria-hidden="true" className="text-lg leading-none">
+                    {marker}
+                  </span>
+                ) : null}
+                {label}
+              </button>
+            )
+          })}
+        </div>
       </div>
     </>
   )
@@ -2195,13 +2235,22 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                                   revealedCardValue ? (
                                     <>
                                       {getCardDisplayLabel(revealedCardValue)}
-                                      {revealedVote?.isUnsure ? (
+                                      {revealedVote?.isUnsure ||
+                                      revealedVote?.isSure ? (
                                         <span
-                                          aria-label="Unsure estimate"
-                                          title="Unsure estimate"
+                                          aria-label={
+                                            revealedVote.isUnsure
+                                              ? 'Unsure estimate'
+                                              : 'Sure estimate'
+                                          }
+                                          title={
+                                            revealedVote.isUnsure
+                                              ? 'Unsure estimate'
+                                              : 'Sure estimate'
+                                          }
                                           className="ml-1 inline-grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[var(--pep-accent)] bg-white text-xs font-black normal-case text-[var(--pep-accent)]"
                                         >
-                                          ?
+                                          {revealedVote.isUnsure ? '?' : '!'}
                                         </span>
                                       ) : null}
                                     </>

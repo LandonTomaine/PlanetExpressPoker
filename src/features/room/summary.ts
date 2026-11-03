@@ -4,10 +4,12 @@ import {
 } from './voting'
 
 export const unsureVoteWeight = 0.75
+export const sureVoteWeight = 1.25
 
 export type ScoreVote = {
   cardValue: string
   isUnsure: boolean
+  isSure: boolean
 }
 
 const fibonacciStepByValue = new Map(
@@ -31,7 +33,11 @@ function getNumericVotes(votes: ScoreVote[]) {
     .map((vote) => ({
       ...vote,
       value: Number(vote.cardValue),
-      weight: vote.isUnsure ? unsureVoteWeight : 1,
+      weight: vote.isUnsure
+        ? unsureVoteWeight
+        : vote.isSure
+          ? sureVoteWeight
+          : 1,
     }))
     .sort((left, right) => left.value - right.value)
 }
@@ -112,22 +118,23 @@ export function buildScoreSummary(votes: ScoreVote[]): ScoreSummary {
   )
   const averageValue = weightedTotal / totalWeight
   const roundedAverage = formatAverage(averageValue)
-  const hasUnsureNumericVote = numericVotes.some((vote) => vote.isUnsure)
-  const numericVotesLabel = hasUnsureNumericVote
+  const hasWeightedNumericVote = numericVotes.some((vote) => vote.weight !== 1)
+  const numericVotesLabel = hasWeightedNumericVote
     ? `Numeric votes: ${numericVotes
         .map((vote) =>
           vote.isUnsure
             ? `${vote.value} (unsure × 75%)`
-            : `${vote.value} (regular)`
+            : vote.isSure
+              ? `${vote.value} (sure × 125%)`
+              : `${vote.value} (default)`
         )
         .join(' + ')}.`
     : `Votes used: ${numericVoteValues.join(' + ')} = ${formatRawAverage(weightedTotal)}.`
-  const averageCalculationLabel = hasUnsureNumericVote
+  const averageCalculationLabel = hasWeightedNumericVote
     ? `Weighted total: ${formatRawAverage(weightedTotal)} ÷ ${formatRawAverage(totalWeight)} vote weight = ${formatRawAverage(averageValue)}; rounded up to ${roundedAverage}.`
     : `${formatRawAverage(weightedTotal)} ÷ ${numericVotes.length} = ${formatRawAverage(averageValue)}; rounded up to ${roundedAverage}.`
-  const weightingLabel = hasUnsureNumericVote
-    ? 'Unsure numeric votes count at 75% for the average. Special cards are excluded.'
-    : 'Regular numeric votes count at 100%. Special cards are excluded.'
+  const weightingLabel =
+    'Average weights: Default 100%, Unsure 75%, Sure 125%. Special cards are excluded.'
   const unanimousNumericValue = numericVoteValues.every(
     (cardValue) => cardValue === numericVoteValues[0]
   )
