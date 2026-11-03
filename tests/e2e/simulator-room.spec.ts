@@ -37,6 +37,9 @@ test('simulator room supports join, voting, reveal, and result summary', async (
   await expect(
     page.getByRole('button', { name: 'Unsure estimate' })
   ).toHaveAttribute('aria-pressed', 'false')
+  await expect(
+    page.getByRole('button', { name: 'Sure estimate' })
+  ).toBeEnabled()
   await page.reload()
   await expect(
     page.getByRole('button', { name: 'Sure estimate' })
