@@ -93,6 +93,7 @@ export type Vote = {
   participantId: string
   cardValue: string
   isUnsure: boolean
+  isSure: boolean
   submittedAt: string
 }
 
@@ -101,5 +102,6 @@ export type SubmittedVote = {
   participantId: string
   cardValue: string
   isUnsure: boolean
+  isSure: boolean
   submittedAt: string
 }

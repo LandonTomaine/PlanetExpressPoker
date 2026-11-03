@@ -85,6 +85,7 @@ const voteSchema = z.object({
   participant_id: z.string().uuid(),
   card_value: z.string().min(1),
   is_unsure: z.boolean(),
+  is_sure: z.boolean(),
   submitted_at: z.string(),
 })
 
@@ -103,6 +104,7 @@ const submittedVoteSchema = z.object({
   result_participant_id: z.string().uuid(),
   result_card_value: z.string().min(1),
   result_is_unsure: z.boolean(),
+  result_is_sure: z.boolean(),
   result_submitted_at: z.string(),
 })
 
@@ -250,6 +252,7 @@ function mapVote(vote: z.infer<typeof voteSchema>): Vote {
     participantId: vote.participant_id,
     cardValue: vote.card_value,
     isUnsure: vote.is_unsure,
+    isSure: vote.is_sure,
     submittedAt: vote.submitted_at,
   }
 }
@@ -262,6 +265,7 @@ function mapSubmittedVote(
     participantId: vote.result_participant_id,
     cardValue: vote.result_card_value,
     isUnsure: vote.result_is_unsure,
+    isSure: vote.result_is_sure,
     submittedAt: vote.result_submitted_at,
   }
 }
@@ -418,12 +422,14 @@ export async function submitVote(input: {
   clientId: string
   cardValue: string
   isUnsure: boolean
+  isSure: boolean
 }) {
   const { data, error } = await supabase.rpc('submit_vote', {
     target_room_id: input.roomId,
     participant_client_id: input.clientId,
     selected_card_value: input.cardValue,
     selected_is_unsure: input.isUnsure,
+    selected_is_sure: input.isSure,
   })
 
   if (error) {

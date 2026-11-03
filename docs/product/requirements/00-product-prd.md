@@ -120,7 +120,10 @@ The target user is a small private group that wants a simple planning poker room
 
 - After reveal, the app shows all revealed votes.
 - The app shows the numeric average rounded up to the next available deck value.
-- An unsure numeric vote counts at 75% when calculating that average, and the
+- Voters choose Default (initial selection, no marker), Unsure (`?`), or Sure
+  (`!`). The selection resets to Default for a new round and stays private until
+  reveal alongside the card value.
+- Numeric average weights are Default 100%, Unsure 75%, and Sure 125%. The
   summary shows the weighted arithmetic.
 - The app shows a recommended score.
 - If all numeric votes match, the recommended score is that exact value.
