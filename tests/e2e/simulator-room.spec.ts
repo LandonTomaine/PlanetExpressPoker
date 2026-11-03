@@ -30,19 +30,19 @@ test('simulator room supports join, voting, reveal, and result summary', async (
   await expect(
     page.getByRole('button', { name: 'Unsure estimate' })
   ).toHaveAttribute('aria-pressed', 'true')
-  await page.getByRole('button', { name: 'Sure estimate' }).click()
+  await page.getByRole('button', { name: 'Sure estimate', exact: true }).click()
   await expect(
-    page.getByRole('button', { name: 'Sure estimate' })
+    page.getByRole('button', { name: 'Sure estimate', exact: true })
   ).toHaveAttribute('aria-pressed', 'true')
   await expect(
     page.getByRole('button', { name: 'Unsure estimate' })
   ).toHaveAttribute('aria-pressed', 'false')
   await expect(
-    page.getByRole('button', { name: 'Sure estimate' })
+    page.getByRole('button', { name: 'Sure estimate', exact: true })
   ).toBeEnabled()
   await page.reload()
   await expect(
-    page.getByRole('button', { name: 'Sure estimate' })
+    page.getByRole('button', { name: 'Sure estimate', exact: true })
   ).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('span[aria-label="Sure estimate"]')).toHaveCount(0)
 
