@@ -18,6 +18,12 @@ This repository uses:
 
 PowerShell may block npm shims. Use `npm.cmd` and `npx.cmd` if needed.
 
+Type checking and builds use TypeScript 7's `tsc` through the
+`@typescript/native` npm alias. The `typescript` dependency aliases Microsoft's
+TypeScript 6 compatibility package so `typescript-eslint` retains the compiler
+API it needs. Keep both aliases installed; `npm ci` sets up the commands without
+changing the ESLint rules. See [Microsoft's compatibility guidance](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/#running-side-by-side-with-typescript-60).
+
 ## Local Frontend With Local Supabase
 
 1. `npm.cmd ci`
