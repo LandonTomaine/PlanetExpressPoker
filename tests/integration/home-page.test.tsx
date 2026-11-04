@@ -34,6 +34,26 @@ beforeEach(() => {
 })
 
 describe('HomePage', () => {
+  it('defaults to light appearance and persists a dark appearance choice', async () => {
+    const user = userEvent.setup()
+
+    renderWithTheme(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const appearanceSelect = screen.getByLabelText('Page appearance')
+    expect(appearanceSelect).toHaveValue('light')
+
+    await user.selectOptions(appearanceSelect, 'dark')
+
+    expect(window.localStorage.getItem('pep.appearance.v1')).toBe('dark')
+    expect(document.documentElement.dataset.pepAppearance).toBe('dark')
+  })
+
   it('creates or joins a room after name, room, and avatar selection', async () => {
     const user = userEvent.setup()
 

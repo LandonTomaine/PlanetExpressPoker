@@ -6,11 +6,15 @@ import { RoomPage } from '../../src/routes/RoomPage'
 import {
   createOrGetRoom,
   joinRoom,
+  revealRound,
   setRoomFunLevel,
   setRoomTheme,
+  startRevealCountdown,
+  submitVote,
 } from '../../src/features/room/data/roomApi'
 import { useRoomLiveState } from '../../src/features/room/realtime/useRoomLiveState'
 import { useRoomSettingsLiveState } from '../../src/features/room/realtime/useRoomSettingsLiveState'
+import { useVotingLiveState } from '../../src/features/room/realtime/useVotingLiveState'
 import { ThemeProvider } from '../../src/features/theme/context'
 
 vi.mock('../../src/features/room/data/roomApi', () => ({
@@ -135,7 +139,6 @@ describe('RoomPage controls', () => {
       presenceByParticipantId: {},
       errorMessage: null,
     })
-
     renderRoomPage()
 
     const effectsButton = await screen.findByRole('button', {
@@ -235,10 +238,772 @@ describe('RoomPage controls', () => {
 
     expect(vi.mocked(setRoomTheme)).not.toHaveBeenCalled()
   })
+
+  it('explains score calculations and separates voters from spectators', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-2',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Owner',
+          avatarKey: 'fry',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-2',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-3',
+          roomId: 'room-1',
+          displayName: 'Leela',
+          avatarKey: 'leela',
+          role: 'spectator',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {
+        'participant-1': {
+          participantId: 'participant-1',
+          displayName: 'Owner',
+          avatarKey: 'fry',
+          role: 'voter',
+          onlineAt: new Date().toISOString(),
+        },
+      },
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'revealed',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: new Date().toISOString(),
+        reactionKind: null,
+      },
+      votes: [
+        {
+          roundId: 'round-1',
+          participantId: 'participant-1',
+          cardValue: '3',
+          isUnsure: false,
+          isSure: false,
+          submittedAt: new Date().toISOString(),
+        },
+        {
+          roundId: 'round-1',
+          participantId: 'participant-2',
+          cardValue: '5',
+          isUnsure: true,
+          isSure: false,
+          submittedAt: new Date().toISOString(),
+        },
+      ],
+      errorMessage: null,
+    })
+    renderRoomPage()
+
+    expect(
+      await screen.findByText('Numeric votes: 3 (default) + 5 (unsure × 75%).')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Weighted total: 6.75 ÷ 1.75 vote weight = 3.86; rounded up to 5.'
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'Average weights: Default 100%, Unsure 75%, Sure 125%. Special cards are excluded.'
+      )
+    ).toBeInTheDocument()
+    expect(screen.getByText('Suggested card')).toBeInTheDocument()
+    expect(
+      screen.getByText('Middle votes: 3 and 5. Uses the lower middle card: 3.')
+    ).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Voters' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { name: 'Spectators' })
+    ).toBeInTheDocument()
+    expect(screen.getByText('Watching this round')).toBeInTheDocument()
+    expect(screen.getByText('online now')).toBeInTheDocument()
+    expect(screen.getAllByText('offline')).toHaveLength(2)
+    expect(document.querySelector('.pep-revealed-vote')).toHaveTextContent('3')
+    expect(document.querySelector('.pep-vote-status')).toBeInTheDocument()
+    expect(
+      document.querySelector('span[aria-label="Unsure estimate"]')
+    ).toBeInTheDocument()
+  })
+
+  it('keeps a large yellow no-vote card on voter cards until a vote is submitted', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-2',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Owner',
+          avatarKey: 'fry',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-2',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [],
+      errorMessage: null,
+    })
+
+    renderRoomPage()
+
+    const noVoteCards = await screen.findAllByText('No vote')
+    expect(noVoteCards).toHaveLength(2)
+    noVoteCards.forEach((card) => {
+      expect(card).toHaveClass('bg-[var(--pep-yellow)]')
+      expect(card).toHaveClass('pep-no-vote-card')
+    })
+    expect(screen.queryByText('Voted')).not.toBeInTheDocument()
+  })
+
+  it('defaults estimates to Default and switches exclusively between confidence options', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [],
+      errorMessage: null,
+    })
+
+    const user = userEvent.setup()
+    renderRoomPage()
+
+    await user.click(await screen.findByRole('button', { name: '3 card' }))
+    expect(
+      screen.getByRole('button', { name: 'Default estimate' })
+    ).toHaveAttribute('aria-pressed', 'true')
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '3',
+        isUnsure: false,
+        isSure: false,
+      })
+    )
+    expect(screen.getByRole('button', { name: '3 card' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    )
+    expect(screen.getByRole('button', { name: '3 card' })).toHaveClass(
+      'pep-vote-card'
+    )
+    expect(
+      screen.getByRole('button', { name: 'Unsure estimate' })
+    ).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(screen.getByRole('button', { name: 'Unsure estimate' }))
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '3',
+        isUnsure: true,
+        isSure: false,
+      })
+    )
+
+    await user.click(screen.getByRole('button', { name: '5 card' }))
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '5',
+        isUnsure: true,
+        isSure: false,
+      })
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Sure estimate' }))
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '5',
+        isUnsure: false,
+        isSure: true,
+      })
+    )
+    expect(
+      screen.getByRole('button', { name: 'Unsure estimate' })
+    ).toHaveAttribute('aria-pressed', 'false')
+    expect(
+      screen.getByRole('button', { name: 'Sure estimate' })
+    ).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(screen.getByRole('button', { name: 'Default estimate' }))
+    await waitFor(() =>
+      expect(vi.mocked(submitVote)).toHaveBeenLastCalledWith({
+        roomId: 'room-1',
+        clientId: 'client-1',
+        cardValue: '5',
+        isUnsure: false,
+        isSure: false,
+      })
+    )
+    expect(
+      screen.getByRole('button', { name: 'Default estimate' })
+    ).toHaveAttribute('aria-pressed', 'true')
+    expect(
+      screen.getByRole('button', { name: 'Sure estimate' })
+    ).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it.each(['unsure', 'sure'] as const)(
+    'restores %s confidence, reveals its marker, and resets to Default',
+    async (confidence) => {
+      vi.mocked(joinRoom).mockResolvedValue({
+        participantId: 'participant-1',
+        roomId: 'room-1',
+        roomName: 'demo-room',
+        displayName: 'Amy',
+        avatarKey: 'bender',
+        role: 'voter',
+        isKicked: false,
+      })
+      vi.mocked(useRoomLiveState).mockReturnValue({
+        participants: [
+          {
+            id: 'participant-1',
+            roomId: 'room-1',
+            displayName: 'Amy',
+            avatarKey: 'bender',
+            role: 'voter',
+            isKicked: false,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        presenceByParticipantId: {},
+        errorMessage: null,
+      })
+      const votingState: ReturnType<typeof useVotingLiveState> = {
+        activeRound: {
+          id: 'round-1',
+          roomId: 'room-1',
+          roundNumber: 1,
+          status: 'voting',
+          countdownStartedAt: null,
+          countdownSeconds: 3,
+          revealedAt: null,
+          reactionKind: null,
+        },
+        votes: [
+          {
+            roundId: 'round-1',
+            participantId: 'participant-1',
+            cardValue: '5',
+            isUnsure: confidence === 'unsure',
+            isSure: confidence === 'sure',
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+        errorMessage: null,
+      }
+      vi.mocked(useVotingLiveState).mockReturnValue(votingState)
+      const rerenderPage = renderRoomPage()
+      const label = confidence === 'sure' ? 'Sure estimate' : 'Unsure estimate'
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: label })).toHaveAttribute(
+          'aria-pressed',
+          'true'
+        )
+      )
+      expect(
+        document.querySelector(`span[aria-label="${label}"]`)
+      ).not.toBeInTheDocument()
+
+      vi.mocked(useVotingLiveState).mockReturnValue({
+        ...votingState,
+        activeRound: {
+          ...votingState.activeRound!,
+          status: 'revealed',
+          revealedAt: new Date().toISOString(),
+        },
+      })
+      rerenderPage()
+      await waitFor(() =>
+        expect(
+          document.querySelector(`span[aria-label="${label}"]`)
+        ).toHaveTextContent(confidence === 'sure' ? '!' : '?')
+      )
+      expect(screen.getByRole('button', { name: label })).toBeDisabled()
+
+      vi.mocked(useVotingLiveState).mockReturnValue({
+        ...votingState,
+        activeRound: { ...votingState.activeRound!, roundNumber: 2 },
+        votes: [],
+      })
+      rerenderPage()
+      await waitFor(() =>
+        expect(
+          screen.getByRole('button', { name: 'Default estimate' })
+        ).toHaveAttribute('aria-pressed', 'true')
+      )
+      expect(screen.getByRole('button', { name: label })).toHaveAttribute(
+        'aria-pressed',
+        'false'
+      )
+
+      const user = userEvent.setup()
+      await user.click(screen.getByRole('button', { name: 'Sure estimate' }))
+      expect(submitVote).not.toHaveBeenCalled()
+      await user.click(screen.getByRole('button', { name: '8 card' }))
+      await waitFor(() =>
+        expect(submitVote).toHaveBeenLastCalledWith({
+          roomId: 'room-1',
+          clientId: 'client-1',
+          cardValue: '8',
+          isUnsure: false,
+          isSure: true,
+        })
+      )
+    }
+  )
+
+  it('confirms before revealing when a voter has not submitted a vote', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-2',
+          roomId: 'room-1',
+          displayName: 'Leela',
+          avatarKey: 'leela',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [
+        {
+          roundId: 'round-1',
+          participantId: 'participant-1',
+          cardValue: '3',
+          isUnsure: false,
+          isSure: false,
+          submittedAt: new Date().toISOString(),
+        },
+      ],
+      errorMessage: null,
+    })
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    const user = userEvent.setup()
+
+    renderRoomPage()
+
+    await user.click(await screen.findByRole('button', { name: 'Reveal' }))
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      '1 voter has not voted yet. Reveal anyway?'
+    )
+    expect(vi.mocked(revealRound)).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Countdown' }))
+
+    expect(confirmSpy).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(startRevealCountdown)).not.toHaveBeenCalled()
+
+    confirmSpy.mockReturnValue(true)
+    await user.click(screen.getByRole('button', { name: 'Reveal' }))
+
+    await waitFor(() =>
+      expect(vi.mocked(revealRound)).toHaveBeenCalledWith({
+        roomId: 'room-1',
+        actorClientId: 'client-1',
+      })
+    )
+  })
+
+  it.each(['manual', 'automatic', 'failed automatic'])(
+    'keeps the selected duration for a %s countdown when all votes arrive',
+    async (trigger) => {
+      vi.mocked(useRoomSettingsLiveState).mockReturnValue({
+        roomSettings: {
+          roomId: 'room-1',
+          deckType: 'fibonacci',
+          autoRevealEnabled: true,
+          revealCountdownEnabled: true,
+          revealCountdownSeconds: 3,
+          funLevel: 'chaotic',
+          themeId: 'futurama',
+          updatedAt: new Date().toISOString(),
+        },
+        errorMessage: null,
+      })
+      vi.mocked(joinRoom).mockResolvedValue({
+        participantId: 'participant-1',
+        roomId: 'room-1',
+        roomName: 'demo-room',
+        displayName: 'Amy',
+        avatarKey: 'bender',
+        role: 'voter',
+        isKicked: false,
+      })
+      vi.mocked(useRoomLiveState).mockReturnValue({
+        participants: [
+          {
+            id: 'participant-1',
+            roomId: 'room-1',
+            displayName: 'Amy',
+            avatarKey: 'bender',
+            role: 'voter',
+            isKicked: false,
+            createdAt: new Date().toISOString(),
+          },
+          {
+            id: 'participant-2',
+            roomId: 'room-1',
+            displayName: 'Leela',
+            avatarKey: 'leela',
+            role: 'voter',
+            isKicked: false,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        presenceByParticipantId: {},
+        errorMessage: null,
+      })
+      vi.mocked(useVotingLiveState).mockReturnValue({
+        activeRound: {
+          id: 'round-1',
+          roomId: 'room-1',
+          roundNumber: 1,
+          status: 'voting',
+          countdownStartedAt: null,
+          countdownSeconds: 3,
+          revealedAt: null,
+          reactionKind: null,
+        },
+        votes: [
+          {
+            roundId: 'round-1',
+            participantId: 'participant-1',
+            cardValue: '3',
+            isUnsure: false,
+            isSure: false,
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+        errorMessage: null,
+      })
+
+      const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const user = userEvent.setup()
+      const rerender = renderRoomPage()
+
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Countdown' })).toBeEnabled()
+      )
+      await user.selectOptions(
+        await screen.findByLabelText('Countdown duration'),
+        '10'
+      )
+      expect(screen.getByLabelText('Countdown duration')).toHaveValue('10')
+      if (trigger === 'failed automatic') {
+        vi.mocked(startRevealCountdown).mockRejectedValueOnce(
+          new Error('Countdown unavailable')
+        )
+      }
+      if (trigger === 'manual') {
+        await user.click(screen.getByRole('button', { name: 'Countdown' }))
+      }
+      const votingState = vi
+        .mocked(useVotingLiveState)
+        .mock.results.at(-1)!.value
+      vi.mocked(useVotingLiveState).mockReturnValue({
+        ...votingState,
+        votes: [
+          ...votingState.votes,
+          {
+            roundId: 'round-1',
+            participantId: 'participant-2',
+            cardValue: '5',
+            isUnsure: false,
+            isSure: false,
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+      })
+      rerender()
+
+      await waitFor(() =>
+        expect(vi.mocked(startRevealCountdown)).toHaveBeenCalledWith({
+          roomId: 'room-1',
+          actorClientId: 'client-1',
+          countdownSeconds: 10,
+        })
+      )
+      expect(startRevealCountdown).toHaveBeenCalledTimes(1)
+      if (trigger === 'failed automatic') {
+        expect(
+          await screen.findByText('Countdown unavailable')
+        ).toBeInTheDocument()
+        await new Promise((resolve) => setTimeout(resolve, 100))
+        expect(startRevealCountdown).toHaveBeenCalledTimes(1)
+        confirmSpy.mockRestore()
+        return
+      }
+      expect(screen.getByText('reveal in 10')).toBeInTheDocument()
+      await new Promise((resolve) => setTimeout(resolve, 3200))
+      expect(revealRound).not.toHaveBeenCalled()
+      expect(screen.getByText(/reveal in [67]/)).toBeInTheDocument()
+      confirmSpy.mockRestore()
+    }
+  )
+
+  it('allows a manual countdown before anyone has voted', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [],
+      errorMessage: null,
+    })
+
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const user = userEvent.setup()
+    renderRoomPage()
+
+    const countdownButton = await screen.findByRole('button', {
+      name: 'Countdown',
+    })
+    await waitFor(() => expect(countdownButton).toBeEnabled())
+    await user.click(countdownButton)
+
+    await waitFor(() =>
+      expect(vi.mocked(startRevealCountdown)).toHaveBeenCalledWith({
+        roomId: 'room-1',
+        actorClientId: 'client-1',
+        countdownSeconds: 3,
+      })
+    )
+    confirmSpy.mockRestore()
+  })
+
+  it('counts the revealer’s optimistic vote while live vote state is catching up', async () => {
+    vi.mocked(joinRoom).mockResolvedValue({
+      participantId: 'participant-1',
+      roomId: 'room-1',
+      roomName: 'demo-room',
+      displayName: 'Amy',
+      avatarKey: 'bender',
+      role: 'voter',
+      isKicked: false,
+    })
+    vi.mocked(useRoomLiveState).mockReturnValue({
+      participants: [
+        {
+          id: 'participant-1',
+          roomId: 'room-1',
+          displayName: 'Amy',
+          avatarKey: 'bender',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: 'participant-2',
+          roomId: 'room-1',
+          displayName: 'Leela',
+          avatarKey: 'leela',
+          role: 'voter',
+          isKicked: false,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      presenceByParticipantId: {},
+      errorMessage: null,
+    })
+    vi.mocked(useVotingLiveState).mockReturnValue({
+      activeRound: {
+        id: 'round-1',
+        roomId: 'room-1',
+        roundNumber: 1,
+        status: 'voting',
+        countdownStartedAt: null,
+        countdownSeconds: 3,
+        revealedAt: null,
+        reactionKind: null,
+      },
+      votes: [
+        {
+          roundId: 'round-1',
+          participantId: 'participant-2',
+          cardValue: '3',
+          isUnsure: false,
+          isSure: false,
+          submittedAt: new Date().toISOString(),
+        },
+      ],
+      errorMessage: null,
+    })
+    const confirmSpy = vi.spyOn(window, 'confirm')
+    const user = userEvent.setup()
+
+    renderRoomPage()
+
+    await user.click(await screen.findByRole('button', { name: /5 card/i }))
+    await user.click(screen.getByRole('button', { name: 'Reveal' }))
+
+    expect(vi.mocked(submitVote)).toHaveBeenCalled()
+    expect(confirmSpy).not.toHaveBeenCalled()
+    await waitFor(() => expect(vi.mocked(revealRound)).toHaveBeenCalled())
+  })
 })
 
 function renderRoomPage(initialEntry = '/rooms/demo-room') {
-  render(
+  const ui = () => (
     <ThemeProvider>
       <MemoryRouter initialEntries={[initialEntry]}>
         <Routes>
@@ -247,4 +1012,6 @@ function renderRoomPage(initialEntry = '/rooms/demo-room') {
       </MemoryRouter>
     </ThemeProvider>
   )
+  const view = render(ui())
+  return () => view.rerender(ui())
 }

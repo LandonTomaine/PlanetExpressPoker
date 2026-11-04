@@ -5,8 +5,23 @@
     <link rel="icon" type="image/png" href="/planet-express-logo.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#d9f4ee" />
+    <meta id="pep-theme-color" name="theme-color" content="#d9f4ee" />
     <title>Planet Express Poker</title>
+    <script>
+      try {
+        var appearance = localStorage.getItem('pep.appearance.v1')
+        if (appearance === 'dark' || appearance === 'light') {
+          document.documentElement.dataset.pepAppearance = appearance
+          document.documentElement.style.colorScheme = appearance
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute(
+              'content',
+              appearance === 'dark' ? '#10262c' : '#d9f4ee'
+            )
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

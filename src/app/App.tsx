@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { ThemeProvider } from '../features/theme/context'
+import { AppearanceSelect } from '../features/theme/AppearanceSelect'
 import { useTheme } from '../features/theme/useTheme'
 
 type DeploymentInfo = {
@@ -25,7 +26,7 @@ function AppFrame() {
   const location = useLocation()
   const shouldShowNav = location.pathname !== '/'
   const pendingTouchLogoClickCountRef = useRef(0)
-  const { activeTheme, cssVars } = useTheme()
+  const { activeTheme, appearance, cssVars, setAppearance } = useTheme()
 
   function dispatchHypnotoadLogoClick() {
     window.dispatchEvent(new CustomEvent('pep:hypnotoad-logo-click'))
@@ -48,6 +49,7 @@ function AppFrame() {
   return (
     <div
       data-pep-theme={activeTheme.id}
+      data-pep-appearance={appearance}
       style={cssVars}
       className="min-h-screen bg-[var(--pep-bg)] text-[var(--pep-ink)]"
     >
@@ -82,6 +84,13 @@ function AppFrame() {
           </div>
 
           <div className="flex flex-col items-start gap-2 sm:items-end">
+            <div className="w-32">
+              <AppearanceSelect
+                label="Appearance"
+                value={appearance}
+                onChange={setAppearance}
+              />
+            </div>
             {shouldShowNav ? (
               <nav className="flex gap-2">
                 <AppNavLink to="/">Home</AppNavLink>
@@ -115,7 +124,7 @@ function AppNavLink({ children, to }: AppNavLinkProps) {
       end={to === '/'}
       className={({ isActive }) => {
         return [
-          'rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.04em] transition hover:-translate-y-0.5',
+          'pep-nav-control rounded-full border px-4 py-2 text-sm font-black uppercase tracking-[0.04em] transition hover:-translate-y-0.5',
           isActive
             ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#ffffff,_#e3edf0)] text-[var(--pep-ink)] shadow-[0_6px_0_rgba(20,38,51,0.18)]'
             : 'border-slate-300 bg-[linear-gradient(180deg,_#f9fbfc,_#dfe8ec)] text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.1)] hover:border-[var(--pep-line-strong)] hover:bg-[linear-gradient(180deg,_#ffffff,_#e9f0f2)]',
@@ -171,7 +180,7 @@ function RepositoryLink({ repositoryUrl }: { repositoryUrl: string }) {
   return (
     <a
       href={repositoryUrl}
-      className="inline-flex items-center gap-2 self-start rounded-full border border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#f9fbfc,_#dfe8ec)] px-3.5 py-2 text-xs font-black uppercase tracking-[0.06em] text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--pep-ink)] hover:bg-[linear-gradient(180deg,_#ffffff,_#e9f0f2)]"
+      className="pep-repository-link inline-flex items-center gap-2 self-start rounded-full border border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#f9fbfc,_#dfe8ec)] px-3.5 py-2 text-xs font-black uppercase tracking-[0.06em] text-[var(--pep-ink)] shadow-[0_6px_14px_rgba(12,32,42,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--pep-ink)] hover:bg-[linear-gradient(180deg,_#ffffff,_#e9f0f2)]"
       rel="noreferrer"
       target="_blank"
     >

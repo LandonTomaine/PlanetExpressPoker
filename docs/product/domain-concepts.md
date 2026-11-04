@@ -83,13 +83,19 @@ The round resets for the next estimate without maintaining public round history.
 
 ### Vote
 
-A vote is a participant's current selection for the active round.
+A vote is a participant's current selection for the active round. It can also
+carry one confidence selection: Default (no marker, 100% average weight),
+Unsure (`?`, 75%), or Sure (`!`, 125%). Default is selected initially and after
+each round reset.
 
 Rules:
 
 - only voters can submit votes
 - spectators cannot submit votes
 - a participant may change their vote until reveal
+- the confidence marker remains private until reveal, alongside the card value
+- confidence weighting affects only the rounded average; recommendation and spread
+  rules continue to use the revealed card values
 - non-numeric cards do not affect average or recommendation
 - the numeric average rounds up to the next available deck value
 

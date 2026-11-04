@@ -140,6 +140,8 @@ Current fields:
 - `round_id` uuid not null references `rounds(id)` on delete cascade
 - `participant_id` uuid not null references `participants(id)` on delete cascade
 - `card_value` text not null
+- `is_unsure` boolean not null default false
+- `is_sure` boolean not null default false
 - `submitted_at` timestamptz not null default now()
 
 Current key:
@@ -150,6 +152,9 @@ Notes:
 
 - store `card_value` as text so numeric and special cards share one column
 - numeric interpretation belongs in app logic
+- confidence flags are mutually exclusive; both false means Default
+- `submit_vote` persists confidence; `list_round_votes` hides both markers for
+  other participants until reveal
 
 ### `app_secrets`
 

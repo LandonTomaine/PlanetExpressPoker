@@ -1,11 +1,12 @@
 import { defaultAvatar } from './avatars'
 import { defaultThemeId, getThemeConfig } from '../theme/registry'
-import type { ThemeId } from '../theme/types'
+import type { Appearance, ThemeId } from '../theme/types'
 
 const identityStorageKey = 'pep.identity.v1'
 const activeRoomStorageKey = 'pep.active-room.v1'
 const roomNamePrefillStorageKey = 'pep.room-name-prefill.v1'
 const themeStorageKey = 'pep.theme.v1'
+const appearanceStorageKey = 'pep.appearance.v1'
 const roomThemePrefillStorageKey = 'pep.room-theme-prefill.v1'
 
 export type StoredIdentity = {
@@ -144,6 +145,24 @@ export function saveStoredThemeId(themeId: ThemeId) {
   }
 
   window.localStorage.setItem(themeStorageKey, themeId)
+}
+
+export function readStoredAppearance(): Appearance | null {
+  if (!isBrowser()) {
+    return 'light'
+  }
+
+  const rawValue = window.localStorage.getItem(appearanceStorageKey)
+
+  return rawValue === 'dark' || rawValue === 'light' ? rawValue : null
+}
+
+export function saveStoredAppearance(appearance: Appearance) {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.localStorage.setItem(appearanceStorageKey, appearance)
 }
 
 export function readRoomThemePrefill(): ThemeId | null {

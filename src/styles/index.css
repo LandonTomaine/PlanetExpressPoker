@@ -35,6 +35,14 @@
   --pep-body-bg:
     linear-gradient(rgba(20, 38, 51, 0.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(20, 38, 51, 0.035) 1px, transparent 1px);
+  --pep-surface: rgba(255, 255, 255, 0.94);
+  --pep-surface-muted: #e8eef0;
+  --pep-surface-gradient: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.96),
+    rgba(231, 245, 241, 0.92)
+  );
+  --pep-muted-ink: #526a73;
   font-family: var(--pep-font-body);
   color: var(--pep-ink);
   background: var(--pep-root-bg);
@@ -42,6 +50,40 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-pep-appearance='dark'] {
+  --pep-bg: #111c29;
+  --pep-panel: rgba(19, 32, 47, 0.92);
+  --pep-panel-strong: #1c2e40;
+  --pep-line: rgba(229, 242, 255, 0.18);
+  --pep-line-strong: rgba(229, 242, 255, 0.4);
+  --pep-ink: #f4f8fc;
+  --pep-ink-soft: #bdcddb;
+  --pep-surface: rgba(19, 32, 47, 0.94);
+  --pep-surface-muted: #1c2e40;
+  --pep-surface-gradient: linear-gradient(
+    160deg,
+    #1c2e40,
+    rgba(19, 32, 47, 0.94)
+  );
+  --pep-muted-ink: #bdcddb;
+  --pep-root-bg:
+    radial-gradient(
+      circle at top left,
+      rgba(227, 196, 94, 0.14),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 85% 12%,
+      rgba(118, 201, 217, 0.12),
+      transparent 20%
+    ),
+    linear-gradient(180deg, #142438 0%, #0f1b2b 52%, #17293a 100%);
+  --pep-body-bg:
+    linear-gradient(rgba(229, 242, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(229, 242, 255, 0.045) 1px, transparent 1px);
+  color-scheme: dark;
 }
 
 html {
@@ -75,4 +117,139 @@ button:disabled {
 
 #root {
   min-height: 100vh;
+}
+
+/*
+ * Theme palettes own the semantic colors. These rules cover the remaining
+ * Tailwind light-surface utilities while preserving every image and branded
+ * asset exactly as authored.
+ */
+html[data-pep-appearance='dark'] .bg-white,
+html[data-pep-appearance='dark'] [class*='bg-white/'] {
+  background-color: var(--pep-surface) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-surface-gradient {
+  background-image: var(--pep-surface-gradient) !important;
+}
+
+html[data-pep-appearance='dark'] :is(.pep-nav-control, .pep-repository-link) {
+  background-image: linear-gradient(
+    180deg,
+    var(--pep-panel-strong),
+    var(--pep-surface)
+  ) !important;
+}
+
+html[data-pep-appearance='dark'] :is(.pep-revealed-vote, .pep-yellow-control) {
+  color: var(--pep-bg) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-role-choice-voter {
+  border-color: color-mix(
+    in srgb,
+    var(--pep-yellow) 68%,
+    var(--pep-line-strong)
+  ) !important;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pep-yellow) 74%, var(--pep-panel-strong)),
+    color-mix(in srgb, var(--pep-yellow) 56%, var(--pep-panel))
+  ) !important;
+  color: var(--pep-bg) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-role-choice-spectator {
+  border-color: color-mix(
+    in srgb,
+    var(--pep-accent-2) 62%,
+    var(--pep-line-strong)
+  ) !important;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--pep-accent-2) 62%, var(--pep-panel-strong)),
+    color-mix(in srgb, var(--pep-accent-2) 44%, var(--pep-panel))
+  ) !important;
+  color: var(--pep-bg) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-vote-status {
+  border-color: color-mix(
+    in srgb,
+    var(--pep-accent-2) 52%,
+    var(--pep-panel-strong)
+  ) !important;
+  background-color: color-mix(
+    in srgb,
+    var(--pep-accent-2) 44%,
+    var(--pep-panel-strong)
+  ) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-vote-card {
+  --pep-ink: #142633;
+  background-image: linear-gradient(180deg, #ffffff, #dff7ef) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-vote-card[aria-pressed='true'] {
+  --pep-ink: #142633;
+  background-image: linear-gradient(180deg, #fff0b8, #f4d44f) !important;
+}
+
+html[data-pep-appearance='dark'] .pep-delivery-action:not(:disabled) {
+  --pep-ink: #142633;
+  background-image: linear-gradient(135deg, #caf6e9, #fff5b2) !important;
+}
+
+html[data-pep-appearance='dark']
+  :is(.bg-slate-100, .bg-slate-200, .bg-slate-500),
+html[data-pep-appearance='dark'] [class~='bg-slate-100/78'],
+html[data-pep-appearance='dark'] [class~='bg-slate-200/70'] {
+  background-color: var(--pep-surface-muted) !important;
+}
+
+html[data-pep-appearance='dark'] :disabled[class*='disabled:bg-slate-'] {
+  background-color: var(--pep-surface-muted) !important;
+}
+
+html[data-pep-appearance='dark'] .border-slate-300,
+html[data-pep-appearance='dark'] [class~='border-slate-300/80'] {
+  border-color: var(--pep-line-strong) !important;
+}
+
+html[data-pep-appearance='dark'] :disabled[class*='disabled:border-slate-'] {
+  border-color: var(--pep-line-strong) !important;
+}
+
+html[data-pep-appearance='dark']
+  :is(.text-slate-400, .text-slate-500, .text-slate-600, .text-slate-700) {
+  color: var(--pep-muted-ink) !important;
+}
+
+html[data-pep-appearance='dark'] :disabled[class*='disabled:text-slate-'] {
+  color: var(--pep-muted-ink) !important;
+}
+
+html[data-pep-appearance='dark'] .bg-emerald-100 {
+  background-color: #174638 !important;
+}
+
+html[data-pep-appearance='dark'] .text-emerald-800 {
+  color: #a8e8ca !important;
+}
+
+html[data-pep-appearance='dark'] .bg-sky-100 {
+  background-color: #173f58 !important;
+}
+
+html[data-pep-appearance='dark'] .text-sky-800 {
+  color: #b4e1fb !important;
+}
+
+html[data-pep-appearance='dark'] .bg-amber-100 {
+  background-color: #554119 !important;
+}
+
+html[data-pep-appearance='dark'] .text-amber-800 {
+  color: #ffe29a !important;
 }

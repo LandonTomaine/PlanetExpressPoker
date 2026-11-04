@@ -64,6 +64,7 @@ import {
   numericCardValues,
 } from '../features/room/voting'
 import { ThemeSelect } from '../features/theme/ThemeSelect'
+import { AppearanceSelect } from '../features/theme/AppearanceSelect'
 import { useTheme } from '../features/theme/useTheme'
 import {
   getThemeCardArtworkPath,
@@ -79,6 +80,8 @@ import type {
   Room,
   RoundReactionKind,
 } from '../features/room/types'
+
+type VoteConfidence = 'default' | 'unsure' | 'sure'
 
 type RoundReactionCategory =
   | 'allSpecialCards'
@@ -105,8 +108,8 @@ const deliveryStormSequence = [
   'ArrowDown',
 ] as const
 const specialCardValues = ['ship', 'BIG', 'nibbler', 'coffee'] as const
-const revealCountdownDurationMs = 3_000
-const revealCountdownDurationSeconds = revealCountdownDurationMs / 1000
+const defaultRevealCountdownSeconds = 3
+const manualCountdownOptions = [1, 3, 5, 10]
 
 type RoomPageProps = {
   mode?: 'normal' | 'simulator'
@@ -115,8 +118,13 @@ type RoomPageProps = {
 export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const location = useLocation()
   const navigate = useNavigate()
-  const { personalThemeId, setPersonalThemeId, setRoomThemeOverride } =
-    useTheme()
+  const {
+    appearance,
+    personalThemeId,
+    setAppearance,
+    setPersonalThemeId,
+    setRoomThemeOverride,
+  } = useTheme()
   const { roomName: roomNameParam = '' } = useParams()
   const displayRoomName = normalizeRoomName(roomNameParam)
   const backingRoomName =
@@ -144,8 +152,14 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const [settingsError, setSettingsError] = useState<string | null>(null)
   const [isFunLevelSaving, setIsFunLevelSaving] = useState(false)
   const [isRoomThemeSaving, setIsRoomThemeSaving] = useState(false)
+  const [manualCountdownSeconds, setManualCountdownSeconds] = useState(
+    defaultRevealCountdownSeconds
+  )
   const [countdownNow, setCountdownNow] = useState(() => Date.now())
   const [localCountdownStartedAt, setLocalCountdownStartedAt] = useState<
+    number | null
+  >(null)
+  const [localCountdownSeconds, setLocalCountdownSeconds] = useState<
     number | null
   >(null)
   const [optimisticRevealedRoundId, setOptimisticRevealedRoundId] = useState<
@@ -169,9 +183,14 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const [pendingParticipantActionId, setPendingParticipantActionId] = useState<
     string | null
   >(null)
-  const [optimisticOwnCardValue, setOptimisticOwnCardValue] = useState<
-    string | null
-  >(null)
+  const [optimisticOwnCardValue, setOptimisticOwnCardValue] = useState<{
+    roundId: string
+    cardValue: string
+    isUnsure: boolean
+    isSure: boolean
+  } | null>(null)
+  const [confidenceDraft, setConfidenceDraft] =
+    useState<VoteConfidence>('default')
   const [inviteState, setInviteState] = useState<'idle' | 'copied' | 'failed'>(
     'idle'
   )
@@ -261,7 +280,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   })
 
   const startRevealCountdownEvent = useEffectEvent(async () => {
-    await handleRevealCountdown()
+    await handleRevealCountdown(manualCountdownSeconds)
   })
 
   const finalizeRevealEvent = useEffectEvent(async () => {
@@ -366,6 +385,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
     setSelfParticipant(null)
     setOptimisticOwnCardValue(null)
+    setConfidenceDraft('default')
     setVoteError(null)
     setRevealError(null)
     setParticipantActionError(null)
@@ -380,6 +400,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       setRoomError(null)
       setSelfParticipant(null)
       setRoom(null)
+      setOptimisticOwnCardValue(null)
+      setConfidenceDraft('default')
 
       if (roomNameError) {
         setIsRoomLoading(false)
@@ -480,6 +502,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     queueMicrotask(() => {
       setSelfParticipant(null)
       setOptimisticOwnCardValue(null)
+      setConfidenceDraft('default')
       setVoteError('You were kicked from this room.')
       setParticipantActionError(null)
       if (!isSimulatorMode && displayRoomName) {
@@ -650,7 +673,22 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       vote.participantId === selfParticipant?.participantId &&
       vote.roundId === activeRound?.id
   )
-  const displayedOwnCardValue = ownVote?.cardValue ?? optimisticOwnCardValue
+  const displayedOwnVote =
+    optimisticOwnCardValue !== null &&
+    optimisticOwnCardValue.roundId === activeRound?.id &&
+    (ownVote?.cardValue !== optimisticOwnCardValue.cardValue ||
+      ownVote?.isUnsure !== optimisticOwnCardValue.isUnsure ||
+      ownVote?.isSure !== optimisticOwnCardValue.isSure)
+      ? optimisticOwnCardValue
+      : ownVote
+  const displayedOwnCardValue = displayedOwnVote?.cardValue ?? null
+  const displayedOwnConfidence: VoteConfidence = displayedOwnVote
+    ? displayedOwnVote.isUnsure
+      ? 'unsure'
+      : displayedOwnVote.isSure
+        ? 'sure'
+        : 'default'
+    : confidenceDraft
 
   const activeRoundVotes = votes.filter(
     (vote) => vote.roundId === activeRound?.id
@@ -683,7 +721,6 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     isJoinedToRoom &&
     !isCountdownSubmitting &&
     Boolean(activeRound) &&
-    hasSubmittedVotes &&
     isActiveRoundVotingForDisplay
   const canResetRound =
     isJoinedToRoom &&
@@ -702,11 +739,15 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     activeVoters.every((participant) =>
       submittedVoteParticipantIds.has(participant.id)
     )
-  const revealedVoteByParticipantId = new Map(
-    activeRoundVotes.map((vote) => [vote.participantId, vote.cardValue])
+  const revealedVotesByParticipantId = new Map(
+    activeRoundVotes.map((vote) => [vote.participantId, vote])
   )
-  const revealedCardValues = Array.from(revealedVoteByParticipantId.values())
-  const scoreSummary = buildScoreSummary(revealedCardValues)
+  const revealedVotes = Array.from(revealedVotesByParticipantId.values())
+  const revealedVoteByParticipantId = new Map(
+    revealedVotes.map((vote) => [vote.participantId, vote.cardValue])
+  )
+  const revealedCardValues = revealedVotes.map((vote) => vote.cardValue)
+  const scoreSummary = buildScoreSummary(revealedVotes)
   const hasMatchingNumericVotes = hasNumericConsensus(revealedCardValues)
   const isConsensusCelebration =
     isActiveRoundRevealedForDisplay &&
@@ -725,9 +766,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       ? new Date(activeRound.countdownStartedAt).getTime()
       : null
   const countdownStartedAt = serverCountdownStartedAt ?? localCountdownStartedAt
+  const countdownDurationSeconds =
+    activeRound?.status === 'countdown'
+      ? activeRound.countdownSeconds
+      : (localCountdownSeconds ?? defaultRevealCountdownSeconds)
   const countdownEndsAt =
     countdownStartedAt !== null
-      ? countdownStartedAt + revealCountdownDurationMs
+      ? countdownStartedAt + countdownDurationSeconds * 1000
       : null
   const countdownMsRemaining =
     countdownEndsAt !== null && isActiveRoundCountdownForDisplay
@@ -736,7 +781,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
   const countdownSecondsRemaining =
     countdownMsRemaining !== null && countdownMsRemaining > 0
       ? Math.min(
-          revealCountdownDurationSeconds,
+          countdownDurationSeconds,
           Math.ceil(countdownMsRemaining / 1000)
         )
       : null
@@ -862,6 +907,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       lastSeenRoundNumberRef.current = null
       queueMicrotask(() => {
         setLocalCountdownStartedAt(null)
+        setLocalCountdownSeconds(null)
         setOptimisticRevealedRoundId(null)
       })
       return
@@ -873,6 +919,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     ) {
       queueMicrotask(() => {
         setLocalCountdownStartedAt(null)
+        setLocalCountdownSeconds(null)
       })
     }
 
@@ -899,8 +946,10 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     queueMicrotask(() => {
       setLocalCountdownStartedAt(null)
+      setLocalCountdownSeconds(null)
       setOptimisticRevealedRoundId(null)
       setOptimisticOwnCardValue(null)
+      setConfidenceDraft('default')
       setVoteError(null)
       setRevealError(null)
       setActiveFunEvent(null)
@@ -1063,13 +1112,17 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       return
     }
 
-    if (activeRound.status !== 'voting') {
+    if (activeRound.status !== 'voting' || !roomSettings?.autoRevealEnabled) {
       countdownAttemptRef.current = null
       return
     }
 
     if (!allVotersHaveSubmitted) {
       countdownAttemptRef.current = null
+      return
+    }
+
+    if (localCountdownStartedAt !== null || isCountdownSubmitting) {
       return
     }
 
@@ -1082,7 +1135,15 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     countdownAttemptRef.current = roundAttemptKey
 
     void startRevealCountdownEvent()
-  }, [activeRound, allVotersHaveSubmitted, room, selfParticipant])
+  }, [
+    activeRound,
+    allVotersHaveSubmitted,
+    localCountdownStartedAt,
+    isCountdownSubmitting,
+    room,
+    roomSettings?.autoRevealEnabled,
+    selfParticipant,
+  ])
 
   useEffect(() => {
     if (
@@ -1104,7 +1165,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
   }, [activeRound, countdownEndsAt, isActiveRoundCountdownForDisplay, room])
 
-  async function handleVote(cardValue: string) {
+  async function handleVote(cardValue: string, confidence: VoteConfidence) {
     if (!room || !selfParticipant) {
       return
     }
@@ -1116,13 +1177,23 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
     setIsVoteSubmitting(true)
     setVoteError(null)
-    setOptimisticOwnCardValue(cardValue)
+    const isUnsure = confidence === 'unsure'
+    const isSure = confidence === 'sure'
+    setConfidenceDraft(confidence)
+    setOptimisticOwnCardValue({
+      roundId: activeRound?.id ?? '',
+      cardValue,
+      isUnsure,
+      isSure,
+    })
 
     try {
       await submitVote({
         roomId: room.id,
         clientId: identity.clientId,
         cardValue,
+        isUnsure,
+        isSure,
       })
     } catch (error) {
       setOptimisticOwnCardValue(null)
@@ -1172,7 +1243,11 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
   }
 
-  async function handleDevVote(cardValue: string) {
+  async function handleDevVote(
+    cardValue: string,
+    isUnsure = false,
+    isSure = false
+  ) {
     if (!isSimulatorMode || !room || !devVoteParticipant) {
       return
     }
@@ -1197,6 +1272,8 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         roomId: room.id,
         clientId: devClientId,
         cardValue,
+        isUnsure,
+        isSure,
       })
       setDevVoteParticipantId(null)
     } catch (error) {
@@ -1208,12 +1285,20 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     }
   }
 
-  async function handleRevealCountdown() {
+  async function handleRevealCountdown(countdownSeconds: number) {
     if (!room || !selfParticipant) {
       return
     }
 
+    if (!confirmIncompleteReveal()) {
+      return
+    }
+
+    if (activeRound) {
+      countdownAttemptRef.current = `${activeRound.id}:${activeRound.roundNumber}`
+    }
     setLocalCountdownStartedAt(Date.now())
+    setLocalCountdownSeconds(countdownSeconds)
     setOptimisticRevealedRoundId(null)
     setCountdownNow(Date.now())
     setIsCountdownSubmitting(true)
@@ -1223,6 +1308,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       await startRevealCountdown({
         roomId: room.id,
         actorClientId: identity.clientId,
+        countdownSeconds,
       })
     } catch (error) {
       setRevealError(
@@ -1231,7 +1317,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           : 'Failed to start reveal countdown.'
       )
       setLocalCountdownStartedAt(null)
-      countdownAttemptRef.current = null
+      setLocalCountdownSeconds(null)
     } finally {
       setIsCountdownSubmitting(false)
     }
@@ -1248,6 +1334,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     try {
       await revealRound({ roomId: room.id, actorClientId: identity.clientId })
       setLocalCountdownStartedAt(null)
+      setLocalCountdownSeconds(null)
       setOptimisticRevealedRoundId(activeRound?.id ?? null)
     } catch (error) {
       setRevealError(
@@ -1256,6 +1343,32 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
     } finally {
       setIsRevealSubmitting(false)
     }
+  }
+
+  function confirmIncompleteReveal() {
+    const missingVoterCount = activeVoters.filter(
+      (participant) =>
+        !submittedVoteParticipantIds.has(participant.id) &&
+        !(
+          participant.id === selfParticipant?.participantId &&
+          optimisticOwnCardValue
+        )
+    ).length
+
+    return (
+      missingVoterCount === 0 ||
+      window.confirm(
+        `${missingVoterCount} voter${missingVoterCount === 1 ? '' : 's'} ${missingVoterCount === 1 ? 'has' : 'have'} not voted yet. Reveal anyway?`
+      )
+    )
+  }
+
+  async function handleReveal() {
+    if (!confirmIncompleteReveal()) {
+      return
+    }
+
+    await handleInstantReveal()
   }
 
   async function finalizeReveal() {
@@ -1351,6 +1464,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         actorClientId: identity.clientId,
       })
       setLocalCountdownStartedAt(null)
+      setLocalCountdownSeconds(null)
       setOptimisticRevealedRoundId(null)
       setOptimisticOwnCardValue(null)
     } catch (error) {
@@ -1408,6 +1522,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
       if (input.isSelfTarget && input.nextRole === 'spectator') {
         setOptimisticOwnCardValue(null)
+        setConfidenceDraft('default')
         setVoteError(null)
       }
     } catch (error) {
@@ -1512,7 +1627,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="mt-4 mb-4 min-h-[12rem] rounded-[18px] border-2 border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#fff7ce,_#ffffff_58%,_#d7f5eb)] p-4 shadow-[0_14px_34px_rgba(31,160,137,0.13)] sm:h-[12rem] sm:overflow-hidden"
+      className="pep-surface-gradient mt-4 mb-4 min-h-[12rem] rounded-[18px] border-2 border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#fff7ce,_#ffffff_58%,_#d7f5eb)] p-4 shadow-[0_14px_34px_rgba(31,160,137,0.13)]"
     >
       {isActiveRoundRevealedForDisplay ? (
         <>
@@ -1534,18 +1649,28 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <div className="min-w-0 rounded-[14px] border border-[var(--pep-line)] bg-white/86 p-2.5">
               <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--pep-accent)]">
-                Average
+                Average (rounded)
               </p>
               <p className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]">
                 {scoreSummary.averageLabel}
               </p>
+              <div className="mt-1.5 space-y-1 text-[11px] font-semibold leading-4 text-[var(--pep-ink-soft)]">
+                <p>{scoreSummary.numericVotesLabel}</p>
+                <p>{scoreSummary.averageCalculationLabel}</p>
+                {scoreSummary.weightingLabel ? (
+                  <p>{scoreSummary.weightingLabel}</p>
+                ) : null}
+              </div>
             </div>
             <div className="min-w-0 rounded-[14px] border-2 border-[var(--pep-accent)]/25 bg-white p-2.5 shadow-[0_10px_24px_rgba(212,47,38,0.08)]">
               <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--pep-accent)]">
-                Recommended
+                Suggested card
               </p>
               <p className="mt-1 font-[var(--pep-font-display)] text-3xl leading-none text-[var(--pep-ink)]">
                 {scoreSummary.recommendedLabel}
+              </p>
+              <p className="mt-1.5 text-[11px] font-semibold leading-4 text-[var(--pep-ink-soft)]">
+                {scoreSummary.recommendationExplanation}
               </p>
             </div>
           </div>
@@ -1608,12 +1733,13 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             >
               <button
                 type="button"
+                aria-pressed={isSelected}
                 aria-label={
                   cardMeaningLabel
                     ? `${cardArtworkLabel} card, ${cardMeaningLabel}`
                     : `${cardLabel} card`
                 }
-                onClick={() => void handleVote(card)}
+                onClick={() => void handleVote(card, displayedOwnConfidence)}
                 disabled={
                   !isJoinedToRoom ||
                   effectiveSelfRole !== 'voter' ||
@@ -1621,7 +1747,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   !isActiveRoundVotingForDisplay
                 }
                 className={[
-                  'relative flex h-full w-full flex-col justify-between rounded-[12px] border p-3 text-left shadow-[0_8px_18px_rgba(12,32,42,0.07)]',
+                  'pep-vote-card relative flex h-full w-full flex-col justify-between rounded-[12px] border p-3 text-left shadow-[0_8px_18px_rgba(12,32,42,0.07)]',
                   isSelected
                     ? 'border-[var(--pep-accent)] bg-[linear-gradient(180deg,_#fff0b8,_#f4d44f)] ring-2 ring-[var(--pep-accent)]/20'
                     : 'border-[var(--pep-line-strong)] bg-[linear-gradient(180deg,_#ffffff,_#dff7ef)] hover:border-[var(--pep-accent-2)]',
@@ -1669,6 +1795,65 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           )
         })}
       </div>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[var(--pep-line)] bg-white/82 px-4 py-3">
+        <div>
+          <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
+            Confidence
+          </p>
+          <p className="mt-1 text-sm leading-5 text-[var(--pep-ink-soft)]">
+            Default × 1 · Unsure ? × 0.75 · Sure ! × 1.25
+          </p>
+        </div>
+        <div
+          role="group"
+          aria-label="Estimate confidence"
+          className="flex flex-wrap gap-2"
+        >
+          {(['default', 'unsure', 'sure'] as const).map((confidence) => {
+            const label =
+              confidence === 'default'
+                ? 'Default'
+                : confidence === 'unsure'
+                  ? 'Unsure'
+                  : 'Sure'
+            const marker =
+              confidence === 'unsure' ? '?' : confidence === 'sure' ? '!' : ''
+            return (
+              <button
+                key={confidence}
+                type="button"
+                aria-pressed={displayedOwnConfidence === confidence}
+                aria-label={`${label} estimate`}
+                onClick={() => {
+                  setConfidenceDraft(confidence)
+                  if (displayedOwnCardValue) {
+                    void handleVote(displayedOwnCardValue, confidence)
+                  }
+                }}
+                disabled={
+                  !isJoinedToRoom ||
+                  effectiveSelfRole !== 'voter' ||
+                  isVoteSubmitting ||
+                  !isActiveRoundVotingForDisplay
+                }
+                className={[
+                  'inline-flex min-h-10 items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-black shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
+                  displayedOwnConfidence === confidence
+                    ? 'pep-yellow-control border-[var(--pep-accent)] bg-[var(--pep-yellow)] text-[var(--pep-ink)]'
+                    : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)]',
+                ].join(' ')}
+              >
+                {marker ? (
+                  <span aria-hidden="true" className="text-lg leading-none">
+                    {marker}
+                  </span>
+                ) : null}
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
     </>
   )
 
@@ -1701,7 +1886,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         initial={{ opacity: 0, y: 18, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.2 }}
-        className="max-h-[calc(100vh-3rem)] w-full max-w-2xl overflow-y-auto rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_26px_70px_rgba(12,32,42,0.28)]"
+        className="pep-surface-gradient max-h-[calc(100vh-3rem)] w-full max-w-2xl overflow-y-auto rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_26px_70px_rgba(12,32,42,0.28)]"
       >
         <div className="flex items-start gap-4">
           <div className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-[14px] border border-[var(--pep-line)] bg-white shadow-[0_12px_26px_rgba(12,32,42,0.12)]">
@@ -1771,9 +1956,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 onClick={() => setJoinRole('voter')}
                 disabled={isJoining || isRoomLoading}
                 className={[
-                  'rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
+                  'pep-role-choice rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
                   joinRole === 'voter'
-                    ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#fff6bf,_#f4d44f)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                    ? 'pep-role-choice-voter border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#fff6bf,_#f4d44f)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
                     : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
                 ].join(' ')}
               >
@@ -1785,9 +1970,9 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 onClick={() => setJoinRole('spectator')}
                 disabled={isJoining || isRoomLoading}
                 className={[
-                  'rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
+                  'pep-role-choice rounded-[12px] border px-4 py-3 text-sm font-black uppercase transition disabled:cursor-not-allowed disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400',
                   joinRole === 'spectator'
-                    ? 'border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#e4f6ef,_#bfe7d8)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
+                    ? 'pep-role-choice-spectator border-[var(--pep-ink)] bg-[linear-gradient(180deg,_#e4f6ef,_#bfe7d8)] text-[var(--pep-ink)] shadow-[0_8px_18px_rgba(20,38,51,0.14)]'
                     : 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink-soft)]',
                 ].join(' ')}
               >
@@ -1881,199 +2066,315 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
         </div>
       ) : null}
 
-      <div className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(13rem,13rem))] gap-2.5">
-        {participants.map((participant, index) => {
-          const avatar = getAvatarOption(
-            participant.avatarKey,
-            effectiveThemeId
+      <div className="mt-4 space-y-5">
+        {(
+          [
+            {
+              role: 'voter' as const,
+              heading: 'Voters',
+              description: 'People who can submit an estimate this round.',
+            },
+            {
+              role: 'spectator' as const,
+              heading: 'Spectators',
+              description: 'People watching this round without voting.',
+            },
+          ] as const
+        ).map((group) => {
+          const groupedParticipants = participants.filter(
+            (participant) => participant.role === group.role
           )
-          const isOnline = Boolean(
-            displayedPresenceByParticipantId[participant.id]
-          )
-          const isSelf = participant.id === selfParticipant?.participantId
-          const isRoomOwner = participant.id === roomOwnerParticipantId
-          const hasSubmittedVote =
-            submittedVoteParticipantIds.has(participant.id) ||
-            (isSelf && Boolean(displayedOwnCardValue))
-          const revealedCardValue = revealedVoteByParticipantId.get(
-            participant.id
-          )
-          const isRevealedShipCard = revealedCardValue === 'ship'
-          const nextRole = participant.role === 'voter' ? 'spectator' : 'voter'
-          const isParticipantActionPending =
-            pendingParticipantActionId === participant.id
-          const canDevVoteAsParticipant =
-            isSimulatorMode &&
-            isJoinedToRoom &&
-            isActiveRoundVotingForDisplay &&
-            participant.role === 'voter' &&
-            Boolean(devClientIdByParticipantId[participant.id])
 
           return (
-            <motion.article
-              key={participant.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.18, delay: index * 0.03 }}
-              className="relative min-w-0 overflow-hidden rounded-[12px] border border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.86),_rgba(238,245,243,0.92))] p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]"
-            >
-              <div className="flex items-start gap-2">
-                <div
-                  className={`grid h-9 w-9 shrink-0 overflow-hidden rounded-[9px] bg-gradient-to-br ${avatar.accentClassName} shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]`}
-                >
-                  <img
-                    src={avatar.portraitPath}
-                    alt={avatar.label}
-                    className={getAvatarPortraitClassName(avatar)}
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="min-h-[3.6rem]">
-                    <h4 className="truncate text-sm font-black text-[var(--pep-ink)]">
-                      {participant.displayName}
-                    </h4>
-                    <p className="mt-0.5 truncate text-xs text-[var(--pep-ink-soft)]">
-                      {avatar.label}
-                    </p>
-                    <div className="mt-1 flex h-4 items-center gap-1.5">
-                      {isRoomOwner ? (
-                        <span className="rounded-full bg-[var(--pep-panel-strong)] px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-ink)]">
-                          Owner
-                        </span>
-                      ) : null}
-                      {isSelf ? (
-                        <span className="rounded-full bg-[var(--pep-accent)]/10 px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-accent)]">
-                          You
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <p
-                    className={[
-                      'mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
-                      isActiveRoundRevealedForDisplay
-                        ? revealedCardValue
-                          ? [
-                              'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
-                              isRevealedShipCard ? 'text-3xl' : 'text-xl',
-                            ].join(' ')
-                          : 'border-slate-300 bg-slate-100 text-sm text-slate-500'
-                        : 'border-transparent bg-transparent text-transparent',
-                    ].join(' ')}
+            <section key={group.role} aria-labelledby={`${group.role}-heading`}>
+              <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 px-1">
+                <div className="flex items-baseline gap-2">
+                  <h4
+                    id={`${group.role}-heading`}
+                    className="text-xs font-black uppercase tracking-[0.1em] text-[var(--pep-ink)]"
                   >
-                    {isActiveRoundRevealedForDisplay
-                      ? revealedCardValue
-                        ? getCardDisplayLabel(revealedCardValue)
-                        : 'No vote'
-                      : ''}
-                  </p>
-                  <div className="mt-2 flex flex-col items-start gap-1 pr-11">
-                    <span
-                      className={[
-                        'whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.06em]',
-                        participant.role === 'voter'
-                          ? 'bg-sky-100 text-sky-800'
-                          : 'bg-slate-200 text-slate-700',
-                      ].join(' ')}
-                    >
-                      {participant.role}
-                    </span>
-                    <span
-                      className={[
-                        'whitespace-nowrap rounded-full px-2 py-1 text-[10px] font-black uppercase tracking-[0.06em]',
-                        isOnline
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-slate-200 text-slate-700',
-                      ].join(' ')}
-                    >
-                      {isOnline ? 'online' : 'offline'}
-                    </span>
-                  </div>
-                  {isJoinedToRoom ? (
-                    <div className="mt-3 flex items-center gap-1.5 pr-11">
-                      <button
-                        type="button"
-                        aria-label={`Switch ${participant.displayName} to ${nextRole} mode`}
-                        title={`Switch ${participant.displayName} to ${nextRole} mode`}
-                        onClick={() =>
-                          void handleRoleChange({
-                            participantId: participant.id,
-                            nextRole,
-                            isSelfTarget: isSelf,
-                          })
-                        }
-                        disabled={isParticipantActionPending}
+                    {group.heading}
+                  </h4>
+                  <span className="rounded-full bg-[var(--pep-panel-strong)] px-2 py-0.5 text-[10px] font-black uppercase text-[var(--pep-ink-soft)]">
+                    {groupedParticipants.length}
+                  </span>
+                </div>
+                <p className="text-xs text-[var(--pep-ink-soft)]">
+                  {group.description}
+                </p>
+              </div>
+              {groupedParticipants.length === 0 ? (
+                <p className="rounded-[12px] border border-dashed border-[var(--pep-line)] bg-white/55 px-3 py-2 text-sm text-[var(--pep-ink-soft)]">
+                  No {group.role}s in the room.
+                </p>
+              ) : (
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(13rem,13rem))] gap-2.5">
+                  {groupedParticipants.map((participant) => {
+                    const index = participants.indexOf(participant)
+                    const avatar = getAvatarOption(
+                      participant.avatarKey,
+                      effectiveThemeId
+                    )
+                    const isOnline = Boolean(
+                      displayedPresenceByParticipantId[participant.id]
+                    )
+                    const isSelf =
+                      participant.id === selfParticipant?.participantId
+                    const isRoomOwner =
+                      participant.id === roomOwnerParticipantId
+                    const hasSubmittedVote =
+                      submittedVoteParticipantIds.has(participant.id) ||
+                      (isSelf && Boolean(displayedOwnCardValue))
+                    const revealedCardValue = revealedVoteByParticipantId.get(
+                      participant.id
+                    )
+                    const revealedVote = activeRoundVotes.find(
+                      (vote) => vote.participantId === participant.id
+                    )
+                    const isRevealedShipCard = revealedCardValue === 'ship'
+                    const nextRole =
+                      participant.role === 'voter' ? 'spectator' : 'voter'
+                    const isParticipantActionPending =
+                      pendingParticipantActionId === participant.id
+                    const canDevVoteAsParticipant =
+                      isSimulatorMode &&
+                      isJoinedToRoom &&
+                      isActiveRoundVotingForDisplay &&
+                      participant.role === 'voter' &&
+                      Boolean(devClientIdByParticipantId[participant.id])
+
+                    return (
+                      <motion.article
+                        key={participant.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.18, delay: index * 0.03 }}
                         className={[
-                          'grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
-                          nextRole === 'spectator'
-                            ? 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)]'
-                            : 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_5px_12px_rgba(31,152,134,0.18)]',
+                          'pep-surface-gradient relative min-w-0 overflow-hidden rounded-[12px] border p-2.5 shadow-[0_8px_20px_rgba(12,32,42,0.05)]',
+                          participant.role === 'voter'
+                            ? 'border-[var(--pep-line)] bg-[linear-gradient(180deg,_rgba(255,255,255,0.92),_rgba(238,245,243,0.96))]'
+                            : 'border-slate-300 bg-[linear-gradient(180deg,_rgba(248,250,252,0.94),_rgba(231,237,242,0.94))]',
                         ].join(' ')}
                       >
-                        <EyeIcon crossed={nextRole === 'spectator'} />
-                      </button>
-                      {isSelf && !isRoomOwner ? (
-                        <button
-                          type="button"
-                          aria-label="Leave room"
-                          title="Leave room"
-                          onClick={() => void handleLeaveRoom(participant.id)}
-                          disabled={isParticipantActionPending}
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
-                        >
-                          <LeaveIcon />
-                        </button>
-                      ) : isRoomOwner ? (
-                        <span
-                          aria-label="Room owner cannot be kicked"
-                          title="Room owner cannot be kicked"
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-slate-300 bg-slate-100 text-slate-500"
-                        >
-                          <ShieldIcon />
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          aria-label={`Kick ${participant.displayName}`}
-                          title={`Kick ${participant.displayName}`}
-                          onClick={() =>
-                            void handleKick(participant.id, isRoomOwner)
-                          }
-                          disabled={isParticipantActionPending}
-                          className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_5px_12px_rgba(212,47,38,0.14)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
-                        >
-                          <KickIcon />
-                        </button>
-                      )}
-                    </div>
-                  ) : null}
-                  {canDevVoteAsParticipant ? (
-                    <button
-                      type="button"
-                      onClick={() => setDevVoteParticipantId(participant.id)}
-                      disabled={pendingDevVoteParticipantId === participant.id}
-                      className="mt-2 mr-11 inline-flex min-h-7 items-center rounded-full border border-[var(--pep-line-strong)] bg-white/86 px-2.5 py-1 text-[10px] font-black text-[var(--pep-ink)] shadow-[0_4px_10px_rgba(12,32,42,0.06)] hover:border-[var(--pep-accent-2)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
-                    >
-                      Simulate vote
-                    </button>
-                  ) : null}
+                        <div className="flex items-start gap-2">
+                          <div
+                            className={`grid h-9 w-9 shrink-0 overflow-hidden rounded-[9px] bg-gradient-to-br ${avatar.accentClassName} shadow-[inset_0_0_0_1px_rgba(255,255,255,0.7)]`}
+                          >
+                            <img
+                              src={avatar.portraitPath}
+                              alt={avatar.label}
+                              className={getAvatarPortraitClassName(avatar)}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="min-h-[4.2rem]">
+                              <h4 className="truncate text-sm font-black text-[var(--pep-ink)]">
+                                {participant.displayName}
+                              </h4>
+                              <div className="mt-1 flex flex-wrap items-center gap-1">
+                                <span
+                                  className={[
+                                    'rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase leading-none',
+                                    participant.role === 'voter'
+                                      ? 'bg-sky-100 text-sky-800'
+                                      : 'bg-slate-200 text-slate-700',
+                                  ].join(' ')}
+                                >
+                                  {participant.role}
+                                </span>
+                                <span
+                                  className={[
+                                    'inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase leading-none',
+                                    isOnline
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : 'bg-slate-200 text-slate-700',
+                                  ].join(' ')}
+                                >
+                                  <span
+                                    aria-hidden="true"
+                                    className={[
+                                      'h-1.5 w-1.5 rounded-full',
+                                      isOnline
+                                        ? 'bg-emerald-600'
+                                        : 'bg-slate-500',
+                                    ].join(' ')}
+                                  />
+                                  {isOnline ? 'online now' : 'offline'}
+                                </span>
+                                {isRoomOwner ? (
+                                  <span className="rounded-full bg-[var(--pep-panel-strong)] px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-ink)]">
+                                    Owner
+                                  </span>
+                                ) : null}
+                                {isSelf ? (
+                                  <span className="rounded-full bg-[var(--pep-accent)]/10 px-1.5 py-0.5 text-[9px] font-black uppercase leading-none text-[var(--pep-accent)]">
+                                    You
+                                  </span>
+                                ) : null}
+                              </div>
+                            </div>
+                            {participant.role === 'voter' ? (
+                              <p
+                                className={[
+                                  'pep-revealed-vote mt-1 flex min-h-9 items-center justify-center truncate rounded-[10px] border px-2 py-1 text-center font-black uppercase leading-none',
+                                  isActiveRoundRevealedForDisplay
+                                    ? revealedCardValue
+                                      ? [
+                                          'border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]',
+                                          isRevealedShipCard
+                                            ? 'text-3xl'
+                                            : 'text-xl',
+                                        ].join(' ')
+                                      : 'border-slate-300 bg-slate-100 text-sm text-slate-500'
+                                    : !hasSubmittedVote
+                                      ? 'pep-no-vote-card border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-sm text-[var(--pep-ink)] shadow-[0_5px_0_rgba(20,38,51,0.14)]'
+                                      : 'pep-voted-card border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-sm text-white shadow-[0_5px_0_rgba(31,152,134,0.18)]',
+                                ].join(' ')}
+                              >
+                                {isActiveRoundRevealedForDisplay ? (
+                                  revealedCardValue ? (
+                                    <>
+                                      {getCardDisplayLabel(revealedCardValue)}
+                                      {revealedVote?.isUnsure ||
+                                      revealedVote?.isSure ? (
+                                        <span
+                                          aria-label={
+                                            revealedVote.isUnsure
+                                              ? 'Unsure estimate'
+                                              : 'Sure estimate'
+                                          }
+                                          title={
+                                            revealedVote.isUnsure
+                                              ? 'Unsure estimate'
+                                              : 'Sure estimate'
+                                          }
+                                          className="ml-1 inline-grid h-5 w-5 shrink-0 place-items-center rounded-full border border-[var(--pep-accent)] bg-white text-xs font-black normal-case text-[var(--pep-accent)]"
+                                        >
+                                          {revealedVote.isUnsure ? '?' : '!'}
+                                        </span>
+                                      ) : null}
+                                    </>
+                                  ) : (
+                                    'No vote'
+                                  )
+                                ) : !hasSubmittedVote ? (
+                                  'No vote'
+                                ) : (
+                                  'Voted'
+                                )}
+                              </p>
+                            ) : (
+                              <p className="mt-1 flex min-h-9 items-center justify-center rounded-[10px] bg-slate-200/70 px-2 py-1 text-center text-xs font-bold text-slate-600">
+                                Watching this round
+                              </p>
+                            )}
+                            {isJoinedToRoom ? (
+                              <div className="mt-3 flex items-center gap-1.5 pr-11">
+                                <button
+                                  type="button"
+                                  aria-label={`Switch ${participant.displayName} to ${nextRole} mode`}
+                                  title={`Switch ${participant.displayName} to ${nextRole} mode`}
+                                  onClick={() =>
+                                    void handleRoleChange({
+                                      participantId: participant.id,
+                                      nextRole,
+                                      isSelfTarget: isSelf,
+                                    })
+                                  }
+                                  disabled={isParticipantActionPending}
+                                  className={[
+                                    'grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none',
+                                    nextRole === 'spectator'
+                                      ? 'border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)]'
+                                      : 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_5px_12px_rgba(31,152,134,0.18)]',
+                                  ].join(' ')}
+                                >
+                                  <EyeIcon crossed={nextRole === 'spectator'} />
+                                </button>
+                                {isSelf && !isRoomOwner ? (
+                                  <button
+                                    type="button"
+                                    aria-label="Leave room"
+                                    title="Leave room"
+                                    onClick={() =>
+                                      void handleLeaveRoom(participant.id)
+                                    }
+                                    disabled={isParticipantActionPending}
+                                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-line-strong)] bg-white text-[var(--pep-ink)] shadow-[0_5px_12px_rgba(12,32,42,0.08)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                                  >
+                                    <LeaveIcon />
+                                  </button>
+                                ) : isRoomOwner ? (
+                                  <span
+                                    aria-label="Room owner cannot be kicked"
+                                    title="Room owner cannot be kicked"
+                                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-slate-300 bg-slate-100 text-slate-500"
+                                  >
+                                    <ShieldIcon />
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    aria-label={`Kick ${participant.displayName}`}
+                                    title={`Kick ${participant.displayName}`}
+                                    onClick={() =>
+                                      void handleKick(
+                                        participant.id,
+                                        isRoomOwner
+                                      )
+                                    }
+                                    disabled={isParticipantActionPending}
+                                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full border-2 border-[var(--pep-accent)] bg-white text-[var(--pep-accent)] shadow-[0_5px_12px_rgba(212,47,38,0.14)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                                  >
+                                    <KickIcon />
+                                  </button>
+                                )}
+                              </div>
+                            ) : null}
+                            {canDevVoteAsParticipant ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDevVoteParticipantId(participant.id)
+                                }
+                                disabled={
+                                  pendingDevVoteParticipantId === participant.id
+                                }
+                                className="mt-2 mr-11 inline-flex min-h-7 items-center rounded-full border border-[var(--pep-line-strong)] bg-white/86 px-2.5 py-1 text-[10px] font-black text-[var(--pep-ink)] shadow-[0_4px_10px_rgba(12,32,42,0.06)] hover:border-[var(--pep-accent-2)] disabled:cursor-default disabled:border-slate-300 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-none"
+                              >
+                                Simulate vote
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                        {participant.role === 'voter' ? (
+                          <div
+                            title={
+                              hasSubmittedVote
+                                ? 'Vote submitted'
+                                : 'Waiting for vote'
+                            }
+                            aria-label={
+                              hasSubmittedVote
+                                ? 'Vote submitted'
+                                : 'Waiting for vote'
+                            }
+                            className={[
+                              'pep-vote-status absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
+                              hasSubmittedVote
+                                ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
+                                : 'border-slate-300 bg-slate-100 text-slate-400',
+                            ].join(' ')}
+                          >
+                            <CheckIcon />
+                          </div>
+                        ) : null}
+                      </motion.article>
+                    )
+                  })}
                 </div>
-              </div>
-              <div
-                title={hasSubmittedVote ? 'Vote submitted' : 'Waiting for vote'}
-                aria-label={
-                  hasSubmittedVote ? 'Vote submitted' : 'Waiting for vote'
-                }
-                className={[
-                  'absolute bottom-2.5 right-2.5 grid h-9 w-9 place-items-center rounded-full border-2',
-                  hasSubmittedVote
-                    ? 'border-[var(--pep-accent-2)] bg-[var(--pep-accent-2)] text-white shadow-[0_8px_16px_rgba(31,152,134,0.22)]'
-                    : 'border-slate-300 bg-slate-100 text-slate-400',
-                ].join(' ')}
-              >
-                <CheckIcon />
-              </div>
-            </motion.article>
+              )}
+            </section>
           )
         })}
       </div>
@@ -2090,7 +2391,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="dev-vote-title"
-          className="w-full max-w-2xl rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
+          className="pep-surface-gradient w-full max-w-2xl rounded-[22px] border-2 border-[var(--pep-ink)] bg-[linear-gradient(160deg,_#ffffff,_#dff7ef)] p-5 shadow-[0_28px_80px_rgba(12,32,42,0.34)]"
         >
           <p className="text-xs font-black uppercase tracking-[0.12em] text-[var(--pep-accent-2)]">
             Simulate vote
@@ -2204,7 +2505,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                   type="button"
                   disabled={isDeliveryInProgress}
                   onClick={() => void handleDeliveryDrop()}
-                  className="mt-4 flex w-full items-center justify-between gap-3 rounded-[14px] border border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#caf6e9,_#fff5b2)] px-4 py-3 text-left text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink)] shadow-[0_12px_24px_rgba(31,160,137,0.16)] disabled:cursor-default disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
+                  className="pep-delivery-action mt-4 flex w-full items-center justify-between gap-3 rounded-[14px] border border-[var(--pep-accent-2)]/35 bg-[linear-gradient(135deg,_#caf6e9,_#fff5b2)] px-4 py-3 text-left text-sm font-black uppercase tracking-[0.08em] text-[var(--pep-ink)] shadow-[0_12px_24px_rgba(31,160,137,0.16)] disabled:cursor-default disabled:border-slate-200 disabled:bg-slate-200 disabled:text-slate-600 disabled:shadow-none"
                 >
                   <span>{theme.manualDeliveryLabel}</span>
                   <img
@@ -2391,13 +2692,20 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
 
                 <div className="mt-3 space-y-2.5">
                   {!isJoinedToRoom ? (
-                    <ThemeSelect
-                      label="Page theme"
-                      value={personalThemeId}
-                      onChange={(nextThemeId) =>
-                        setPersonalThemeId(nextThemeId)
-                      }
-                    />
+                    <>
+                      <ThemeSelect
+                        label="Page theme"
+                        value={personalThemeId}
+                        onChange={(nextThemeId) =>
+                          setPersonalThemeId(nextThemeId)
+                        }
+                      />
+                      <AppearanceSelect
+                        label="Page appearance"
+                        value={appearance}
+                        onChange={setAppearance}
+                      />
+                    </>
                   ) : null}
                   <label className="block">
                     <span className="text-xs font-black uppercase text-[var(--pep-ink-soft)]">
@@ -2472,7 +2780,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
             ) : null}
           </section>
 
-          <section className="min-w-0 overflow-hidden rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(160deg,_rgba(255,255,255,0.92),_rgba(200,239,229,0.86))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.09)]">
+          <section className="pep-surface-gradient min-w-0 overflow-hidden rounded-[16px] border border-[var(--pep-line)] bg-[linear-gradient(160deg,_rgba(255,255,255,0.92),_rgba(200,239,229,0.86))] p-5 shadow-[0_16px_42px_rgba(12,32,42,0.09)]">
             <div className="mb-5 flex items-end justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase text-[var(--pep-accent)]">
@@ -2514,7 +2822,7 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
               <div className="grid w-full gap-2 sm:grid-cols-3">
                 <button
                   type="button"
-                  onClick={() => void handleInstantReveal()}
+                  onClick={() => void handleReveal()}
                   disabled={!canReveal}
                   className={[
                     'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
@@ -2525,19 +2833,42 @@ export function RoomPage({ mode = 'normal' }: RoomPageProps) {
                 >
                   Reveal
                 </button>
-                <button
-                  type="button"
-                  onClick={() => void handleRevealCountdown()}
-                  disabled={!canStartCountdown}
-                  className={[
-                    'min-h-12 rounded-[12px] border-2 px-4 py-2 text-xs font-black uppercase sm:text-sm',
-                    canStartCountdown
-                      ? 'cursor-pointer border-[var(--pep-ink)] bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_8px_0_rgba(20,38,51,0.18)]'
-                      : 'cursor-default border-slate-300 bg-slate-100 text-slate-400 shadow-none',
-                  ].join(' ')}
-                >
-                  Countdown
-                </button>
+                <div className="flex min-h-12 overflow-hidden rounded-[12px] border-2 border-[var(--pep-ink)]">
+                  <label className="sr-only" htmlFor="manual-countdown-seconds">
+                    Countdown duration
+                  </label>
+                  <select
+                    id="manual-countdown-seconds"
+                    aria-label="Countdown duration"
+                    value={manualCountdownSeconds}
+                    onChange={(event) =>
+                      setManualCountdownSeconds(Number(event.target.value))
+                    }
+                    disabled={!canStartCountdown}
+                    className="w-14 bg-white px-2 text-center text-sm font-black text-[var(--pep-ink)] disabled:bg-slate-100 disabled:text-slate-400"
+                  >
+                    {manualCountdownOptions.map((seconds) => (
+                      <option key={seconds} value={seconds}>
+                        {seconds}s
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void handleRevealCountdown(manualCountdownSeconds)
+                    }
+                    disabled={!canStartCountdown}
+                    className={[
+                      'pep-yellow-control flex-1 px-3 text-xs font-black uppercase sm:text-sm',
+                      canStartCountdown
+                        ? 'cursor-pointer bg-[var(--pep-yellow)] text-[var(--pep-ink)] shadow-[0_8px_0_rgba(20,38,51,0.18)]'
+                        : 'cursor-default bg-slate-100 text-slate-400 shadow-none',
+                    ].join(' ')}
+                  >
+                    Countdown
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => void handleResetRound()}
